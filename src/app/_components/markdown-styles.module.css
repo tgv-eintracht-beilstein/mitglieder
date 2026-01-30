@@ -16,3 +16,23 @@
 .markdown h3 {
   @apply text-2xl mt-8 mb-4 leading-snug;
 }
+
+@media print {
+  .markdown {
+    @apply text-base leading-loose;
+  }
+
+  .markdown p {
+    page-break-inside: avoid;
+  }
+
+  .markdown ul,
+  .markdown ol {
+    page-break-inside: avoid;
+  }
+
+  .markdown h2,
+  .markdown h3 {
+    page-break-after: avoid;
+  }
+}
