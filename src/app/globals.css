@@ -1,3 +1,60 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@media print {
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .min-h-screen {
+    flex: 1;
+  }
+
+  footer {
+    page-break-inside: avoid;
+  }
+
+  article {
+    page-break-inside: avoid;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+
+  @page :first {
+    margin-top: 2cm;
+  }
+
+  @page :nth(1n) {
+    @bottom-left {
+      content: string(title);
+    }
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+    }
+    @top-left {
+      content: "TGV Eintracht Beilstein";
+      font-weight: bold;
+    }
+  }
+}
+
