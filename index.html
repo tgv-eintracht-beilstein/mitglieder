@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Mitgliedsbeiträge 2026 – TGV „Eintracht“ Beilstein e. V.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* =====================
+   BASE / SCREEN STYLES
+===================== */
+:root {
+    --primary: #b11217;
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --text: #222;
+    --muted: #666;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+header {
+    background: linear-gradient(135deg, #b11217, #8f0f13);
+    color: #fff;
+    padding: 30px 20px;
+}
+
+.header-inner {
+    max-width: 1100px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-inner img {
+    height: 70px;
+    background: #fff;
+    padding: 6px;
+    border-radius: 8px;
+}
+
+main {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+}
+
+h1, h2 {
+    color: var(--primary);
+    margin-top: 0;
+}
+
+header h1 {
+    color: #ffffff !important;
+}
+
+h3 {
+    margin-top: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+td {
+    padding: 10px 6px;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+td.price {
+    text-align: right;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.note {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 12px;
+}
+
+footer {
+    background: #1f1f1f;
+    color: #fff;
+    padding: 40px 20px;
+    font-size: 14px;
+}
+
+.footer-grid {
+    max-width: 1100px;
+    margin: auto;
+    display: flex;
+    gap: 30px;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.footer-grid > div {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* =====================
+   PRINT HEADER / FOOTER
+===================== */
+.print-header {
+    display: none;
+}
+
+.print-footer {
+    display: none;
+}
+
+/* =====================
+   PRINT STYLES
+===================== */
+@media print {
+
+    body {
+        background: #fff;
+        color: #000;
+        margin: 0;
+        padding: 0;
+    }
+
+    header {
+        display: none;
+    }
+
+    footer {
+        background: #f0f0f0;
+        color: #666;
+        padding: 20px 0;
+        font-size: 11px;
+        border-top: none;
+        margin-top: 40px;
+        page-break-inside: avoid;
+    }
+
+    main {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .section {
+        box-shadow: none;
+        border-radius: 0;
+        padding: 15px 0;
+        page-break-inside: avoid;
+    }
+
+    table, tr {
+        page-break-inside: avoid;
+    }
+
+    h2, h3 {
+        page-break-after: avoid;
+    }
+
+    /* Show print header on first page */
+    .print-header {
+        display: table !important;
+        width: 100%;
+        page-break-inside: avoid;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        color: #666;
+        background-color: #f0f0f0;
+        border-bottom: none;
+    }
+
+    .print-header img {
+        height: 40px;
+    }
+
+    .print-header table {
+        border-bottom: none !important;
+    }
+
+    .print-header td {
+        color: #666 !important;
+        padding: 5px 0;
+    }
+
+    .print-header strong {
+        font-size: 11pt !important;
+    }
+
+    .print-footer {
+        display: none !important;
+    }
+
+    /* Style footer grid for print */
+    .footer-grid {
+        display: flex;
+        gap: 30px;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        background-color: #f0f0f0;
+        padding: 15px;
+    }
+
+    .footer-grid > div {
+        flex: 1;
+        min-width: 180px;
+        font-size: 11px;
+        line-height: 1.5;
+        color: #666;
+    }
+
+    .footer-grid strong {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 3px;
+        font-size: 12px;
+    }
+}
+
+@page {
+    size: A4;
+    margin: 20mm 15mm 20mm 15mm;
+}
+}
+/* This ensures header text is white on the red background */
+header h1, 
+header p {
+    color: #ffffff !important;
+    margin: 0;
+}
+</style>
+
+
+
+</head>
+
+<body>
+
+<!-- PRINT HEADER -->
+<div class="print-header">
+    <table style="width:100%; border-bottom:1px solid #ccc;">
+        <tr>
+            <td style="width:60px;">
+                <img src="https://www.tgveintrachtbeilstein.de/wp-content/uploads/2016/04/tgv.logo_.512.png" style="height:40px;">
+            </td>
+            <td style="font-size:12px; color: #ccc;">
+                MITGLIEDSBEITRÄGE<strong>2026</strong><br>
+                TGV „Eintracht“ Beilstein e. V.
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- PRINT FOOTER -->
+<div class="print-footer">
+    www.tgveintrachtbeilstein.de · info@tgveintrachtbeilstein.de · Tel. +49 (0) 7062 5753
+</div>
+
+<!-- SCREEN HEADER -->
+<header>
+    <div class="header-inner">
+        <img src="https://www.tgveintrachtbeilstein.de/wp-content/uploads/2016/04/tgv.logo_.512.png">
+        <div>
+            <h1>MITGLIEDSBEITRÄGE<strong>2026</strong></h1>
+            <p>TGV „Eintracht“ Beilstein e. V.</p>
+        </div>
+    </div>
+</header>
+
+<main>
+
+<div class="section">
+<p>Der Jahresbeitrag setzt sich aus einem Vereinsbeitrag und dem/den jeweiligen Abteilungsbeitrag/-beiträgen zusammen:</p>
+
+<h2>VEREINSBEITRAG</h2>
+
+<p>Der fällige Vereinsbeitrag muss jährlich im Januar beglichen werden. Bei erteiltem SEPA Mandat wird der Betrag Ende Januar (ab dem 22.) automatisch eingezogen.</p>
+
+<table>
+<tr><td>Vereinsbeitrag für Erwachsene</td><td class="price">60,00 Euro</td></tr>
+<tr><td>Vereinsbeitrag für Zweitmitglieder *</td><td class="price">35,00 Euro</td></tr>
+<tr><td>Vereinsbeitrag für Kinder bis 18 Jahren</td><td class="price">25,00 Euro</td></tr>
+<tr><td>Vereinsbeitrag Auszubildende, Schüler und Studenten 18-25 Jahre **</td><td class="price">30,00 Euro</td></tr>
+<tr><td>Vereinsbeitrag für Familien ***</td><td class="price">100,00 Euro</td></tr>
+</table>
+
+<p class="note">
+* Ehe- oder Lebenspartner<br>
+** Bescheinigungen sind bis 31.12. d. J. bei der Geschäftsstelle vorzulegen<br>
+*** ein Kind aus Familienmitgliedschaft wird im Jahr nach Volljährigkeit als Erstmitglied weitergeführt, wenn keine Bescheinigung für die Ermäßigung vorliegt.
+</p>
+</div>
+
+<div class="section">
+<h2>ABTEILUNGSBEITRÄGE</h2>
+
+<p>Fällige Abteilungsbeiträge müssen jährlich im Februar beglichen werden. Bei erteiltem SEPA Mandat wird der Betrag Ende Februar (ab dem 11.) automatisch eingezogen.</p>
+
+<h3>FUSSBALL</h3>
+<table>
+<tr><td>Erwachsene Aktive</td><td class="price">72,00 Euro</td></tr>
+<tr><td>1. Kind einer Familie oder Schüler / Student / Azubi</td><td class="price">60,00 Euro</td></tr>
+<tr><td>2. Kind einer Familie</td><td class="price">36,00 Euro</td></tr>
+<tr><td>3. und jedes weitere Kind einer Familie</td><td class="price">0,00 Euro</td></tr>
+<tr><td>Familienbeitrag</td><td class="price">100,00 Euro</td></tr>
+<tr><td>Fördermitglied (Passive, Trainer)</td><td class="price">40,00 Euro</td></tr>
+</table>
+
+<p class="note">Beitragsbefreiung auf Antrag für Mitglieder ab 60 Jahren</p>
+
+<h3>GESANG</h3>
+<table>
+<tr><td>Aktive</td><td class="price">50,00 Euro</td></tr>
+<tr><td>Passive</td><td class="price">0,00 Euro</td></tr>
+</table>
+
+<h3>SCHWIMMEN</h3>
+<table>
+<tr><td>Aktiv/Passiv</td><td class="price">20,00 Euro</td></tr>
+<tr><td>Familienbeitrag</td><td class="price">30,00 Euro</td></tr>
+<tr><td>Beitragsfreies Mitglied</td><td class="price">0,00 Euro</td></tr>
+</table>
+
+<h3>HANDBALL</h3>
+<table>
+<tr><td>Jugendliche 12-18 Jahre</td><td class="price">50,00 Euro</td></tr>
+<tr><td>Erwachsene 18-50 Jahre</td><td class="price">50,00 Euro</td></tr>
+</table>
+
+<h3>TISCHTENNIS</h3>
+<table>
+<tr><td>Aktiv</td><td class="price">50,00 Euro</td></tr>
+<tr><td>Passiv</td><td class="price">0,00 Euro</td></tr>
+<tr><td>Familienbeitrag</td><td class="price">100,00 Euro</td></tr>
+</table>
+
+<h3>TENNIS</h3>
+<table>
+<tr><td>Aktive</td><td class="price">120,00 Euro</td></tr>
+<tr><td>Schüler, Studenten, Auszubildende von 18 bis einschl. 26 Jahre*</td><td class="price">50,00 Euro</td></tr>
+<tr><td>Kinder und Jugendliche ab 10 - 18 Jahre</td><td class="price">30,00 Euro</td></tr>
+<tr><td>Kinder und Jugendliche bis 0 - 9 Jahre</td><td class="price">0,00 Euro</td></tr>
+<tr><td>Passive</td><td class="price">50,00 Euro</td></tr>
+</table>
+
+<p class="note">
+* Der Ausbildungsnachweis, mindestens gültig bis zum 31.07. d. J. muss bis Mitte Januar des Beitragsjahres vorgelegt werden. Andernfalls wird der Beitrag für ein erwachsenes Mitglied erhoben.
+</p>
+
+<h3>TURNEN- &amp; LEICHTATHLETIK</h3>
+<table>
+<tr><td>Abteilungsbeitrag Kinderturnen/Leichtathletik</td><td class="price">30,00 Euro</td></tr>
+<tr><td>Abteilungsbeitrag 2. Kind</td><td class="price">15,00 Euro</td></tr>
+<tr><td>Abteilungsbeitrag ab dem 3. Kind</td><td class="price">0,00 Euro</td></tr>
+<tr><td>Eltern-Kind-Turnen</td><td class="price">10,00 Euro/Kind</td></tr>
+<tr><td>Abteilungsbeitrag Jedermann Sport</td><td class="price">30,00 Euro</td></tr>
+<tr><td>Tang Soo Doo Kursbeitrag</td><td class="price"></td></tr>
+</table>
+</div>
+
+</main>
+
+<footer>
+    <div class="footer-grid">
+        <div>
+            <strong>TGV „Eintracht" Beilstein e. V.</strong><br>
+            Albert-Einstein-Str. 20 · 71717 Beilstein
+        </div>
+        <div>
+            <strong>Kontakt</strong><br>
+            Tel: +49 (0) 7062 5753<br>
+            Email: info@tgveintrachtbeilstein.de
+        </div>
+        <div>
+            <strong>Bankverbindung</strong><br>
+            Volksbank Beilstein-Ilsfeld-Abstatt eG<br>
+            IBAN: DE63 6206 2215 0001 0770 07<br>
+            BIC: GENODES1BIA
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
