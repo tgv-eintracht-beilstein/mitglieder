@@ -75,7 +75,7 @@ const PdfViewer = forwardRef<PdfViewerHandle, { url: string; filename?: string }
 
             containerRef.current.appendChild(canvas);
             const ctx = canvas.getContext("2d")!;
-            await page.render({ canvasContext: ctx, viewport: scaled }).promise;
+            await page.render({ canvasContext: ctx, canvas, viewport: scaled }).promise;
           }
         } catch {
           if (!cancelled) setError(true);
