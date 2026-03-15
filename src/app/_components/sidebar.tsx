@@ -8,6 +8,7 @@ const navItems = [
   { href: "/mitgliedsbeitraege", label: "Mitgliedsbeitr\u00e4ge" },
   { href: "/reisekosten", label: "Reisekosten" },
   { href: "/uebungsleiterpauschale", label: "\u00dcbungsleiterpauschale" },
+  { href: "/ehrenamtspauschale-verzicht", label: "EAP-Verzicht" },
   { href: "/docs", label: "Dokumente" },
 ];
 

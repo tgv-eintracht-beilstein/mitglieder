@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Image from "next/image";
 import TopNav from "@/app/_components/sidebar";
+import { Suspense } from "react";
+import PdfModeDetector from "@/app/_components/pdf-mode-detector";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -24,15 +26,17 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon/favicon.ico" />
       </head>
       <body className={`${inter.className} bg-[#f6f7f9] text-gray-800`}>
+        <Suspense><PdfModeDetector /></Suspense>
         {/* Top header */}
         <header className="bg-gradient-to-r from-[#b11217] to-[#8f0f13] text-white print:hidden">
           <div className="max-w-screen-xl mx-auto px-6 py-4 flex items-center gap-4">
             <Image
-              src="https://www.tgveintrachtbeilstein.de/wp-content/uploads/2016/04/tgv.logo_.512.png"
+              src="/tgv-logo.png"
               alt="TGV Logo"
               width={48}
               height={48}
               className="bg-white rounded-lg p-1 shrink-0"
+              loading="eager"
               unoptimized
             />
             <div className="flex-1 min-w-0 hidden md:block">
@@ -41,11 +45,13 @@ export default function RootLayout({
               </h1>
               <p className="text-xs text-red-200">Mitgliederbereich</p>
             </div>
-            <TopNav />
+            <div className="ml-auto">
+              <TopNav />
+            </div>
           </div>
         </header>
 
-        <main className="max-w-screen-xl mx-auto py-8 px-3 md:px-8 min-h-[calc(100vh-64px)]">
+        <main className="max-w-screen-xl mx-auto py-8 px-4 md:px-8 min-h-[calc(100vh-64px)]">
           {children}
         </main>
 
