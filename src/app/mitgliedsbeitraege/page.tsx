@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import PrintButton from "@/app/_components/print-button";
 
 export const metadata: Metadata = {
-  title: 'Mitgliedsbeitr\u00e4ge 2026 \u2013 TGV "Eintracht" Beilstein e. V.',
+  title: 'Mitgliedsbeiträge 2026 – TGV "Eintracht" Beilstein e. V.',
 };
 
 function PriceTable({ rows }: { rows: [string, string][] }) {
@@ -54,23 +53,20 @@ function Note({ children }: { children: React.ReactNode }) {
 export default function MitgliedsbeitraegePage() {
   return (
     <>
-      {/* Print-only header */}
+      {/* Print header */}
       <div className="hidden print:flex items-center gap-3 mb-6 pb-4 border-b border-gray-300">
-        <Image
-          src="https://www.tgveintrachtbeilstein.de/wp-content/uploads/2016/04/tgv.logo_.512.png"
-          alt="TGV Logo"
-          width={40}
-          height={40}
-          unoptimized
-        />
-        <div className="text-xs text-gray-600">
-          <strong className="block">MITGLIEDSBEITR&Auml;GE 2026</strong>
-          TGV &bdquo;Eintracht&ldquo; Beilstein e. V.
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/tgv-logo.png" alt="TGV Logo" width={44} height={44} />
+        <div>
+          <div className="font-bold text-base text-gray-900">TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.V.</div>
+          <div className="text-xs text-gray-500">Mitgliedsbeiträge 2026</div>
         </div>
       </div>
-      <h1 className="text-2xl font-bold text-[#b11217] mb-6">
-        Mitgliedsbeiträge 2026
-      </h1>
+
+      <div className="flex items-center justify-between mb-6 print:hidden">
+        <h1 className="text-2xl font-bold text-[#b11217]">Mitgliedsbeiträge 2026</h1>
+      </div>
+      <h1 className="hidden print:block text-2xl font-bold text-[#b11217] mb-6">Mitgliedsbeiträge 2026</h1>
 
       <Section>
         <p className="text-sm text-gray-600 mb-4">
@@ -185,7 +181,31 @@ export default function MitgliedsbeitraegePage() {
         />
       </Section>
 
-      <PrintButton />
+      <div className="flex justify-end print:hidden mt-2 mb-6">
+        <PrintButton />
+      </div>
+
+      {/* Print footer */}      <div className="hidden print:grid grid-cols-3 gap-4 mt-6 pt-3 border-t border-gray-300 text-[10px] text-gray-500 leading-snug">
+        <div className="flex items-start gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/tgv-logo-sw.png" alt="TGV Logo" width={32} height={32} className="opacity-50 shrink-0 mt-0.5" />
+          <div>
+            <div className="font-semibold text-gray-700">TGV &bdquo;Eintracht&ldquo; Beilstein e.&thinsp;V.</div>
+            <div>Albert-Einstein-Str. 20 &middot; 71717 Beilstein</div>
+          </div>
+        </div>
+        <div>
+          <div className="font-semibold text-gray-700 mb-0.5">Kontakt</div>
+          <div>Tel: +49 (0) 7062 5753</div>
+          <div>info@tgveintrachtbeilstein.de</div>
+        </div>
+        <div>
+          <div className="font-semibold text-gray-700 mb-0.5">Bankverbindung</div>
+          <div>Volksbank Beilstein-Ilsfeld-Abstatt eG</div>
+          <div>IBAN: DE63 6206 2215 0001 0770 07</div>
+          <div>BIC: GENODES1BIA</div>
+        </div>
+      </div>
     </>
   );
 }

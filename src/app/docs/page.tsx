@@ -3,7 +3,50 @@ import path from "path";
 import matter from "gray-matter";
 import Link from "next/link";
 
-const PDF_BASE = "https://github.com/tgv-eintracht-beilstein/dokumentation/raw/gh-pages";
+const PDF_BASE = "https://raw.githubusercontent.com/tgv-eintracht-beilstein/dokumentation/gh-pages";
+
+const DownloadIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M7 1v8M4 6l3 3 3-3"/>
+    <path d="M1 10v1a2 2 0 002 2h8a2 2 0 002-2v-1"/>
+  </svg>
+);
+
+function DocRow({ slug, title, preface, downloadHref }: { slug?: string; title: string; preface?: string; downloadHref: string }) {
+  return (
+    <div className="rounded-lg border border-gray-100 px-4 py-3 hover:border-[#b11217] hover:shadow-sm transition-all group flex items-center justify-between gap-4">
+      {slug ? (
+        <Link href={`/docs/${slug}`} className="flex-1 min-w-0">
+          <div className="font-semibold text-gray-900 group-hover:text-[#b11217] transition-colors">{title}</div>
+          {preface && <div className="text-xs text-gray-400 mt-0.5 line-clamp-2">{preface}</div>}
+        </Link>
+      ) : (
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-gray-900 group-hover:text-[#b11217] transition-colors">{title}</div>
+          {preface && <div className="text-xs text-gray-400 mt-0.5 line-clamp-2">{preface}</div>}
+        </div>
+      )}
+      <a
+        href={downloadHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Herunterladen"
+        className="shrink-0 p-1.5 text-gray-400 hover:text-[#b11217] transition-colors"
+      >
+        <DownloadIcon />
+      </a>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+      <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase">{title}</div>
+      <div className="p-4 space-y-2">{children}</div>
+    </section>
+  );
+}
 
 export default function DocsIndex() {
   const docsDir = path.join(process.cwd(), "dokumentation/docs");
@@ -13,31 +56,38 @@ export default function DocsIndex() {
     const raw = fs.readFileSync(path.join(docsDir, file), "utf8");
     const { data } = matter(raw);
     return { slug: file.replace(/\.md$/, ""), title: data.title || file, preface: data.preface || "" };
-  }).sort((a, b) => {
-    if (a.slug === "satzung") return -1;
-    if (b.slug === "satzung") return 1;
-    return a.title.localeCompare(b.title, "de");
   });
 
+  const satzung = docs.find(d => d.slug === "satzung");
+  const ordnungen = docs
+    .filter(d => d.slug !== "satzung")
+    .sort((a, b) => a.title.localeCompare(b.title, "de"));
+
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-xl font-bold text-gray-900 mb-1">Dokumente</h1>
-      <p className="text-sm text-gray-400 mb-6">TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V.</p>
-      <div className="space-y-3">
-        {docs.map(({ slug, title, preface }) => (
-          <div key={slug} className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 hover:border-[#b11217] hover:shadow-md transition-all group flex items-center justify-between gap-4">
-            <Link href={`/docs/${slug}`} className="flex-1 min-w-0">
-              <div className="font-semibold text-gray-900 group-hover:text-[#b11217] transition-colors">{title}</div>
-              {preface && <div className="text-xs text-gray-400 mt-1 line-clamp-2">{preface}</div>}
-            </Link>
-            <a href={`${PDF_BASE}/${slug}.pdf`} target="_blank" rel="noopener noreferrer"
-              className="shrink-0 hover:opacity-80 transition-opacity" title="PDF herunterladen">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="https://www.tgveintrachtbeilstein.de/wp-content/uploads/2018/12/pdf.png" alt="PDF" className="h-8 w-auto" />
-            </a>
-          </div>
-        ))}
+    <>
+      <div className="flex items-center justify-between mb-6 print:hidden">
+        <h1 className="text-2xl font-bold text-[#b11217]">Dokumente</h1>
       </div>
-    </div>
+
+      {satzung && (
+        <Section title="Satzung">
+          <DocRow slug={satzung.slug} title={satzung.title} preface={satzung.preface} downloadHref={`${PDF_BASE}/${satzung.slug}.pdf`} />
+        </Section>
+      )}
+
+      <Section title="Ordnungen">
+        {ordnungen.map(({ slug, title, preface }) => (
+          <DocRow key={slug} slug={slug} title={title} preface={preface} downloadHref={`${PDF_BASE}/${slug}.pdf`} />
+        ))}
+      </Section>
+
+      <Section title="Corporate Design">
+        <DocRow
+          title="Corporate Design Paket"
+          preface="Logos, Schriften und Vorlagen für den einheitlichen Vereinsauftritt"
+          downloadHref="https://github.com/tgv-eintracht-beilstein/design/archive/master.zip"
+        />
+      </Section>
+    </>
   );
 }
