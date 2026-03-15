@@ -1,0 +1,3 @@
+[submodule "dokumentation"]
+	path = dokumentation
+	url = git@github.com:tgv-eintracht-beilstein/dokumentation.git
