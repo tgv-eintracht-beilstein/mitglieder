@@ -6,6 +6,8 @@ export default function ReisekostenPage() {
       storageKey: "reisekosten_v1",
       title: "Reisekostenabrechnung",
       filename: "reisekosten.pdf",
+      showStunden: false,
+      showKm: true,
     }} />
   );
 }
