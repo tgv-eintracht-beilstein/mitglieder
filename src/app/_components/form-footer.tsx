@@ -100,17 +100,26 @@ export default function FormFooter({ onReset, filename = "formular.pdf", content
   useEffect(() => { onDownloadReady?.(handleDownload); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="flex items-center justify-between print:hidden mt-2 mb-6">
+    <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-2 print:hidden mt-2 mb-6">
       <button
         onClick={onReset}
-        className="px-5 py-2.5 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm hover:bg-red-100 transition-colors"
+        className="w-full md:w-auto px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg text-xs hover:bg-red-100 transition-colors"
       >
         Formular zurücksetzen
       </button>
       <div className="flex items-center gap-2">
+        {/* Mobile: PDF download */}
+        <button
+          onClick={handleDownload}
+          disabled={loading}
+          className="flex md:hidden w-full justify-center items-center gap-1.5 px-5 py-3 text-base bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium disabled:opacity-60 whitespace-nowrap"
+        >
+          {loading ? "Erstelle PDF…" : "PDF herunterladen"}
+        </button>
+        {/* Desktop: print */}
         <button
           onClick={() => window.print()}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 5V1h8v4"/><rect x="1" y="5" width="12" height="6" rx="1"/><path d="M3 11v2h8v-2"/><circle cx="10.5" cy="8" r="0.5" fill="currentColor"/>

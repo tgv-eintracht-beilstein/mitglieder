@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PrintButton from "@/app/_components/print-button";
+import DownloadPageButton from "@/app/_components/download-page-button";
 
 export const metadata: Metadata = {
   title: 'Mitgliedsbeiträge 2026 – TGV "Eintracht" Beilstein e. V.',
@@ -181,8 +182,15 @@ export default function MitgliedsbeitraegePage() {
         />
       </Section>
 
-      <div className="flex justify-end print:hidden mt-2 mb-6">
-        <PrintButton />
+      <div className="flex justify-end print:hidden mt-2 mb-6 gap-2">
+        {/* Mobile: PDF download */}
+        <div className="md:hidden">
+          <DownloadPageButton filename="mitgliedsbeitraege-2026.pdf" />
+        </div>
+        {/* Desktop: print */}
+        <div className="hidden md:block">
+          <PrintButton />
+        </div>
       </div>
 
       {/* Print footer */}      <div className="hidden print:grid grid-cols-3 gap-4 mt-6 pt-3 border-t border-gray-300 text-[10px] text-gray-500 leading-snug">
