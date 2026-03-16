@@ -718,7 +718,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         <div className="space-y-2 mb-1 text-xs">
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={state.steuerVollHoehe} onChange={(e) => set("steuerVollHoehe", e.target.checked)} className="w-4 h-4" />
-            in voller H&ouml;he (3.300,00 Euro)
+            in voller H&ouml;he ({parseInt(state.monat) >= 2026 ? "3.300,00" : "3.000,00"} Euro)
           </label>
           <div className="flex items-center gap-2 flex-wrap">
             <label className="flex items-center gap-2">
