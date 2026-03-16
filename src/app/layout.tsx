@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Image from "next/image";
+import Link from "next/link";
 import TopNav from "@/app/_components/sidebar";
 import { Suspense } from "react";
 import PdfModeDetector from "@/app/_components/pdf-mode-detector";
@@ -30,15 +31,17 @@ export default function RootLayout({
         {/* Top header */}
         <header className="bg-gradient-to-r from-[#b11217] to-[#8f0f13] text-white print:hidden">
           <div className="max-w-screen-xl mx-auto px-6 py-4 flex items-center gap-4">
-            <Image
-              src="/tgv-logo.png"
-              alt="TGV Logo"
-              width={48}
-              height={48}
-              className="bg-white rounded-lg p-1 shrink-0"
-              loading="eager"
-              unoptimized
-            />
+            <Link href="/">
+              <Image
+                src="/tgv-logo.png"
+                alt="TGV Logo"
+                width={48}
+                height={48}
+                className="bg-white rounded-lg p-1 shrink-0 hover:opacity-90 transition-opacity"
+                loading="eager"
+                unoptimized
+              />
+            </Link>
             <div className="flex-1 min-w-0 hidden md:block">
               <h1 className="text-lg font-bold leading-tight">
                 TGV &bdquo;Eintracht&ldquo; Beilstein e. V.

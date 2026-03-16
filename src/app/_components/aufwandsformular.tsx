@@ -367,7 +367,7 @@ function DownloadButton({ filename, storageKey: _storageKey }: { filename: strin
     <button
       onClick={handleDownload}
       disabled={loading}
-      className="shrink-0 flex items-center gap-1.5 px-5 py-2.5 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium disabled:opacity-60"
+      className="shrink-0 flex items-center gap-1.5 px-5 py-2.5 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium disabled:opacity-60 whitespace-nowrap overflow-hidden text-ellipsis"
     >
       {loading ? (
         <>

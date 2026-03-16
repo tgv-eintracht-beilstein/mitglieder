@@ -108,7 +108,7 @@ export default function EhrenamtspauschaleVerzichtPage() {
         <h1 className="text-2xl font-bold text-[#b11217]">Verzicht auf Auszahlung der Ehrenamtspauschale</h1>
         <button
           onClick={() => downloadFn?.()}
-          className="flex items-center gap-1.5 px-5 py-2.5 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium"
+          className="flex items-center gap-1.5 px-5 py-2.5 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium whitespace-nowrap overflow-hidden text-ellipsis"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M7 1v8M4 6l3 3 3-3"/>
