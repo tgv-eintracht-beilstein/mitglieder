@@ -617,7 +617,7 @@ function RowEditModal({ row, onSave, onDelete, onClose }: {
     </div>
   );
 }
-function DownloadButton({ filename, storageKey: _storageKey, disabled: disabledProp }: { filename: string; storageKey: string; disabled?: boolean }) {
+function DownloadButton({ filename, storageKey: _storageKey, disabled: disabledProp, missingCount }: { filename: string; storageKey: string; disabled?: boolean; missingCount?: number }) {
   const [loading, setLoading] = useState(false);
 
   async function handleDownload() {
@@ -696,6 +696,7 @@ function DownloadButton({ filename, storageKey: _storageKey, disabled: disabledP
             <path d="M1 10v1a2 2 0 002 2h8a2 2 0 002-2v-1"/>
           </svg>
           PDF herunterladen
+          {disabledProp && missingCount ? <span className="ml-1 bg-white/20 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{missingCount}</span> : null}
         </>
       )}
     </button>
@@ -771,14 +772,21 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const endbetrag = aufwand - spende;
   const inputCls = "w-full bg-transparent border-b border-gray-300 px-1 py-1 text-xs focus:outline-none focus:border-blue-400";
 
-  const isComplete = !!(
-    state.nachname && state.vorname && state.strasse && state.plzOrt &&
-    state.geburtsdatum && state.telefon && state.abteilung && state.monat &&
-    endbetrag > 0 &&
-    validateIban(state.iban) && (state.zahlungBar || state.zahlungUeberweisung) &&
-    (state.steuerVollHoehe || state.steuerBisZu || state.steuerNicht) &&
-    state.rows.every(r => r.datum)
-  );
+  const missing: string[] = [];
+  if (!state.nachname) missing.push("Nachname");
+  if (!state.vorname) missing.push("Vorname");
+  if (!state.strasse) missing.push("Straße");
+  if (!state.plzOrt) missing.push("PLZ / Ort");
+  if (!state.geburtsdatum) missing.push("Geburtsdatum");
+  if (!state.telefon) missing.push("Telefon");
+  if (!state.abteilung) missing.push("Abteilung");
+  if (!state.monat) missing.push("Monat");
+  if (endbetrag <= 0) missing.push("Endbetrag > 0");
+  if (!state.zahlungBar && !state.zahlungUeberweisung) missing.push("Zahlungsart");
+  if (state.zahlungUeberweisung && !validateIban(state.iban)) missing.push("IBAN");
+  if (!state.steuerVollHoehe && !state.steuerBisZu && !state.steuerNicht) missing.push("Steuererklärung");
+  if (state.rows.some(r => !r.datum)) missing.push("Datum in Tätigkeitsnachweis");
+  const isComplete = missing.length === 0;
 
   return (
     <div className="reisekosten-form px-1" ref={contentRef}>
