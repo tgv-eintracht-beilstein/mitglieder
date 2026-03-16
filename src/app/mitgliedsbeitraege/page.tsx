@@ -86,8 +86,8 @@ export default function MitgliedsbeitraegePage() {
             ["Vereinsbeitrag für Erwachsene", "80,00 Euro"],
             ["Vereinsbeitrag für Zweitmitglieder *", "45,00 Euro"],
             ["Vereinsbeitrag für Kinder bis 18 Jahren", "35,00 Euro"],
-            ["Vereinsbeitrag Auszubildende, Schüler und Studenten 18–25 Jahre **", "50,00 Euro"],
-            ["Vereinsbeitrag für Familien ***", "180,00 Euro"],
+            ["Vereinsbeitrag Auszubildende, Schüler und Studenten 18–25 Jahre **", "35,00 Euro"],
+            ["Vereinsbeitrag für Familien ***", "130,00 Euro"],
           ]}
         />
         <Note>
@@ -122,7 +122,7 @@ export default function MitgliedsbeitraegePage() {
         <SubTitle>Gesang</SubTitle>
         <PriceTable
           rows={[
-            ["Aktive", "20,00 Euro"],
+            ["Aktive", "70,00 Euro"],
             ["Passive", "0,00 Euro"],
           ]}
         />
@@ -176,8 +176,8 @@ export default function MitgliedsbeitraegePage() {
             ["Abteilungsbeitrag 2. Kind", "30,00 Euro"],
             ["Abteilungsbeitrag ab dem 3. Kind", "0,00 Euro"],
             ["Eltern-Kind-Turnen", "25,00 Euro/Kind"],
-            ["Abteilungsbeitrag Jedermann Sport", "30,00 Euro"],
-            ["Tang Soo Doo Kursbeitrag", "50,00 Euro"],
+            ["Jedermänner", "50,00 Euro"],
+            ["Tang Soo Doo", "Kursbeitrag"],
           ]}
         />
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { DateSelect } from "./aufwandsformular";
 
 function PI({ value, children }: { value: string; children: React.ReactNode }) {
   return (
@@ -56,7 +57,10 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
               <div key={f.key}>
                 <div className="text-[10px] text-gray-400 mb-0.5">{f.label}</div>
                 <PI value={f.value}>
-                  <input type={f.type ?? "text"} value={f.value} onChange={e => f.onChange(e.target.value)} className={fieldCls} />
+                  {f.type === "date"
+                    ? <DateSelect value={f.value} onChange={f.onChange} />
+                    : <input type={f.type ?? "text"} value={f.value} onChange={e => f.onChange(e.target.value)} className={fieldCls} />
+                  }
                 </PI>
               </div>
             ))}
