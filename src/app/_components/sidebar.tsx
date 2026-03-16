@@ -19,7 +19,7 @@ export default function TopNav() {
   return (
     <>
       {/* Desktop nav */}
-      <nav className="hidden md:flex items-center gap-1 print:hidden">
+      <nav className="hidden [@media(min-width:1075px)]:flex items-center gap-1 print:hidden">
         {navItems.map(({ href, label }) => (
           <Link
             key={href}
@@ -37,7 +37,7 @@ export default function TopNav() {
 
       {/* Mobile hamburger button */}
       <button
-        className="md:hidden print:hidden p-2 rounded-lg hover:bg-white/20 transition-colors"
+        className="[@media(max-width:1074px)]:flex hidden print:hidden p-2 rounded-lg hover:bg-white/20 transition-colors"
         onClick={() => setOpen(true)}
         aria-label="Menü öffnen"
       >
