@@ -43,8 +43,8 @@ export default function RootLayout({
               />
             </Link>
             <div className="flex-1 min-w-0 hidden md:block">
-              <h1 className="text-lg font-bold leading-tight">
-                TGV &bdquo;Eintracht&ldquo; Beilstein e. V.
+              <h1 className="text-lg font-bold leading-tight whitespace-nowrap">
+                TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e. V.
               </h1>
               <p className="text-xs text-red-200">Mitgliederbereich</p>
             </div>
