@@ -266,7 +266,7 @@ export function DateSelect({ value, onChange, className }: { value: string; onCh
   return (
     <div className={`relative ${className ?? ""}`}>
       <button ref={btnRef} type="button" onClick={openPanel}
-        className="w-full flex items-center gap-1 border-b border-gray-300 bg-transparent py-0.5 text-sm focus:outline-none focus:border-[#b11217] text-left print:hidden">
+        className="w-full flex items-center gap-1 border-b border-gray-300 bg-transparent py-0.5 text-[length:inherit] focus:outline-none focus:border-[#b11217] text-left print:hidden">
         <span className={value ? "" : "text-gray-400"}>{label}</span>
         <svg className="ml-auto shrink-0 text-gray-400" width={12} height={12} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round"/></svg>
       </button>
@@ -823,8 +823,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             <tbody>
               {sortedRows.map((row) => (
                 <tr key={row.id} className="pdf-row border-b border-gray-100 hover:bg-blue-50">
-                  <td className="border-r border-gray-100 px-1 py-1.5">
-                    <PI value={row.datum}><DateSelect value={row.datum} onChange={v => updateRow(row.id, "datum", v)} /></PI>
+                  <td className="border-r border-gray-100 px-1 py-1.5 w-24">
+                    <PI value={row.datum}><DateSelect value={row.datum} onChange={v => updateRow(row.id, "datum", v)} className="w-24" /></PI>
                   </td>
                   <td className="border-r border-gray-100 px-1 py-1.5">
                     <PI value={row.von}><TimeSelect value={row.von} onChange={v => updateRow(row.id, "von", v)} /></PI>
