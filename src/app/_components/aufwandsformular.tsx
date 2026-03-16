@@ -199,24 +199,34 @@ export function MonthSelect({ value, onChange }: { value: string; onChange: (v: 
   );
 }
 
-export function DateSelect({ value, onChange, className }: { value: string; onChange: (v: string) => void; className?: string }) {
+export function DateSelect({ value, onChange, className, minYear }: { value: string; onChange: (v: string) => void; className?: string; minYear?: number }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
+    function close() { setOpen(false); }
     function h(e: MouseEvent) {
       if (btnRef.current?.contains(e.target as Node)) return;
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) setOpen(false);
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) close();
     }
     document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      document.removeEventListener("mousedown", h);
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
   }, []);
 
   function openPanel() {
     if (btnRef.current) {
       const r = btnRef.current.getBoundingClientRect();
-      setPos({ top: r.bottom + 4, left: r.left });
+      const panelW = 276;
+      const left = Math.min(r.left, window.innerWidth - panelW - 8);
+      setPos({ top: r.bottom + 4, left: Math.max(8, left) });
     }
     setOpen(o => !o);
   }
@@ -225,21 +235,31 @@ export function DateSelect({ value, onChange, className }: { value: string; onCh
   const [year, month, day] = parts as [number|null, number|null, number|null];
   const label = value ? `${String(day).padStart(2,"0")}.${String(month).padStart(2,"0")}.${year}` : "– Datum –";
   const curYear = new Date().getFullYear();
-  const years = Array.from({ length: 5 }, (_, i) => curYear - 2 + i);
+  const yearFrom = minYear ?? curYear - 2;
   const daysInMonth = year && month ? new Date(year, month, 0).getDate() : 31;
+  const [yearInput, setYearInput] = useState("");
 
   function set(y: number, m: number, d: number) {
     const clampedD = Math.min(d, new Date(y, m, 0).getDate());
     onChange(`${y}-${String(m).padStart(2,"0")}-${String(clampedD).padStart(2,"0")}`);
   }
 
-  const content = (
+  const desktopPanel = (
     <div className="p-3 space-y-3 min-w-[260px]">
       <div className="flex items-center gap-2">
-        <select value={year ?? curYear} onChange={e => set(Number(e.target.value), month ?? 1, day ?? 1)}
-          className="flex-1 border-b border-gray-300 bg-transparent text-sm focus:outline-none focus:border-[#b11217] px-1 py-1">
-          {years.map(y => <option key={y} value={y}>{y}</option>)}
-        </select>
+        <input
+          type="number"
+          value={yearInput || (year ?? curYear)}
+          min={yearFrom}
+          max={curYear + 5}
+          onChange={e => {
+            setYearInput(e.target.value);
+            const y = parseInt(e.target.value);
+            if (y >= 1900 && y <= curYear + 5) set(y, month ?? 1, day ?? 1);
+          }}
+          onBlur={() => setYearInput("")}
+          className="w-20 border-b border-gray-300 bg-transparent text-sm focus:outline-none focus:border-[#b11217] px-1 py-1 tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
         <select value={month ?? 1} onChange={e => set(year ?? curYear, Number(e.target.value), day ?? 1)}
           className="flex-1 border-b border-gray-300 bg-transparent text-sm focus:outline-none focus:border-[#b11217] px-1 py-1">
           {MONTHS_DE.map((m, i) => <option key={m} value={i+1}>{m}</option>)}
@@ -265,35 +285,31 @@ export function DateSelect({ value, onChange, className }: { value: string; onCh
 
   return (
     <div className={`relative ${className ?? ""}`}>
+      {/* Mobile: native date input */}
+      <input
+        type="date"
+        value={value}
+        min={`${yearFrom}-01-01`}
+        onChange={e => onChange(e.target.value)}
+        className="sm:hidden w-full bg-transparent border-b border-gray-300 py-0.5 text-[length:inherit] focus:outline-none focus:border-[#b11217] print:hidden"
+      />
+      {/* Desktop: custom button + panel */}
       <button ref={btnRef} type="button" onClick={openPanel}
-        className="w-full flex items-center gap-1 border-b border-gray-300 bg-transparent py-0.5 text-[length:inherit] focus:outline-none focus:border-[#b11217] text-left print:hidden">
+        className="hidden sm:flex w-full items-center gap-1 border-b border-gray-300 bg-transparent py-0.5 text-[length:inherit] focus:outline-none focus:border-[#b11217] text-left print:hidden">
         <span className={value ? "" : "text-gray-400"}>{label}</span>
         <svg className="ml-auto shrink-0 text-gray-400" width={12} height={12} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round"/></svg>
       </button>
       <span className="hidden print:block text-sm">{label}</span>
       {open && (
-        <>
-          {/* Desktop: fixed panel escapes overflow clipping */}
-          <div ref={panelRef} className="hidden sm:block fixed z-[200] bg-white border border-gray-200 rounded shadow-md print:hidden"
-            style={{ top: pos.top, left: pos.left }}>{content}</div>
-          {/* Mobile: fullscreen overlay */}
-          <div className="sm:hidden fixed inset-0 z-[200] bg-white flex flex-col print:hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-              <span className="font-medium text-sm">Datum wählen</span>
-              <button type="button" onClick={() => setOpen(false)} className="p-1 text-gray-500">
-                <svg width={20} height={20} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><path d="M4 4l12 12M16 4L4 16"/></svg>
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto">{content}</div>
-          </div>
-        </>
+        <div ref={panelRef} className="fixed z-[200] bg-white border border-gray-200 rounded shadow-md print:hidden"
+          style={{ top: pos.top, left: pos.left }}>{desktopPanel}</div>
       )}
     </div>
   );
 }
 
-function NumberInput({ value, onChange, step = 1, min = 0, className }: {
-  value: string; onChange: (v: string) => void; step?: number; min?: number; className?: string;
+function NumberInput({ value, onChange, step = 1, min = 0, className, large }: {
+  value: string; onChange: (v: string) => void; step?: number; min?: number; className?: string; large?: boolean;
 }) {
   const num = parseFloat(value) || 0;
   function adjust(delta: number) {
@@ -301,13 +317,13 @@ function NumberInput({ value, onChange, step = 1, min = 0, className }: {
     onChange(String(next));
   }
   return (
-    <span className={`inline-flex items-center border-b border-gray-300 focus-within:border-[#b11217] ${className ?? ""}`}>
+    <span className={`inline-flex items-center justify-center border-b border-gray-300 focus-within:border-[#b11217] ${className ?? ""}`}>
       <button type="button" onClick={() => adjust(-step)}
-        className="px-1 text-gray-400 hover:text-gray-700 print:hidden leading-none">−</button>
+        className={`text-gray-400 hover:text-gray-700 print:hidden leading-none ${large ? "px-4 py-2 text-xl" : "px-1"}`}>−</button>
       <input type="number" value={value} onChange={e => onChange(e.target.value)} step={step} min={min}
-        className="w-10 text-center bg-transparent text-xs focus:outline-none tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+        className={`text-center bg-transparent focus:outline-none tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${large ? "w-20 text-base" : "w-10 text-xs"}`} />
       <button type="button" onClick={() => adjust(step)}
-        className="px-1 text-gray-400 hover:text-gray-700 print:hidden leading-none">+</button>
+        className={`text-gray-400 hover:text-gray-700 print:hidden leading-none ${large ? "px-4 py-2 text-xl" : "px-1"}`}>+</button>
     </span>
   );
 }
@@ -401,13 +417,29 @@ function TimeSelect({ value, onChange, className }: {
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const mobileRef = useRef<HTMLDivElement>(null);
+
+  // Local draft for mobile — only committed on checkmark
+  const [draftH, setDraftH] = useState<string>("00");
+  const [draftM, setDraftM] = useState<string>("00");
+  const [dirty, setDirty] = useState(false);
+
   useEffect(() => {
+    function close() { setOpen(false); }
     function h(e: MouseEvent) {
       if (btnRef.current?.contains(e.target as Node)) return;
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) setOpen(false);
+      if (panelRef.current?.contains(e.target as Node)) return;
+      if (mobileRef.current?.contains(e.target as Node)) return;
+      close();
     }
     document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      document.removeEventListener("mousedown", h);
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
   }, []);
 
   function openPanel() {
@@ -415,59 +447,84 @@ function TimeSelect({ value, onChange, className }: {
       const r = btnRef.current.getBoundingClientRect();
       setPos({ top: r.bottom + 4, left: r.left });
     }
+    // Init draft from current value
+    const [h, m] = value ? value.split(":") : ["00", "00"];
+    setDraftH(h);
+    setDraftM(m);
+    setDirty(false);
     setOpen(o => !o);
   }
 
-  const [curH, curM] = value ? value.split(":") : ["", ""];
+  const [curH, curM] = value ? value.split(":") : ["00", "00"];
   const label = value || "––:––";
+  const draftLabel = `${draftH}:${draftM}`;
 
-  function pick(h: string, m: string) { onChange(`${h}:${m}`); setOpen(false); }
+  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
 
-  const content = (
-    <div className="p-3 space-y-2 w-56">
-      <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Stunde</div>
-      <div className="grid grid-cols-6 gap-1">
-        {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0")).map(h => (
-          <button key={h} type="button"
-            onClick={() => pick(h, curM || "00")}
-            className={`py-1 text-xs rounded transition-colors ${curH === h ? "bg-[#b11217] text-white font-medium" : "hover:bg-gray-100 text-gray-700"}`}>
-            {h}
-          </button>
-        ))}
+  // Desktop: picks apply immediately
+  function pickDesktop(h: string, m: string) {
+    onChange(`${h}:${m}`);
+    setOpen(false);
+  }
+
+  function renderContent(large: boolean) {
+    const displayH = large ? draftH : curH;
+    const displayM = large ? draftM : curM;
+    const btnH = large ? "py-3 text-base" : "py-1 text-xs";
+    const btnM = large ? "py-4 text-lg font-medium" : "py-1.5 text-xs";
+    return (
+      <div className={large ? "p-4 space-y-4" : "p-3 space-y-2 w-56"}>
+        <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Stunde</div>
+        <div className="grid grid-cols-6 gap-1">
+          {hours.map(h => (
+            <button key={h} type="button"
+              onClick={() => large ? (setDraftH(h), setDirty(true)) : pickDesktop(h, displayM)}
+              className={`rounded transition-colors ${btnH} ${displayH === h ? "bg-[#b11217] text-white font-medium" : "hover:bg-gray-100 text-gray-700"}`}>
+              {h}
+            </button>
+          ))}
+        </div>
+        <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide pt-1">Minute</div>
+        <div className="grid grid-cols-4 gap-2">
+          {MINUTES.map(m => (
+            <button key={m} type="button"
+              onClick={() => large ? (setDraftM(m), setDirty(true)) : pickDesktop(displayH, m)}
+              className={`rounded transition-colors ${btnM} ${displayM === m ? "bg-[#b11217] text-white font-medium" : "hover:bg-gray-100 text-gray-700"}`}>
+              :{m}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide pt-1">Minute</div>
-      <div className="grid grid-cols-4 gap-1">
-        {MINUTES.map(m => (
-          <button key={m} type="button"
-            onClick={() => pick(curH || "00", m)}
-            className={`py-1.5 text-xs rounded transition-colors ${curM === m ? "bg-[#b11217] text-white font-medium" : "hover:bg-gray-100 text-gray-700"}`}>
-            :{m}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <span className={`relative inline-block ${className ?? ""}`}>
       <button ref={btnRef} type="button" onClick={openPanel}
-        className="flex items-center gap-1 border-b border-gray-300 bg-transparent py-0.5 text-xs focus:outline-none focus:border-[#b11217] print:hidden tabular-nums">
+        className="w-full flex items-center gap-1 border-b border-gray-300 bg-transparent py-0.5 text-[length:inherit] focus:outline-none focus:border-[#b11217] text-left print:hidden tabular-nums">
         <span className={value ? "" : "text-gray-400"}>{label}</span>
-        <svg className="shrink-0 text-gray-400" width={10} height={10} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round"/></svg>
+        <svg className="ml-auto shrink-0 text-gray-400" width={10} height={10} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round"/></svg>
       </button>
       <span className="hidden print:inline text-xs tabular-nums">{label}</span>
       {open && (
         <>
           <div ref={panelRef} className="hidden sm:block fixed z-[200] bg-white border border-gray-200 rounded shadow-md print:hidden"
-            style={{ top: pos.top, left: pos.left }}>{content}</div>
-          <div className="sm:hidden fixed inset-0 z-[200] bg-white flex flex-col print:hidden">
+            style={{ top: pos.top, left: pos.left }}>{renderContent(false)}</div>
+          <div ref={mobileRef} className="sm:hidden fixed inset-0 z-[200] bg-white flex flex-col print:hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-              <span className="font-medium text-sm">Uhrzeit wählen</span>
-              <button type="button" onClick={() => setOpen(false)} className="p-1 text-gray-500">
-                <svg width={20} height={20} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><path d="M4 4l12 12M16 4L4 16"/></svg>
-              </button>
+              <span className="font-medium text-sm tabular-nums">{draftLabel}</span>
+              <div className="flex items-center gap-2">
+                {dirty && (
+                  <button type="button" onClick={() => { onChange(draftLabel); setDirty(false); setOpen(false); }} className="p-1 text-green-600">
+                    <svg width={22} height={22} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M4 10l5 5 7-8"/></svg>
+                  </button>
+                )}
+                <button type="button" onClick={() => setOpen(false)} className="p-1 text-gray-500">
+                  <svg width={20} height={20} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><path d="M4 4l12 12M16 4L4 16"/></svg>
+                </button>
+              </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-4">{content}</div>
+            <div className="flex-1 overflow-y-auto">{renderContent(true)}</div>
           </div>
         </>
       )}
@@ -526,26 +583,24 @@ function RowEditModal({ row, onSave, onDelete, onClose }: {
           <label className="text-xs text-gray-400">Datum</label>
           <DateSelect value={draft.datum} onChange={v => f("datum", v)} className={fieldCls} />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs text-gray-400">von</label>
-            <TimeSelect value={draft.von} onChange={v => f("von", v)} className="w-full text-base" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400">bis</label>
-            <TimeSelect value={draft.bis} onChange={v => f("bis", v)} className="w-full text-base" />
-          </div>
+        <div>
+          <label className="text-xs text-gray-400">von</label>
+          <TimeSelect value={draft.von} onChange={v => f("von", v)} className="w-full text-base" />
+        </div>
+        <div>
+          <label className="text-xs text-gray-400">bis</label>
+          <TimeSelect value={draft.bis} onChange={v => f("bis", v)} className="w-full text-base" />
         </div>
         <div className="bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-600">
           Aufwand: <span className="font-semibold tabular-nums">{stunden.toFixed(2)} Std.</span>
         </div>
         <div>
           <label className="text-xs text-gray-400">€ / Std.</label>
-          <div className="py-2 border-b border-gray-300"><NumberInput value={draft.satz} onChange={v => f("satz", v)} step={0.5} className="w-full" /></div>
+          <div className="py-2"><NumberInput value={draft.satz} onChange={v => f("satz", v)} step={0.5} className="w-full" large /></div>
         </div>
         <div>
           <label className="text-xs text-gray-400">km</label>
-          <div className="py-2 border-b border-gray-300"><NumberInput value={draft.km} onChange={v => f("km", v)} step={1} className="w-full" /></div>
+          <div className="py-2"><NumberInput value={draft.km} onChange={v => f("km", v)} step={1} className="w-full" large /></div>
         </div>
         <div className="bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-600">
           Ergebnis: <span className="font-semibold tabular-nums">{ergebnis.toFixed(2)} €</span>
@@ -911,6 +966,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         if (!row) return null;
         return (
           <RowEditModal
+            key={editingRowId}
             row={row}
             onSave={(updated) => setState(s => ({ ...s, rows: s.rows.map(r => r.id === updated.id ? updated : r) }))}
             onDelete={() => { removeRow(editingRowId); setEditingRowId(null); }}
