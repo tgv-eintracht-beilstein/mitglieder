@@ -41,8 +41,8 @@ function DocRow({ slug, title, preface, downloadHref }: { slug?: string; title: 
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4">
-      <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase">{title}</div>
+    <section className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4">
+      <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">{title}</div>
       <div className="p-4 space-y-2">{children}</div>
     </section>
   );
