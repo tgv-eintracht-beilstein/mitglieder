@@ -83,11 +83,11 @@ export default function MitgliedsbeitraegePage() {
         </p>
         <PriceTable
           rows={[
-            ["Vereinsbeitrag für Erwachsene", "60,00 Euro"],
-            ["Vereinsbeitrag für Zweitmitglieder *", "35,00 Euro"],
-            ["Vereinsbeitrag für Kinder bis 18 Jahren", "25,00 Euro"],
-            ["Vereinsbeitrag Auszubildende, Schüler und Studenten 18–25 Jahre **", "30,00 Euro"],
-            ["Vereinsbeitrag für Familien ***", "100,00 Euro"],
+            ["Vereinsbeitrag für Erwachsene", "80,00 Euro"],
+            ["Vereinsbeitrag für Zweitmitglieder *", "45,00 Euro"],
+            ["Vereinsbeitrag für Kinder bis 18 Jahren", "35,00 Euro"],
+            ["Vereinsbeitrag Auszubildende, Schüler und Studenten 18–25 Jahre **", "50,00 Euro"],
+            ["Vereinsbeitrag für Familien ***", "180,00 Euro"],
           ]}
         />
         <Note>
@@ -122,7 +122,7 @@ export default function MitgliedsbeitraegePage() {
         <SubTitle>Gesang</SubTitle>
         <PriceTable
           rows={[
-            ["Aktive", "50,00 Euro"],
+            ["Aktive", "20,00 Euro"],
             ["Passive", "0,00 Euro"],
           ]}
         />
@@ -172,12 +172,19 @@ export default function MitgliedsbeitraegePage() {
         <SubTitle>Turnen &amp; Leichtathletik</SubTitle>
         <PriceTable
           rows={[
-            ["Abteilungsbeitrag Kinderturnen/Leichtathletik", "30,00 Euro"],
-            ["Abteilungsbeitrag 2. Kind", "15,00 Euro"],
+            ["Abteilungsbeitrag Kinderturnen/Leichtathletik", "50,00 Euro"],
+            ["Abteilungsbeitrag 2. Kind", "30,00 Euro"],
             ["Abteilungsbeitrag ab dem 3. Kind", "0,00 Euro"],
-            ["Eltern-Kind-Turnen", "10,00 Euro/Kind"],
+            ["Eltern-Kind-Turnen", "25,00 Euro/Kind"],
             ["Abteilungsbeitrag Jedermann Sport", "30,00 Euro"],
-            ["Tang Soo Doo Kursbeitrag", "–"],
+            ["Tang Soo Doo Kursbeitrag", "50,00 Euro"],
+          ]}
+        />
+
+        <SubTitle>Gymnastik</SubTitle>
+        <PriceTable
+          rows={[
+            ["Abteilungsbeitrag", "15,00 Euro"],
           ]}
         />
       </Section>
