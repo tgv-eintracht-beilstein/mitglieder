@@ -768,7 +768,18 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const addRow = useCallback(() =>
     setState((s) => {
       const last = s.rows[s.rows.length - 1];
-      return { ...s, rows: [...s.rows, { id: s.nextId, datum: last?.datum ?? "", von: last?.von || "00:00", bis: last?.bis || "00:00", satz: last?.satz ?? "15", km: last?.km ?? "", beschreibung: last?.beschreibung ?? "" }], nextId: s.nextId + 1 };
+      let newDatum = last?.datum ?? "";
+      if (newDatum) {
+        const d = new Date(newDatum);
+        d.setDate(d.getDate() + 1);
+        newDatum = d.toISOString().slice(0, 10);
+      }
+      const newId = s.nextId;
+      setTimeout(() => {
+        setFlashingRowId(newId);
+        setTimeout(() => setFlashingRowId(null), 1600);
+      }, 0);
+      return { ...s, rows: [...s.rows, { id: newId, datum: newDatum, von: last?.von || "00:00", bis: last?.bis || "00:00", satz: last?.satz ?? "15", km: last?.km ?? "", beschreibung: last?.beschreibung ?? "" }], nextId: newId + 1 };
     }), []);
 
   const removeRow = useCallback((id: number) =>
@@ -799,6 +810,18 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
     const key = (r: Row) => `${r.datum}T${r.von || "00:00"}`;
     return key(a).localeCompare(key(b));
   });
+
+  const duplicateIds = new Set<number>();
+  const seen = new Map<string, number>();
+  for (const r of sortedRows) {
+    const key = `${r.datum}|${r.von}|${r.bis}`;
+    if (seen.has(key)) {
+      duplicateIds.add(r.id);
+      duplicateIds.add(seen.get(key)!);
+    } else {
+      seen.set(key, r.id);
+    }
+  }
 
   const aufwand = state.rows.reduce((sum, r) => sum + calcRow(r), 0);
   const spende = parseFloat(state.aufwandsspende) || 0;
@@ -889,7 +912,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         <div className="md:hidden print:hidden divide-y divide-gray-100">
           {sortedRows.map((row) => (
             <button key={row.id} onClick={() => setEditingRowId(row.id)}
-              className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors">
+              className={`w-full text-left px-4 py-3 transition-colors ${duplicateIds.has(row.id) ? "bg-red-50 hover:bg-red-100" : "hover:bg-gray-50"}`}>
               <div className="flex justify-between items-start">
                 <div className="text-sm font-medium text-gray-800">
                   {row.datum || <span className="text-gray-300">Kein Datum</span>}
@@ -919,16 +942,12 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                 {showKm && <th className="border-r border-gray-200 px-2 py-2 w-48">km</th>}
                 <th className="border-r border-gray-200 px-2 py-2 whitespace-nowrap w-48 text-right">Ergebnis</th>
                 <th className="border-r border-gray-200 px-2 py-2 text-left">Kursbezeichnung / Reiseziel</th>
-                <th className="px-2 py-2 print:hidden w-8">
-                  <button onClick={addRow} className="flex items-center justify-center w-6 h-6 rounded bg-[#b11217] text-white hover:bg-[#8f0f13] transition-colors" aria-label="Zeile hinzufügen">
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
-                  </button>
-                </th>
+                <th className="px-2 py-2 print:hidden w-8"></th>
               </tr>
             </thead>
             <tbody>
               {sortedRows.map((row) => (
-                <tr key={row.id} className={`pdf-row border-b border-gray-100 hover:bg-blue-50 ${flashingRowId === row.id ? "row-flash" : ""}`}>
+                <tr key={row.id} className={`pdf-row border-b border-gray-100 ${duplicateIds.has(row.id) ? "row-duplicate" : "hover:bg-blue-50"} ${flashingRowId === row.id ? "row-flash" : ""}`}>
                   <td className="border-r border-gray-100 px-2 py-1.5 w-48 text-center">
                     <PI value={row.datum}><DateSelect value={row.datum} onChange={v => updateRow(row.id, "datum", v)} className="w-24" /></PI>
                   </td>
@@ -975,6 +994,18 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                   </td>
                 </tr>
               ))}
+            </tbody>
+            <tbody className="print:hidden">
+              <tr>
+                <td colSpan={colsBefore + 3} className="py-2 text-center">
+                  <button onClick={addRow}
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs text-[#b11217] border border-[#b11217] rounded-lg hover:bg-[#b11217] hover:text-white transition-colors"
+                    aria-label="Zeile hinzufügen">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
+                    Zeile hinzufügen
+                  </button>
+                </td>
+              </tr>
             </tbody>
             <tfoot>
               <tr className="border-t-2 border-gray-300 bg-gray-50">
