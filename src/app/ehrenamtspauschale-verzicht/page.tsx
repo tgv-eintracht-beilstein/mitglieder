@@ -142,8 +142,8 @@ export default function EhrenamtspauschaleVerzichtPage() {
       />
 
       {/* Verzichtserklärung */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3 overflow-hidden">
-        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
+        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">
           Verzichtserklärung
         </div>
 

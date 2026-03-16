@@ -772,7 +772,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
 
       {/* ── Table ── */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
-        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden flex items-center justify-between">
+        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden flex items-center justify-between rounded-t-xl">
           <span>Tätigkeitsnachweis</span>
           <button onClick={addRow} className="md:hidden flex items-center justify-center w-6 h-6 rounded bg-white/20 hover:bg-white/30 transition-colors" aria-label="Zeile hinzufügen">
             <svg width="12" height="12" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
@@ -911,8 +911,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       })()}
 
       {/* ── Payment ── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3 overflow-hidden">
-        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden">Endbetrag &amp; Zahlung</div>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
+        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden rounded-t-xl">Endbetrag &amp; Zahlung</div>
         <div className="p-4 text-sm space-y-2">
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={state.zahlungBar} onChange={(e) => set("zahlungBar", e.target.checked)} className="w-4 h-4" />
@@ -956,8 +956,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       </div>
 
       {/* ── Legal declaration ── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
-        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden">Steuererklärung</div>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4">
+        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden rounded-t-xl">Steuererklärung</div>
         <div className="p-4 text-sm">
         <p className="mb-3 text-gray-700 text-xs leading-relaxed">
           Hiermit erkl&auml;re ich,{" "}

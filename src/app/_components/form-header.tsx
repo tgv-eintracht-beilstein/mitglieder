@@ -50,8 +50,8 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase">Persönliche Angaben</div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">Persönliche Angaben</div>
           <div className="px-4 py-3 space-y-2">
             {personalFields.map((f) => (
               <div key={f.key}>
