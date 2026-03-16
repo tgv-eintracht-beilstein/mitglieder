@@ -90,6 +90,11 @@ export default function EhrenamtspauschaleVerzichtPage() {
   const today = new Date().toLocaleDateString("de-DE");
   const city = state.plzOrt.replace(/^\d+\s*/, "").trim() || "_______________";
 
+  const isComplete = !!(
+    state.nachname && state.vorname && state.strasse && state.plzOrt &&
+    state.geburtsdatum && state.telefon && state.betrag
+  );
+
   return (
     <div className="overflow-x-hidden" ref={contentRef}>
 
@@ -108,7 +113,8 @@ export default function EhrenamtspauschaleVerzichtPage() {
         <h1 className="text-2xl font-bold text-[#b11217]">Verzicht auf Auszahlung der Ehrenamtspauschale</h1>
         <button
           onClick={() => downloadFn?.()}
-          className="hidden md:flex items-center gap-1.5 px-5 py-2.5 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium whitespace-nowrap overflow-hidden text-ellipsis"
+          disabled={!isComplete}
+          className="hidden md:flex items-center gap-1.5 px-5 py-2.5 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium whitespace-nowrap overflow-hidden text-ellipsis disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M7 1v8M4 6l3 3 3-3"/>
@@ -208,7 +214,7 @@ export default function EhrenamtspauschaleVerzichtPage() {
           <div className="flex flex-col">
             <div className="flex-1 border-b border-gray-400 min-h-[4rem] flex flex-col justify-end">
               {state.signature && (
-                <div className="hidden print:block text-[7pt] text-green-600 leading-tight mb-0.5">
+                <div className="text-[7pt] text-green-600 leading-tight mb-0.5">
                   ✓ Einwilligung zur digitalen Unterschrift erteilt
                 </div>
               )}
@@ -239,7 +245,7 @@ export default function EhrenamtspauschaleVerzichtPage() {
         />
       )}
 
-      <FormFooter onReset={() => { localStorage.removeItem(STORAGE_KEY); setState(defaultState()); }} contentRef={contentRef} filename={buildPdfFilename("ehrenamtspauschale-verzicht", state.vorname, state.nachname)} onDownloadReady={fn => setDownloadFn(() => fn)} />
+      <FormFooter onReset={() => { localStorage.removeItem(STORAGE_KEY); setState(defaultState()); }} contentRef={contentRef} filename={buildPdfFilename("ehrenamtspauschale-verzicht", state.vorname, state.nachname)} onDownloadReady={fn => setDownloadFn(() => fn)} disabled={!isComplete} />
 
       <div className="pdf-footer hidden mt-6 pt-3 border-t border-gray-200 flex items-center gap-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}

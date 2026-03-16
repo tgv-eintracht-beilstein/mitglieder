@@ -58,7 +58,7 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
                 <div className="text-[10px] text-gray-400 mb-0.5">{f.label}</div>
                 <PI value={f.value}>
                   {f.type === "date"
-                    ? <DateSelect value={f.value} onChange={f.onChange} />
+                    ? <DateSelect value={f.value} onChange={f.onChange} className="text-sm" />
                     : <input type={f.type ?? "text"} value={f.value} onChange={e => f.onChange(e.target.value)} className={fieldCls} />
                   }
                 </PI>
