@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import SignatureModal from "@/app/_components/signature-modal";
 import FormHeader from "@/app/_components/form-header";
-import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress } from "@/lib/sharedAddress";
+import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
 const KM_RATE = 0.3;
 
@@ -723,6 +723,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [flashingRowId, setFlashingRowId] = useState<number | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [sharedSignature, setSharedSignature] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -737,6 +738,22 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         nachname: addr.nachname, vorname: addr.vorname, strasse: addr.strasse,
         plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon,
       }));
+      // Load shared signature — fall back to scanning other form stores
+      let sig = loadSharedSignature();
+      if (!sig) {
+        const otherKeys = ["uebungsleiterpauschale_v1", "reisekosten_v1", "ehrenamtspauschale_verzicht_v1"];
+        for (const k of otherKeys) {
+          if (k === storageKey) continue;
+          try {
+            const r = localStorage.getItem(k);
+            if (r) { const p = JSON.parse(r); if (p?.signature) { sig = p.signature; break; } }
+          } catch {}
+        }
+        // Also check current form
+        if (!sig && saved?.signature) sig = saved.signature;
+        if (sig) saveSharedSignature(sig);
+      }
+      setSharedSignature(sig);
     } catch {}
     setHydrated(true);
   }, [storageKey]);
@@ -1191,7 +1208,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       {showSignModal && (
         <SignatureModal
           existing={state.signature || undefined}
-          onSave={(dataUrl) => { set("signature", dataUrl); setShowSignModal(false); }}
+          sharedSignature={sharedSignature || undefined}
+          onSave={(dataUrl) => { set("signature", dataUrl); saveSharedSignature(dataUrl); setSharedSignature(dataUrl); setShowSignModal(false); }}
           onDelete={() => set("signature", "")}
           onClose={() => setShowSignModal(false)}
         />

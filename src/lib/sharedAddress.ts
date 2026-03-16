@@ -20,3 +20,13 @@ export function loadSharedAddress(): SharedAddress {
 export function saveSharedAddress(addr: SharedAddress) {
   localStorage.setItem(SHARED_ADDRESS_KEY, JSON.stringify(addr));
 }
+
+export const SHARED_SIGNATURE_KEY = "shared_signature_v1";
+
+export function loadSharedSignature(): string {
+  try { return localStorage.getItem(SHARED_SIGNATURE_KEY) ?? ""; } catch { return ""; }
+}
+
+export function saveSharedSignature(dataUrl: string) {
+  try { localStorage.setItem(SHARED_SIGNATURE_KEY, dataUrl); } catch {}
+}
