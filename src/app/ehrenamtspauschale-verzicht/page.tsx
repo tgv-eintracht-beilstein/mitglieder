@@ -96,7 +96,7 @@ export default function EhrenamtspauschaleVerzichtPage() {
   );
 
   return (
-    <div className="overflow-x-hidden" ref={contentRef}>
+    <div className="overflow-x-hidden px-1 -mx-1" ref={contentRef}>
 
       {/* PDF-only page header */}
       <div className="pdf-only hidden items-center gap-3 mb-4 pb-3 border-b-2 border-gray-300">

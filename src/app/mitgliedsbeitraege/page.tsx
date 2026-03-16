@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PrintButton from "@/app/_components/print-button";
 import DownloadPageButton from "@/app/_components/download-page-button";
+import { ABTEILUNG_ICONS } from "@/app/_components/abteilung-icons";
 
 export const metadata: Metadata = {
   title: 'Mitgliedsbeiträge 2026 – TGV "Eintracht" Beilstein e. V.',
@@ -40,8 +41,10 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 function SubTitle({ children }: { children: React.ReactNode }) {
+  const Icon = ABTEILUNG_ICONS[children as string];
   return (
-    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mt-6 mb-1">
+    <h3 className="flex items-center gap-2 text-sm font-bold text-[#b11217] uppercase tracking-wider mt-6 mb-1">
+      {Icon && <Icon size={18} className="text-[#b11217] shrink-0" />}
       {children}
     </h3>
   );
