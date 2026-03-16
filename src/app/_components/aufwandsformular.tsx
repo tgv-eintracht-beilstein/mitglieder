@@ -366,6 +366,8 @@ export interface AufwandsformularConfig {
   storageKey: string;
   title: string;
   filename: string;
+  showKm?: boolean;      // default true
+  showStunden?: boolean; // default true
 }
 
 function validateIban(raw: string): boolean {
@@ -559,8 +561,9 @@ function PI({ value, children, className }: { value: string; children: React.Rea
   );
 }
 
-function RowEditModal({ row, onSave, onDelete, onClose }: {
+function RowEditModal({ row, onSave, onDelete, onClose, showKm = true, showStunden = true }: {
   row: Row; onSave: (r: Row) => void; onDelete: () => void; onClose: () => void;
+  showKm?: boolean; showStunden?: boolean;
 }) {
   const [draft, setDraft] = useState<Row>({ ...row });
   const f = <K extends keyof Row>(k: K, v: Row[K]) => setDraft(d => ({ ...d, [k]: v }));
@@ -583,25 +586,35 @@ function RowEditModal({ row, onSave, onDelete, onClose }: {
           <label className="text-xs text-gray-400">Datum</label>
           <DateSelect value={draft.datum} onChange={v => f("datum", v)} className={fieldCls} />
         </div>
-        <div>
-          <label className="text-xs text-gray-400">von</label>
-          <TimeSelect value={draft.von} onChange={v => f("von", v)} className="w-full text-base" />
-        </div>
-        <div>
-          <label className="text-xs text-gray-400">bis</label>
-          <TimeSelect value={draft.bis} onChange={v => f("bis", v)} className="w-full text-base" />
-        </div>
-        <div className="bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-600">
-          Aufwand: <span className="font-semibold tabular-nums">{stunden.toFixed(2)} Std.</span>
-        </div>
-        <div>
-          <label className="text-xs text-gray-400">€ / Std.</label>
-          <div className="py-2"><NumberInput value={draft.satz} onChange={v => f("satz", v)} step={0.5} className="w-full" large /></div>
-        </div>
-        <div>
-          <label className="text-xs text-gray-400">km</label>
-          <div className="py-2"><NumberInput value={draft.km} onChange={v => f("km", v)} step={1} className="w-full" large /></div>
-        </div>
+        {showStunden && (
+          <div>
+            <label className="text-xs text-gray-400">von</label>
+            <TimeSelect value={draft.von} onChange={v => f("von", v)} className="w-full text-base" />
+          </div>
+        )}
+        {showStunden && (
+          <div>
+            <label className="text-xs text-gray-400">bis</label>
+            <TimeSelect value={draft.bis} onChange={v => f("bis", v)} className="w-full text-base" />
+          </div>
+        )}
+        {showStunden && (
+          <div className="bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-600">
+            Aufwand: <span className="font-semibold tabular-nums">{stunden.toFixed(2)} Std.</span>
+          </div>
+        )}
+        {showStunden && (
+          <div>
+            <label className="text-xs text-gray-400">€ / Std.</label>
+            <div className="py-2"><NumberInput value={draft.satz} onChange={v => f("satz", v)} step={0.5} className="w-full" large /></div>
+          </div>
+        )}
+        {showKm && (
+          <div>
+            <label className="text-xs text-gray-400">km</label>
+            <div className="py-2"><NumberInput value={draft.km} onChange={v => f("km", v)} step={1} className="w-full" large /></div>
+          </div>
+        )}
         <div className="bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-600">
           Ergebnis: <span className="font-semibold tabular-nums">{ergebnis.toFixed(2)} €</span>
         </div>
@@ -704,10 +717,11 @@ function DownloadButton({ filename, storageKey: _storageKey, disabled: disabledP
 }
 
 export default function Aufwandsformular({ config }: { config: AufwandsformularConfig }) {
-  const { storageKey, title, filename } = config;
+  const { storageKey, title, filename, showKm = true, showStunden = true } = config;
   const [state, setState] = useState<FormState>(defaultState);
   const [showSignModal, setShowSignModal] = useState(false);
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
+  const [flashingRowId, setFlashingRowId] = useState<number | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -760,6 +774,25 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const removeRow = useCallback((id: number) =>
     setState((s) => ({ ...s, rows: s.rows.filter((r) => r.id !== id) })), []);
 
+  const duplicateRow = useCallback((id: number) => {
+    setState((s) => {
+      const row = s.rows.find(r => r.id === id);
+      if (!row) return s;
+      let newDatum = row.datum;
+      if (row.datum) {
+        const d = new Date(row.datum);
+        d.setDate(d.getDate() + 7);
+        newDatum = d.toISOString().slice(0, 10);
+      }
+      const newId = s.nextId;
+      setTimeout(() => {
+        setFlashingRowId(newId);
+        setTimeout(() => setFlashingRowId(null), 1600);
+      }, 0);
+      return { ...s, rows: [...s.rows, { ...row, id: newId, datum: newDatum }], nextId: newId + 1 };
+    });
+  }, []);
+
   if (!hydrated) return null;
 
   const sortedRows = [...state.rows].sort((a, b) => {
@@ -772,6 +805,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const endbetrag = aufwand - spende;
   const inputCls = "w-full bg-transparent border-b border-gray-300 px-1 py-1 text-xs focus:outline-none focus:border-blue-400";
 
+  const colsBefore = 1 + (showStunden ? 4 : 0) + (showKm ? 1 : 0);
   const missing: string[] = [];
   if (!state.nachname) missing.push("Nachname");
   if (!state.vorname) missing.push("Vorname");
@@ -859,13 +893,13 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               <div className="flex justify-between items-start">
                 <div className="text-sm font-medium text-gray-800">
                   {row.datum || <span className="text-gray-300">Kein Datum</span>}
-                  {(row.von || row.bis) && <span className="text-gray-400 font-normal ml-2 text-xs">{row.von}–{row.bis}</span>}
+                  {showStunden && (row.von || row.bis) && <span className="text-gray-400 font-normal ml-2 text-xs">{row.von}–{row.bis}</span>}
                 </div>
                 <div className="text-sm font-semibold text-[#b11217] tabular-nums ml-4 shrink-0">{calcRow(row).toFixed(2)} €</div>
               </div>
               <div className="flex gap-3 mt-0.5 text-xs text-gray-400">
-                {(row.von || row.bis) && <span>{calcStunden(row.von, row.bis).toFixed(2)} Std.</span>}
-                {row.km && <span>{row.km} km</span>}
+                {showStunden && (row.von || row.bis) && <span>{calcStunden(row.von, row.bis).toFixed(2)} Std.</span>}
+                {showKm && row.km && <span>{row.km} km</span>}
                 {row.beschreibung && <span className="truncate">{row.beschreibung}</span>}
               </div>
             </button>
@@ -878,12 +912,12 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             <thead>
               <tr className="bg-gray-50 text-gray-600 border-b border-gray-200 text-center">
                 <th className="border-r border-gray-200 px-2 py-2 text-left">Datum</th>
-                <th className="border-r border-gray-200 px-2 py-2">von</th>
-                <th className="border-r border-gray-200 px-2 py-2">bis</th>
-                <th className="border-r border-gray-200 px-2 py-2 whitespace-nowrap">Aufwand Std.</th>
-                <th className="border-r border-gray-200 px-2 py-2">€/Std.</th>
-                <th className="border-r border-gray-200 px-2 py-2">km</th>
-                <th className="border-r border-gray-200 px-2 py-2 whitespace-nowrap">Ergebnis</th>
+                {showStunden && <th className="border-r border-gray-200 px-2 py-2">von</th>}
+                {showStunden && <th className="border-r border-gray-200 px-2 py-2">bis</th>}
+                {showStunden && <th className="border-r border-gray-200 px-2 py-2 whitespace-nowrap">Aufwand Std.</th>}
+                {showStunden && <th className="border-r border-gray-200 px-2 py-2">€/Std.</th>}
+                {showKm && <th className="border-r border-gray-200 px-2 py-2">km</th>}
+                <th className="border-r border-gray-200 px-2 py-2 whitespace-nowrap w-20 text-right">Ergebnis</th>
                 <th className="border-r border-gray-200 px-2 py-2 text-left">Kursbezeichnung / Reiseziel</th>
                 <th className="px-2 py-2 print:hidden w-8">
                   <button onClick={addRow} className="flex items-center justify-center w-6 h-6 rounded bg-[#b11217] text-white hover:bg-[#8f0f13] transition-colors" aria-label="Zeile hinzufügen">
@@ -894,29 +928,45 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             </thead>
             <tbody>
               {sortedRows.map((row) => (
-                <tr key={row.id} className="pdf-row border-b border-gray-100 hover:bg-blue-50">
-                  <td className="border-r border-gray-100 px-2 py-1.5 w-24">
+                <tr key={row.id} className={`pdf-row border-b border-gray-100 hover:bg-blue-50 ${flashingRowId === row.id ? "row-flash" : ""}`}>
+                  <td className="border-r border-gray-100 px-2 py-1.5 w-24 text-center">
                     <PI value={row.datum}><DateSelect value={row.datum} onChange={v => updateRow(row.id, "datum", v)} className="w-24" /></PI>
                   </td>
-                  <td className="border-r border-gray-100 px-1 py-1.5">
-                    <PI value={row.von}><TimeSelect value={row.von} onChange={v => updateRow(row.id, "von", v)} /></PI>
-                  </td>
-                  <td className="border-r border-gray-100 px-1 py-1.5">
-                    <PI value={row.bis}><TimeSelect value={row.bis} onChange={v => updateRow(row.id, "bis", v)} /></PI>
-                  </td>
-                  <td className="border-r border-gray-100 px-2 py-1.5 text-center tabular-nums">{calcStunden(row.von, row.bis).toFixed(2)}</td>
-                  <td className="border-r border-gray-100 px-1 py-1.5">
-                    <PI value={row.satz}><NumberInput value={row.satz} onChange={v => updateRow(row.id, "satz", v)} step={0.5} /></PI>
-                  </td>
-                  <td className="border-r border-gray-100 px-1 py-1.5">
-                    <PI value={row.km}><NumberInput value={row.km} onChange={v => updateRow(row.id, "km", v)} step={1} /></PI>
-                  </td>
-                  <td className="border-r border-gray-100 px-2 py-1.5 text-right font-semibold tabular-nums whitespace-nowrap">{calcRow(row).toFixed(2)} €</td>
-                  <td className="border-r border-gray-100 px-1 py-1.5">
+                  {showStunden && (
+                    <td className="border-r border-gray-100 px-1 py-1.5 text-center">
+                      <PI value={row.von}><TimeSelect value={row.von} onChange={v => updateRow(row.id, "von", v)} /></PI>
+                    </td>
+                  )}
+                  {showStunden && (
+                    <td className="border-r border-gray-100 px-1 py-1.5 text-center">
+                      <PI value={row.bis}><TimeSelect value={row.bis} onChange={v => updateRow(row.id, "bis", v)} /></PI>
+                    </td>
+                  )}
+                  {showStunden && (
+                    <td className="border-r border-gray-100 px-2 py-1.5 text-center tabular-nums">{calcStunden(row.von, row.bis).toFixed(2)}</td>
+                  )}
+                  {showStunden && (
+                    <td className="border-r border-gray-100 px-1 py-1.5 text-center">
+                      <PI value={row.satz}><NumberInput value={row.satz} onChange={v => updateRow(row.id, "satz", v)} step={0.5} /></PI>
+                    </td>
+                  )}
+                  {showKm && (
+                    <td className="border-r border-gray-100 px-1 py-1.5 text-center">
+                      <PI value={row.km}><NumberInput value={row.km} onChange={v => updateRow(row.id, "km", v)} step={1} /></PI>
+                    </td>
+                  )}
+                  <td className="border-r border-gray-100 px-2 py-1.5 text-right font-semibold tabular-nums whitespace-nowrap w-20">{calcRow(row).toFixed(2)} €</td>
+                  <td className="border-r border-gray-100 px-1 py-1.5 text-left">
                     <PI value={row.beschreibung}><input type="text" value={row.beschreibung} onChange={(e) => updateRow(row.id, "beschreibung", e.target.value)} className={inputCls} /></PI>
                   </td>
                   <td className="px-1 py-1.5 print:hidden">
-                    <div className="flex items-center justify-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <button onClick={() => duplicateRow(row.id)}
+                        className="flex items-center justify-center w-6 h-6 rounded border border-gray-300 text-gray-500 hover:bg-green-50 hover:border-green-400 hover:text-green-600 transition-colors" aria-label="Zeile duplizieren">
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="1" y="3" width="6" height="6" rx="1"/><path d="M3 3V2a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H7"/>
+                        </svg>
+                      </button>
                       <button onClick={() => removeRow(row.id)} disabled={state.rows.length === 1}
                         className="flex items-center justify-center w-6 h-6 rounded border border-gray-300 text-gray-800 hover:bg-gray-100 disabled:opacity-20 transition-colors" aria-label="Zeile entfernen">
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>
@@ -928,12 +978,12 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             </tbody>
             <tfoot>
               <tr className="border-t-2 border-gray-300 bg-gray-50">
-                <td colSpan={6} className="px-3 py-2 font-bold">Aufwandsentsch&auml;digung</td>
+                <td colSpan={colsBefore} className="px-3 py-2 font-bold">Aufwandsentsch&auml;digung</td>
                 <td className="px-2 py-2 text-right font-bold tabular-nums border-l border-gray-200 whitespace-nowrap">{aufwand.toFixed(2)} &euro;</td>
                 <td colSpan={2} className="print:hidden" />
               </tr>
               <tr className="bg-gray-50">
-                <td colSpan={6} className="px-3 py-1 font-bold">abz&uuml;glich Aufwandsspende</td>
+                <td colSpan={colsBefore} className="px-3 py-1 font-bold">abz&uuml;glich Aufwandsspende</td>
                 <td className="px-2 py-1 border-l border-gray-200">
                   <input type="number" min="0" step="0.01" value={state.aufwandsspende} onChange={(e) => set("aufwandsspende", e.target.value)} placeholder="0.00"
                     className="w-full text-right text-xs bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-400 print:hidden" />
@@ -942,7 +992,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                 <td colSpan={2} className="print:hidden" />
               </tr>
               <tr className="bg-gray-100 border-t border-gray-300">
-                <td colSpan={6} className="px-3 py-2 font-bold text-sm">Endbetrag</td>
+                <td colSpan={colsBefore} className="px-3 py-2 font-bold text-sm">Endbetrag</td>
                 <td className="px-2 py-2 text-right font-bold text-sm tabular-nums border-l border-gray-200 whitespace-nowrap">{endbetrag.toFixed(2)} &euro;</td>
                 <td colSpan={2} className="print:hidden" />
               </tr>
@@ -976,6 +1026,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           <RowEditModal
             key={editingRowId}
             row={row}
+            showKm={showKm}
+            showStunden={showStunden}
             onSave={(updated) => setState(s => ({ ...s, rows: s.rows.map(r => r.id === updated.id ? updated : r) }))}
             onDelete={() => { removeRow(editingRowId); setEditingRowId(null); }}
             onClose={() => setEditingRowId(null)}

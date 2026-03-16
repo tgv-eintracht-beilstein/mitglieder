@@ -6,6 +6,8 @@ export default function UebungsleiterpauschaleePage() {
       storageKey: "uebungsleiterpauschale_v1",
       title: "Übungsleiterpauschale",
       filename: "uebungsleiterpauschale.pdf",
+      showStunden: true,
+      showKm: false,
     }} />
   );
 }

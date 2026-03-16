@@ -9,11 +9,16 @@ interface Props {
   onClose: () => void;
 }
 
+type Tab = "draw" | "upload";
+
 export default function SignatureModal({ existing, onSave, onDelete, onClose }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const [agreed, setAgreed] = useState(!!existing);
   const [isEmpty, setIsEmpty] = useState(!existing);
+  const [tab, setTab] = useState<Tab>("draw");
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const initCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -79,14 +84,32 @@ export default function SignatureModal({ existing, onSave, onDelete, onClose }: 
 
   const handleAgreeChange = (checked: boolean) => {
     setAgreed(checked);
-    if (!checked) clear();
+    if (!checked) { clear(); setUploadPreview(null); }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string;
+      setUploadPreview(result);
+      setIsEmpty(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   const save = () => {
+    if (tab === "upload" && uploadPreview) {
+      onSave(uploadPreview);
+      return;
+    }
     const canvas = canvasRef.current;
     if (!canvas) return;
     onSave(canvas.toDataURL("image/png"));
   };
+
+  const canSave = agreed && !isEmpty && (tab === "draw" || !!uploadPreview);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -105,29 +128,80 @@ export default function SignatureModal({ existing, onSave, onDelete, onClose }: 
             </span>
           </label>
 
-          <div className={`border-2 rounded-lg overflow-hidden transition-colors ${agreed ? "border-gray-300" : "border-gray-100 opacity-40 pointer-events-none"}`}>
-            <canvas
-              ref={canvasRef}
-              width={600}
-              height={220}
-              className="w-full touch-none cursor-crosshair"
-              onMouseDown={startDraw}
-              onMouseMove={draw}
-              onMouseUp={stopDraw}
-              onMouseLeave={stopDraw}
-              onTouchStart={startDraw}
-              onTouchMove={draw}
-              onTouchEnd={stopDraw}
-            />
+          {/* Tab switcher */}
+          <div className={`transition-opacity ${agreed ? "" : "opacity-40 pointer-events-none"}`}>
+            <div className="flex border-b border-gray-200 mb-3">
+              <button type="button" onClick={() => setTab("draw")}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === "draw" ? "border-[#b11217] text-[#b11217]" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
+                Zeichnen
+              </button>
+              <button type="button" onClick={() => setTab("upload")}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === "upload" ? "border-[#b11217] text-[#b11217]" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
+                Bild hochladen
+              </button>
+            </div>
+
+            {tab === "draw" && (
+              <>
+                <div className="border-2 rounded-lg overflow-hidden border-gray-300">
+                  <canvas
+                    ref={canvasRef}
+                    width={600}
+                    height={220}
+                    className="w-full touch-none cursor-crosshair"
+                    onMouseDown={startDraw}
+                    onMouseMove={draw}
+                    onMouseUp={stopDraw}
+                    onMouseLeave={stopDraw}
+                    onTouchStart={startDraw}
+                    onTouchMove={draw}
+                    onTouchEnd={stopDraw}
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Bitte hier unterschreiben</p>
+              </>
+            )}
+
+            {tab === "upload" && (
+              <div className="space-y-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                {uploadPreview ? (
+                  <div className="border-2 border-gray-300 rounded-lg p-3 flex flex-col items-center gap-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={uploadPreview} alt="Unterschrift Vorschau" className="max-h-28 object-contain" />
+                    <button type="button" onClick={() => { setUploadPreview(null); setIsEmpty(true); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                      className="text-xs text-gray-400 hover:text-red-500 transition-colors">
+                      Bild entfernen
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => fileInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-gray-300 rounded-lg py-8 flex flex-col items-center gap-2 text-gray-400 hover:border-[#b11217] hover:text-[#b11217] transition-colors">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <span className="text-sm">Unterschrift-Bild auswählen</span>
+                    <span className="text-xs">JPG, PNG, GIF, WebP</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
-          <p className="text-xs text-gray-400">Bitte hier unterschreiben</p>
         </div>
 
         <div className="p-5 border-t border-gray-100 flex justify-between items-center">
           <div className="flex gap-2">
-            <button onClick={clear} disabled={!agreed} className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-40">
-              Zur&uuml;cksetzen
-            </button>
+            {tab === "draw" && (
+              <button onClick={clear} disabled={!agreed} className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-40">
+                Zur&uuml;cksetzen
+              </button>
+            )}
             {existing && (
               <button onClick={() => { onDelete(); onClose(); }} className="px-4 py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
                 L&ouml;schen
@@ -138,7 +212,7 @@ export default function SignatureModal({ existing, onSave, onDelete, onClose }: 
             <button onClick={onClose} className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               Abbrechen
             </button>
-            <button onClick={save} disabled={!agreed || isEmpty}
+            <button onClick={save} disabled={!canSave}
               className="px-4 py-2 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
               Speichern
             </button>
