@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const navItems = [
-  { href: "/mitgliedsbeitraege", label: "Mitgliedsbeitr\u00e4ge" },
-  { href: "/reisekosten", label: "Reisekosten" },
-  { href: "/uebungsleiterpauschale", label: "\u00dcbungsleiterpauschale" },
-  { href: "/ehrenamtspauschale-verzicht", label: "EAP-Verzicht" },
   { href: "/docs", label: "Dokumente" },
+  { href: "/mitgliedsbeitraege", label: "Mitgliedsbeiträge" },
+  { href: "/reisekosten", label: "Reisekosten" },
+  { href: "/uebungsleiterpauschale", label: "Übungsleiterpauschale" },
+  { href: "/ehrenamtspauschale-verzicht", label: "EAP-Verzicht" },
 ];
 
 export default function TopNav() {
