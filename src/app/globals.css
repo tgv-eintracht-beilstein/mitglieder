@@ -65,6 +65,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .reisekosten-form table tbody tr.pdf-row:nth-child(even) {
   background-color: #f9fafb;
 }
+.reisekosten-form table tbody tr.pdf-row.row-duplicate {
+  background-color: #fef2f2 !important;
+}
+.reisekosten-form table tbody tr.pdf-row.row-duplicate:hover {
+  background-color: #fee2e2 !important;
+}
 
 
 .pdf-capture table tbody tr:nth-child(odd),
