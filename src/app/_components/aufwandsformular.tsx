@@ -562,7 +562,7 @@ function RowEditModal({ row, onSave, onDelete, onClose }: {
     </div>
   );
 }
-function DownloadButton({ filename, storageKey: _storageKey }: { filename: string; storageKey: string }) {
+function DownloadButton({ filename, storageKey: _storageKey, disabled: disabledProp }: { filename: string; storageKey: string; disabled?: boolean }) {
   const [loading, setLoading] = useState(false);
 
   async function handleDownload() {
@@ -623,8 +623,8 @@ function DownloadButton({ filename, storageKey: _storageKey }: { filename: strin
   return (
     <button
       onClick={handleDownload}
-      disabled={loading}
-      className="shrink-0 w-full justify-center flex items-center gap-1.5 px-5 py-3 text-base bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium disabled:opacity-60 whitespace-nowrap overflow-hidden text-ellipsis md:w-auto md:py-2.5 md:text-sm"
+      disabled={loading || disabledProp}
+      className="shrink-0 w-full justify-center flex items-center gap-1.5 px-5 py-3 text-base bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap overflow-hidden text-ellipsis md:w-auto md:py-2.5 md:text-sm"
     >
       {loading ? (
         <>
@@ -716,6 +716,15 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const endbetrag = aufwand - spende;
   const inputCls = "w-full bg-transparent border-b border-gray-300 px-1 py-1 text-xs focus:outline-none focus:border-blue-400";
 
+  const isComplete = !!(
+    state.nachname && state.vorname && state.strasse && state.plzOrt &&
+    state.geburtsdatum && state.telefon && state.abteilung && state.monat &&
+    endbetrag > 0 &&
+    validateIban(state.iban) && (state.zahlungBar || state.zahlungUeberweisung) &&
+    (state.steuerVollHoehe || state.steuerBisZu || state.steuerNicht) &&
+    state.rows.every(r => r.datum)
+  );
+
   return (
     <div className="reisekosten-form px-1" ref={contentRef}>
 
@@ -737,7 +746,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       <div className="flex items-center justify-between mb-3 print:hidden">
         <h1 className="text-2xl font-bold text-[#b11217]">{title}</h1>
         <div className="hidden md:block">
-          <DownloadButton filename={buildPdfFilename(title, state.vorname, state.nachname)} storageKey={storageKey} />
+          <DownloadButton filename={buildPdfFilename(title, state.vorname, state.nachname)} storageKey={storageKey} disabled={!isComplete} />
         </div>
       </div>
 
@@ -823,7 +832,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             <tbody>
               {sortedRows.map((row) => (
                 <tr key={row.id} className="pdf-row border-b border-gray-100 hover:bg-blue-50">
-                  <td className="border-r border-gray-100 px-1 py-1.5 w-24">
+                  <td className="border-r border-gray-100 px-2 py-1.5 w-24">
                     <PI value={row.datum}><DateSelect value={row.datum} onChange={v => updateRow(row.id, "datum", v)} className="w-24" /></PI>
                   </td>
                   <td className="border-r border-gray-100 px-1 py-1.5">
@@ -1009,7 +1018,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           </div>
           <div className="flex flex-col">
             {state.signature && (
-              <div className="hidden print:block text-[7pt] text-green-600 leading-tight mb-1">
+              <div className="text-[7pt] text-green-600 leading-tight mb-1">
                 ✓ Einwilligung zur digitalen Unterschrift erteilt
               </div>
             )}
@@ -1065,7 +1074,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             Drucken
           </button>
         </div>
-        <DownloadButton filename={buildPdfFilename(title, state.vorname, state.nachname)} storageKey={storageKey} />
+        <DownloadButton filename={buildPdfFilename(title, state.vorname, state.nachname)} storageKey={storageKey} disabled={!isComplete} />
       </div>
     </div>
   );

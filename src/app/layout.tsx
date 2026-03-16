@@ -59,7 +59,7 @@ export default function RootLayout({
         </main>
 
         <footer className="bg-[#1f1f1f] text-white text-sm print:hidden">
-          <div className="max-w-screen-xl mx-auto px-6 py-8 flex flex-wrap gap-8 justify-around">
+          <div className="max-w-screen-xl mx-auto px-6 py-8 flex flex-col items-center gap-6 text-center md:flex-row md:flex-wrap md:justify-around md:text-left md:items-start">
             <div>
               <strong className="block mb-1">TGV &bdquo;Eintracht&ldquo; Beilstein e. V.</strong>
               Albert-Einstein-Str. 20 &middot; 71717 Beilstein

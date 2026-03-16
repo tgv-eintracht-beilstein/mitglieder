@@ -7,9 +7,10 @@ type Props = {
   filename?: string;
   contentRef?: React.RefObject<HTMLDivElement | null>;
   onDownloadReady?: (fn: () => void) => void;
+  disabled?: boolean;
 };
 
-export default function FormFooter({ onReset, filename = "formular.pdf", contentRef: _contentRef, onDownloadReady }: Props) {
+export default function FormFooter({ onReset, filename = "formular.pdf", contentRef: _contentRef, onDownloadReady, disabled: disabledProp }: Props) {
   const [loading, setLoading] = useState(false);
 
   async function handleDownload() {
@@ -120,8 +121,8 @@ export default function FormFooter({ onReset, filename = "formular.pdf", content
       </div>
       <button
         onClick={handleDownload}
-        disabled={loading}
-        className="flex w-full md:w-auto justify-center items-center gap-1.5 px-5 py-3 text-base bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium disabled:opacity-60 whitespace-nowrap"
+        disabled={loading || disabledProp}
+        className="flex w-full md:w-auto justify-center items-center gap-1.5 px-5 py-3 text-base bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
       >
         {loading ? "Erstelle PDF…" : "PDF herunterladen"}
       </button>
