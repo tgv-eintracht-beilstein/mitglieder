@@ -4,14 +4,15 @@ import { useRef, useState, useEffect, useCallback } from "react";
 
 interface Props {
   existing?: string;
+  sharedSignature?: string;
   onSave: (dataUrl: string) => void;
   onDelete: () => void;
   onClose: () => void;
 }
 
-type Tab = "draw" | "upload";
+type Tab = "draw" | "upload" | "saved";
 
-export default function SignatureModal({ existing, onSave, onDelete, onClose }: Props) {
+export default function SignatureModal({ existing, sharedSignature, onSave, onDelete, onClose }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const [agreed, setAgreed] = useState(!!existing);
@@ -77,10 +78,7 @@ export default function SignatureModal({ existing, onSave, onDelete, onClose }: 
 
   const stopDraw = useCallback(() => { drawing.current = false; }, []);
 
-  const clear = () => {
-    initCanvas();
-    setIsEmpty(true);
-  };
+  const clear = () => { initCanvas(); setIsEmpty(true); };
 
   const handleAgreeChange = (checked: boolean) => {
     setAgreed(checked);
@@ -92,24 +90,28 @@ export default function SignatureModal({ existing, onSave, onDelete, onClose }: 
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const result = ev.target?.result as string;
-      setUploadPreview(result);
+      setUploadPreview(ev.target?.result as string);
       setIsEmpty(false);
     };
     reader.readAsDataURL(file);
   };
 
   const save = () => {
-    if (tab === "upload" && uploadPreview) {
-      onSave(uploadPreview);
-      return;
-    }
+    if (tab === "saved" && sharedSignature) { onSave(sharedSignature); return; }
+    if (tab === "upload" && uploadPreview) { onSave(uploadPreview); return; }
     const canvas = canvasRef.current;
     if (!canvas) return;
     onSave(canvas.toDataURL("image/png"));
   };
 
-  const canSave = agreed && !isEmpty && (tab === "draw" || !!uploadPreview);
+  const canSave = agreed && (
+    (tab === "draw" && !isEmpty) ||
+    (tab === "upload" && !!uploadPreview) ||
+    (tab === "saved" && !!sharedSignature)
+  );
+
+  const tabCls = (t: Tab) =>
+    `px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === t ? "border-[#b11217] text-[#b11217]" : "border-transparent text-gray-500 hover:text-gray-700"}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -128,35 +130,21 @@ export default function SignatureModal({ existing, onSave, onDelete, onClose }: 
             </span>
           </label>
 
-          {/* Tab switcher */}
           <div className={`transition-opacity ${agreed ? "" : "opacity-40 pointer-events-none"}`}>
             <div className="flex border-b border-gray-200 mb-3">
-              <button type="button" onClick={() => setTab("draw")}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === "draw" ? "border-[#b11217] text-[#b11217]" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
-                Zeichnen
-              </button>
-              <button type="button" onClick={() => setTab("upload")}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === "upload" ? "border-[#b11217] text-[#b11217]" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
-                Bild hochladen
-              </button>
+              <button type="button" onClick={() => setTab("draw")} className={tabCls("draw")}>Zeichnen</button>
+              <button type="button" onClick={() => setTab("upload")} className={tabCls("upload")}>Bild hochladen</button>
+              {sharedSignature && (
+                <button type="button" onClick={() => { setTab("saved"); setAgreed(true); }} className={tabCls("saved")}>Gespeicherte verwenden</button>
+              )}
             </div>
 
             {tab === "draw" && (
               <>
                 <div className="border-2 rounded-lg overflow-hidden border-gray-300">
-                  <canvas
-                    ref={canvasRef}
-                    width={600}
-                    height={220}
-                    className="w-full touch-none cursor-crosshair"
-                    onMouseDown={startDraw}
-                    onMouseMove={draw}
-                    onMouseUp={stopDraw}
-                    onMouseLeave={stopDraw}
-                    onTouchStart={startDraw}
-                    onTouchMove={draw}
-                    onTouchEnd={stopDraw}
-                  />
+                  <canvas ref={canvasRef} width={600} height={220} className="w-full touch-none cursor-crosshair"
+                    onMouseDown={startDraw} onMouseMove={draw} onMouseUp={stopDraw} onMouseLeave={stopDraw}
+                    onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={stopDraw} />
                 </div>
                 <p className="text-xs text-gray-400 mt-1">Bitte hier unterschreiben</p>
               </>
@@ -164,21 +152,13 @@ export default function SignatureModal({ existing, onSave, onDelete, onClose }: 
 
             {tab === "upload" && (
               <div className="space-y-3">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
                 {uploadPreview ? (
                   <div className="border-2 border-gray-300 rounded-lg p-3 flex flex-col items-center gap-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={uploadPreview} alt="Unterschrift Vorschau" className="max-h-28 object-contain" />
                     <button type="button" onClick={() => { setUploadPreview(null); setIsEmpty(true); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                      className="text-xs text-gray-400 hover:text-red-500 transition-colors">
-                      Bild entfernen
-                    </button>
+                      className="text-xs text-gray-400 hover:text-red-500 transition-colors">Bild entfernen</button>
                   </div>
                 ) : (
                   <button type="button" onClick={() => fileInputRef.current?.click()}
@@ -190,6 +170,14 @@ export default function SignatureModal({ existing, onSave, onDelete, onClose }: 
                     <span className="text-xs">JPG, PNG, GIF, WebP</span>
                   </button>
                 )}
+              </div>
+            )}
+
+            {tab === "saved" && sharedSignature && (
+              <div className="border-2 border-gray-200 rounded-lg p-4 flex flex-col items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={sharedSignature} alt="Gespeicherte Unterschrift" className="max-h-28 object-contain" />
+                <p className="text-xs text-gray-400">Zuletzt verwendete Unterschrift</p>
               </div>
             )}
           </div>
@@ -209,9 +197,7 @@ export default function SignatureModal({ existing, onSave, onDelete, onClose }: 
             )}
           </div>
           <div className="flex gap-2">
-            <button onClick={onClose} className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              Abbrechen
-            </button>
+            <button onClick={onClose} className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Abbrechen</button>
             <button onClick={save} disabled={!canSave}
               className="px-4 py-2 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
               Speichern

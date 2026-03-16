@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import SignatureModal from "@/app/_components/signature-modal";
 import FormFooter from "@/app/_components/form-footer";
 import FormHeader from "@/app/_components/form-header";
-import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress } from "@/lib/sharedAddress";
+import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
 
 const STORAGE_KEY = "ehrenamtspauschale_verzicht_v1";
@@ -45,6 +45,7 @@ export default function EhrenamtspauschaleVerzichtPage() {
   const [state, setState] = useState<FormState>(defaultState);
   const [hydrated, setHydrated] = useState(false);
   const [showSignModal, setShowSignModal] = useState(false);
+  const [sharedSignature, setSharedSignature] = useState("");
   const [downloadFn, setDownloadFn] = useState<(() => void) | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -59,6 +60,20 @@ export default function EhrenamtspauschaleVerzichtPage() {
         nachname: addr.nachname, vorname: addr.vorname, strasse: addr.strasse,
         plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon,
       }));
+      // Load shared signature — fall back to scanning other form stores
+      let sig = loadSharedSignature();
+      if (!sig) {
+        const otherKeys = ["uebungsleiterpauschale_v1", "reisekosten_v1"];
+        for (const k of otherKeys) {
+          try {
+            const r = localStorage.getItem(k);
+            if (r) { const p = JSON.parse(r); if (p?.signature) { sig = p.signature; break; } }
+          } catch {}
+        }
+        if (!sig && saved?.signature) sig = saved.signature;
+        if (sig) saveSharedSignature(sig);
+      }
+      setSharedSignature(sig);
     } catch {}
     setHydrated(true);
   }, []);
@@ -239,7 +254,8 @@ export default function EhrenamtspauschaleVerzichtPage() {
       {showSignModal && (
         <SignatureModal
           existing={state.signature || undefined}
-          onSave={(dataUrl) => { set("signature", dataUrl); setShowSignModal(false); }}
+          sharedSignature={sharedSignature || undefined}
+          onSave={(dataUrl) => { set("signature", dataUrl); saveSharedSignature(dataUrl); setSharedSignature(dataUrl); setShowSignModal(false); }}
           onDelete={() => set("signature", "")}
           onClose={() => setShowSignModal(false)}
         />
