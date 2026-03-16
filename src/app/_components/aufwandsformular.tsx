@@ -916,8 +916,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                 {showStunden && <th className="border-r border-gray-200 px-2 py-2">bis</th>}
                 {showStunden && <th className="border-r border-gray-200 px-2 py-2 whitespace-nowrap">Aufwand Std.</th>}
                 {showStunden && <th className="border-r border-gray-200 px-2 py-2">€/Std.</th>}
-                {showKm && <th className="border-r border-gray-200 px-2 py-2">km</th>}
-                <th className="border-r border-gray-200 px-2 py-2 whitespace-nowrap w-20 text-right">Ergebnis</th>
+                {showKm && <th className="border-r border-gray-200 px-2 py-2 w-48">km</th>}
+                <th className="border-r border-gray-200 px-2 py-2 whitespace-nowrap w-48 text-right">Ergebnis</th>
                 <th className="border-r border-gray-200 px-2 py-2 text-left">Kursbezeichnung / Reiseziel</th>
                 <th className="px-2 py-2 print:hidden w-8">
                   <button onClick={addRow} className="flex items-center justify-center w-6 h-6 rounded bg-[#b11217] text-white hover:bg-[#8f0f13] transition-colors" aria-label="Zeile hinzufügen">
@@ -929,7 +929,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             <tbody>
               {sortedRows.map((row) => (
                 <tr key={row.id} className={`pdf-row border-b border-gray-100 hover:bg-blue-50 ${flashingRowId === row.id ? "row-flash" : ""}`}>
-                  <td className="border-r border-gray-100 px-2 py-1.5 w-24 text-center">
+                  <td className="border-r border-gray-100 px-2 py-1.5 w-48 text-center">
                     <PI value={row.datum}><DateSelect value={row.datum} onChange={v => updateRow(row.id, "datum", v)} className="w-24" /></PI>
                   </td>
                   {showStunden && (
@@ -951,11 +951,11 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                     </td>
                   )}
                   {showKm && (
-                    <td className="border-r border-gray-100 px-1 py-1.5 text-center">
+                    <td className="border-r border-gray-100 px-1 py-1.5 text-center w-48">
                       <PI value={row.km}><NumberInput value={row.km} onChange={v => updateRow(row.id, "km", v)} step={1} /></PI>
                     </td>
                   )}
-                  <td className="border-r border-gray-100 px-2 py-1.5 text-right font-semibold tabular-nums whitespace-nowrap w-20">{calcRow(row).toFixed(2)} €</td>
+                  <td className="border-r border-gray-100 px-2 py-1.5 text-right font-semibold tabular-nums whitespace-nowrap w-48">{calcRow(row).toFixed(2)} €</td>
                   <td className="border-r border-gray-100 px-1 py-1.5 text-left">
                     <PI value={row.beschreibung}><input type="text" value={row.beschreibung} onChange={(e) => updateRow(row.id, "beschreibung", e.target.value)} className={inputCls} /></PI>
                   </td>
@@ -1009,7 +1009,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           <div className="flex justify-between items-center text-gray-600">
             <span>abzgl. Aufwandsspende</span>
             <input type="number" min="0" step="0.01" value={state.aufwandsspende} onChange={(e) => set("aufwandsspende", e.target.value)} placeholder="0.00"
-              className="w-24 text-right bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#b11217] tabular-nums" />
+              className="w-48 text-right bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#b11217] tabular-nums" />
           </div>
           <div className="flex justify-between font-bold text-gray-900 pt-1 border-t border-gray-200">
             <span>Endbetrag</span>
