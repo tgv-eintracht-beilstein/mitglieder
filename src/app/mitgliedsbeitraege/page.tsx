@@ -142,6 +142,7 @@ export default function MitgliedsbeitraegePage() {
         <SubTitle>Handball</SubTitle>
         <PriceTable
           rows={[
+            ["Kinder", "50,00 Euro"],
             ["Jugendliche 12–18 Jahre", "50,00 Euro"],
             ["Erwachsene 18–50 Jahre", "50,00 Euro"],
           ]}
