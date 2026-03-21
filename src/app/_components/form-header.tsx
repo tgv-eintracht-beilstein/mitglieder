@@ -74,7 +74,7 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
                 </div>
                 <PI value={f.value}>
                   {f.type === "date"
-                    ? <DateSelect value={f.value} onChange={f.onChange} className={`text-sm ${f.required && !f.value ? "[&_button]:border-[#b11217] [&_input]:border-[#b11217]" : ""}`} minYear={1900} />
+                    ? <DateSelect value={f.value} onChange={f.onChange} className={`text-sm ${f.required && !f.value ? "[&_button]:border-[#b11217] [&_input]:border-[#b11217]" : ""}`} minYear={1823} />
                     : <input type={f.type ?? "text"} value={f.value} onChange={e => f.onChange(e.target.value)} className={`${fieldCls} ${fieldBorder(f.value, f.required, f.invalid)}`} />
                   }
                 </PI>

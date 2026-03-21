@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import SignatureModal from "@/app/_components/signature-modal";
+import VerzichtPageContent from "./verzicht-page-content";
 import FormHeader from "@/app/_components/form-header";
 import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
@@ -324,11 +325,11 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
   const curMonth = today.getMonth() + 1;
   const curDay = today.getDate();
   const yearFrom = minYear ?? curYear - 2;
+  const years = Array.from({ length: Math.max(5, curYear + 5 - yearFrom + 1) }, (_, i) => curYear + 5 - i);
   // When empty, display current month; otherwise use value's month
   const displayYear = year ?? curYear;
   const displayMonth = month ?? curMonth;
   const daysInMonth = new Date(displayYear, displayMonth, 0).getDate();
-  const [yearInput, setYearInput] = useState("");
 
   function set(y: number, m: number, d: number) {
     const clampedD = Math.min(d, new Date(y, m, 0).getDate());
@@ -338,19 +339,10 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
   const desktopPanel = (
     <div className="p-3 space-y-3 min-w-[260px]">
       <div className="flex items-center gap-2">
-        <input
-          type="number"
-          value={yearInput || displayYear}
-          min={yearFrom}
-          max={curYear + 5}
-          onChange={e => {
-            setYearInput(e.target.value);
-            const y = parseInt(e.target.value);
-            if (y >= 1900 && y <= curYear + 5) set(y, displayMonth, day ?? curDay);
-          }}
-          onBlur={() => setYearInput("")}
-          className="w-20 border-b border-gray-300 bg-transparent text-sm focus:outline-none focus:border-[#b11217] px-1 py-1 tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-        />
+        <select value={displayYear} onChange={e => set(Number(e.target.value), displayMonth, day ?? curDay)}
+          className="w-24 border-b border-gray-300 bg-transparent text-sm focus:outline-none focus:border-[#b11217] px-1 py-1">
+          {years.map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
         <select value={displayMonth} onChange={e => set(displayYear, Number(e.target.value), day ?? curDay)}
           className="flex-1 border-b border-gray-300 bg-transparent text-sm focus:outline-none focus:border-[#b11217] px-1 py-1">
           {MONTHS_DE.map((m, i) => <option key={m} value={i+1}>{m}</option>)}
@@ -451,13 +443,12 @@ interface FormState {
   aufwandsspende: string;
   zahlungBar: boolean;
   zahlungUeberweisung: boolean;
-  spendenquittung: boolean;
-  spendenquittungNummer: string;
   steuerVollHoehe: boolean;
   steuerBisZu: boolean;
   steuerBisZuBetrag: string;
   steuerNicht: boolean;
   signature: string;
+  overrideDate: string;
   rows: Row[];
   nextId: number;
 }
@@ -655,9 +646,9 @@ function defaultState(): FormState {
     geburtsdatum: "", telefon: "", email: "", abteilung: "", monatVon: "", monatBis: "",
     iban: "", aufwandsspende: "",
     zahlungBar: false, zahlungUeberweisung: false,
-    spendenquittung: false, spendenquittungNummer: "",
     steuerVollHoehe: false, steuerBisZu: false, steuerBisZuBetrag: "", steuerNicht: false,
     signature: "",
+    overrideDate: "",
     rows: [emptyRow(1)],
     nextId: 2,
   };
@@ -793,12 +784,14 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
   );
 }
 
-function DownloadButton({ filename, storageKey: _storageKey, disabled: disabledProp, missingCount, checks }: {
+function DownloadButton({ filename, storageKey: _storageKey, disabled: disabledProp, missingCount, checks, side = "bottom", hasDonation }: {
   filename: string; storageKey: string; disabled?: boolean; missingCount?: number;
   checks?: { label: string; valid: boolean }[];
+  side?: "top" | "bottom";
+  hasDonation?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
-  const [pos, setPos] = useState({ top: 0, right: 0 });
+  const [pos, setPos] = useState({ top: 0, bottom: 0, right: 0 });
   const [hovered, setHovered] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
 
@@ -806,12 +799,26 @@ function DownloadButton({ filename, storageKey: _storageKey, disabled: disabledP
     if (btnRef.current) {
       const r = btnRef.current.getBoundingClientRect();
       const tooltipW = 288; // w-72
-      const right = Math.max(8, window.innerWidth - r.right);
-      // clamp so tooltip doesn't go off left edge
-      const clampedRight = window.innerWidth - r.right + r.width / 2 - tooltipW / 2 < 8
-        ? window.innerWidth - tooltipW - 8
-        : right;
-      setPos({ top: r.bottom + 6, right: clampedRight });
+      const distFromRight = window.innerWidth - r.right;
+      
+      // Default to aligning the right edge of the tooltip with the right edge of the button
+      let finalRight = distFromRight;
+      
+      // If the tooltip would go off the left edge of the screen, clamp it
+      if (window.innerWidth - finalRight - tooltipW < 8) {
+        finalRight = window.innerWidth - tooltipW - 8;
+      }
+      
+      // Ensure the tooltip doesn't go off the right edge of the screen
+      if (finalRight < 8) {
+        finalRight = 8;
+      }
+      
+      if (side === "top") {
+        setPos({ top: 0, bottom: window.innerHeight - r.top + 6, right: finalRight });
+      } else {
+        setPos({ top: r.bottom + 6, bottom: 0, right: finalRight });
+      }
     }
     setHovered(true);
   }
@@ -828,42 +835,170 @@ function DownloadButton({ filename, storageKey: _storageKey, disabled: disabledP
       iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:1050px;height:1px;border:0;visibility:hidden";
       document.body.appendChild(iframe);
       await new Promise<void>((resolve) => { iframe.onload = () => resolve(); iframe.src = iframeUrl; });
-      await new Promise(r => setTimeout(r, 1500));
+
+      // Wait longer for content to stabilize, especially for multi-page forms
+      await new Promise(r => setTimeout(r, hasDonation ? 2000 : 1500));
+
       const iframeDoc = iframe.contentDocument!;
       const iframeBody = iframeDoc.body;
+
+      // Ensure pdf-capture class is applied
+      iframeDoc.documentElement.classList.add('pdf-capture');
+
+      // Wait for all images to load
       await Promise.all(Array.from(iframeDoc.images).map(img =>
         img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
       ));
+
+      // Force layout recalculation
       iframe.style.height = iframeBody.scrollHeight + "px";
-      await new Promise(r => setTimeout(r, 200));
-      const canvas = await html2canvas(iframeBody, {
+      await new Promise(r => setTimeout(r, 300));
+
+      const fullCanvas = await html2canvas(iframeBody, {
         scale: 1.5, useCORS: true, logging: false, backgroundColor: '#ffffff',
         width: 1050, height: iframeBody.scrollHeight,
         windowWidth: 1050, windowHeight: iframeBody.scrollHeight,
       });
-      document.body.removeChild(iframe);
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const usableW = pageW - margin * 2;
-      const imgH = (canvas.height * usableW) / canvas.width;
-      let remaining = imgH;
-      let first = true;
-      while (remaining > 0) {
-        const sliceH = Math.min(remaining, pageH - margin * 2);
-        const srcY = (imgH - remaining) * (canvas.height / imgH);
-        const srcH = sliceH * (canvas.height / imgH);
-        const sliceCanvas = document.createElement("canvas");
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = Math.ceil(srcH);
-        sliceCanvas.getContext("2d")!.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
-        if (!first) pdf.addPage();
-        pdf.addImage(sliceCanvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, usableW, sliceH);
-        remaining -= sliceH;
-        first = false;
+
+      // Find break markers more reliably - try multiple selectors
+      let breakMarkers = Array.from(iframeBody.querySelectorAll('[data-page-break="verzicht"]'));
+      if (breakMarkers.length === 0) {
+        breakMarkers = Array.from(iframeBody.querySelectorAll(".print\\:break-before-page"));
       }
-      pdf.save(filename);
+      console.log(`Found ${breakMarkers.length} break markers, hasDonation: ${hasDonation}`);
+
+      const breakMarkersPx = breakMarkers
+        .map(el => {
+          const element = el as HTMLElement;
+          const rect = element.getBoundingClientRect();
+          const offsetTop = element.offsetTop;
+          const computedStyle = iframeDoc.defaultView?.getComputedStyle(element);
+          const isVisible = computedStyle?.display !== 'none' && computedStyle?.visibility !== 'hidden';
+          console.log(`Break marker - offsetTop: ${offsetTop}, rect.top: ${rect.top}, display: ${computedStyle?.display}, visible: ${isVisible}`);
+          return offsetTop * 1.5; // *1.5 for html2canvas scale
+        })
+        .filter(y => y > 0); // Filter out invalid positions
+
+      const canvases: HTMLCanvasElement[] = [];
+      const filenames: string[] = [];
+
+      if (hasDonation && breakMarkersPx.length > 0) {
+        const breakY = breakMarkersPx[0];
+
+        // More lenient break position validation
+        const minBreakPosition = fullCanvas.height * 0.15; // At least 15% down
+        const maxBreakPosition = fullCanvas.height * 0.95; // At most 95% down
+
+        console.log(`Break Y: ${breakY}, Canvas height: ${fullCanvas.height}, Min: ${minBreakPosition}, Max: ${maxBreakPosition}`);
+
+        if (breakY > minBreakPosition && breakY < maxBreakPosition) {
+          console.log("Creating two separate PDFs");
+
+          // Canvas for first PDF (Main form)
+          const canvas1 = document.createElement("canvas");
+          canvas1.width = fullCanvas.width;
+          canvas1.height = Math.floor(breakY);
+          const ctx1 = canvas1.getContext("2d");
+          if (ctx1) {
+            ctx1.fillStyle = "#ffffff";
+            ctx1.fillRect(0, 0, canvas1.width, canvas1.height);
+            ctx1.drawImage(fullCanvas, 0, 0, fullCanvas.width, breakY, 0, 0, fullCanvas.width, breakY);
+          }
+          canvases.push(canvas1);
+          filenames.push(filename);
+
+          // Canvas for second PDF (Verzichtserklärung)
+          const remainingHeight = fullCanvas.height - breakY;
+          const canvas2 = document.createElement("canvas");
+          canvas2.width = fullCanvas.width;
+          canvas2.height = Math.floor(remainingHeight);
+          const ctx2 = canvas2.getContext("2d");
+          if (ctx2) {
+            ctx2.fillStyle = "#ffffff";
+            ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
+            ctx2.drawImage(fullCanvas, 0, breakY, fullCanvas.width, remainingHeight, 0, 0, fullCanvas.width, remainingHeight);
+          }
+          canvases.push(canvas2);
+          // Build proper verzicht filename: verzichtserklärung-vorname-nachname-timestamp.pdf
+          const baseMatch = filename.match(/^[^-]+-(.+)\.pdf$/);
+          const nameAndTimestamp = baseMatch ? baseMatch[1] : filename.replace(/\.pdf$/, "");
+          const verzichtFilename = `verzichtserklärung-${nameAndTimestamp}.pdf`;
+          filenames.push(verzichtFilename);
+
+          console.log(`Canvas 1: ${canvas1.width}x${canvas1.height}, Canvas 2: ${canvas2.width}x${canvas2.height}`);
+        } else {
+          // Break position is invalid, fall back to single PDF
+          console.warn(`Invalid break position detected (${breakY}), generating single PDF`);
+          canvases.push(fullCanvas);
+          filenames.push(filename);
+        }
+      } else {
+        if (hasDonation) {
+          console.warn("No break markers found despite donation being present");
+        }
+        canvases.push(fullCanvas);
+        filenames.push(filename);
+      }
+
+      document.body.removeChild(iframe);
+
+      for (let i = 0; i < canvases.length; i++) {
+        try {
+          const canvas = canvases[i];
+          const currentFilename = filenames[i];
+
+          // Skip if canvas is too small (likely invalid)
+          if (canvas.height < 100) {
+            console.warn(`Skipping PDF ${i + 1} - canvas too small (${canvas.height}px)`);
+            continue;
+          }
+
+          console.log(`Generating PDF ${i + 1}/${canvases.length}: ${currentFilename} (${canvas.width}x${canvas.height})`);
+
+          const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+          const pageW = pdf.internal.pageSize.getWidth();
+          const pageH = pdf.internal.pageSize.getHeight();
+          const margin = 10;
+          const usableW = pageW - margin * 2;
+          const usableH = pageH - margin * 2;
+          const imgH = (canvas.height * usableW) / canvas.width;
+
+          let currentY = 0;
+          let firstPage = true;
+
+          while (currentY < imgH) {
+            const sliceH = Math.min(imgH - currentY, usableH);
+            const sliceCanvas = document.createElement("canvas");
+            sliceCanvas.width = canvas.width;
+            sliceCanvas.height = (sliceH * canvas.width) / usableW;
+
+            const srcY = (currentY * canvas.width) / usableW;
+
+            const sliceCtx = sliceCanvas.getContext("2d");
+            if (sliceCtx) {
+              sliceCtx.fillStyle = "#ffffff";
+              sliceCtx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+              sliceCtx.drawImage(canvas, 0, srcY, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
+            }
+
+            if (!firstPage) pdf.addPage();
+            pdf.addImage(sliceCanvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, usableW, sliceH);
+            currentY += sliceH;
+            firstPage = false;
+          }
+
+          pdf.save(currentFilename);
+          console.log(`Successfully saved: ${currentFilename}`);
+
+          // Small delay between downloads for browser to process
+          if (i < canvases.length - 1) {
+            await new Promise(r => setTimeout(r, 500));
+          }
+        } catch (pdfError) {
+          console.error(`Error generating PDF ${i + 1}:`, pdfError);
+          // Continue with next PDF even if one fails
+        }
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -875,9 +1010,13 @@ function DownloadButton({ filename, storageKey: _storageKey, disabled: disabledP
 
   return (
     <div className="relative inline-flex" onMouseEnter={handleMouseEnter} onMouseLeave={() => setHovered(false)}>
-      {hovered && sorted.length > 0 && (
+      {hovered && disabledProp && sorted.length > 0 && (
         <div className="fixed z-[300] w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-3 print:hidden"
-          style={{ top: pos.top, right: pos.right }}>
+          style={{ 
+            top: side === "bottom" ? pos.top : "auto", 
+            bottom: side === "top" ? pos.bottom : "auto", 
+            right: pos.right 
+          }}>
           <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Pflichtfelder</div>
           <ul className="space-y-1">
             {sorted.map(c => (
@@ -911,7 +1050,7 @@ function DownloadButton({ filename, storageKey: _storageKey, disabled: disabledP
             </svg>
             {disabledProp && missingCount
               ? <><span>{missingCount} {missingCount === 1 ? "Pflichtfeld fehlt" : "Pflichtfelder fehlen"}</span><span className="ml-1 bg-white/20 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{missingCount}</span></>
-              : "PDF herunterladen"
+              : (hasDonation ? "2 PDFs herunterladen" : "PDF herunterladen")
             }
           </>
         )}
@@ -934,6 +1073,14 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Detect ?pdf=1 and activate pdf-capture mode
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('pdf') === '1') {
+        document.body.classList.add('pdf-capture');
+      }
+    }
+
     try {
       const addr = loadSharedAddress();
       const raw = localStorage.getItem(storageKey);
@@ -944,6 +1091,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         // personal fields always come from shared store
         nachname: addr.nachname, vorname: addr.vorname, strasse: addr.strasse,
         plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon, email: addr.email,
+        // Always reset date field on page load
+        overrideDate: "",
       }));
       // Load shared signature — fall back to scanning other form stores
       let sig = loadSharedSignature();
@@ -1108,6 +1257,10 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const missing = allChecks.filter(c => !c.valid);
   const isComplete = missing.length === 0;
 
+  const city = state.plzOrt.replace(/^[\d\s]+/, "").replace(/[^a-zA-ZäöüÄÖÜß\s-]/g, "").trim() || "_______________";
+  const today = new Date().toLocaleDateString("de-DE");
+  const defaultDate = [city, today].filter(s => s !== "_______________" && s !== "").join(", ");
+
   return (
     <div className="reisekosten-form px-1" ref={contentRef}>
 
@@ -1129,7 +1282,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       <div className="flex items-center justify-between mb-3 print:hidden">
         <h1 className="text-2xl font-bold text-[#b11217]">{title}</h1>
         <div className="hidden md:flex items-center gap-2">
-          <DownloadButton filename={buildPdfFilename(title, state.vorname, state.nachname)} storageKey={storageKey} disabled={!isComplete} missingCount={missing.length} checks={allChecks} />
+          <DownloadButton filename={buildPdfFilename(title, state.vorname, state.nachname)} storageKey={storageKey} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="bottom" hasDonation={spende > 0} />
         </div>
       </div>
 
@@ -1406,7 +1559,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               <PI value={state.iban} className="flex-1 uppercase">
                 <input type="text" value={state.iban} onChange={(e) => set("iban", e.target.value.toUpperCase())}
                   placeholder="DE00 0000 0000 0000 0000 00"
-                  className={`w-full border-b bg-transparent px-1 py-0.5 text-sm focus:outline-none ${
+                  className={`w-full border-b bg-transparent px-1 py-0.5 text-sm uppercase focus:outline-none ${
                     state.iban === "" ? "border-gray-300 focus:border-blue-500"
                     : validateIban(state.iban) ? "border-green-500 text-green-700"
                     : "border-[#b11217] text-[#b11217]"
@@ -1420,20 +1573,6 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             </div>
           </div>
         )}
-        <label className="flex items-center gap-2 flex-wrap">
-          <input type="checkbox" checked={state.spendenquittung} onChange={(e) => set("spendenquittung", e.target.checked)} className="w-4 h-4 print:hidden" />
-          <PrintCheckbox checked={state.spendenquittung} />
-          Bitte um Erstellung einer Aufwandsspendenquittung *) &uuml;ber
-          {state.spendenquittung && (
-            <span className="flex items-center gap-2 ml-1">
-              <input type="text" value={state.spendenquittungNummer} onChange={(e) => set("spendenquittungNummer", e.target.value)}
-                placeholder="Nummer"
-                className="w-28 border-b border-gray-300 bg-transparent px-1 py-0.5 text-sm focus:outline-none focus:border-blue-500 print:hidden" />
-              <span className="hidden print:inline text-sm">{state.spendenquittungNummer}</span>
-              <span className="text-gray-400 text-xs">Spendenquittung erstellt mit Nummer</span>
-            </span>
-          )}
-        </label>
         </div>
       </div>
 
@@ -1488,7 +1627,22 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-6 pt-4 border-t border-gray-200 print:border-t-0 text-xs text-gray-400">
           <div className="flex flex-col">
             <div className="flex-1 border-b border-gray-400 print:border-0 min-h-[4rem] print:min-h-0 flex items-end pb-1 text-gray-700 font-medium">
-              {[state.plzOrt.replace(/^[\d\s]+/, "").replace(/[^a-zA-ZäöüÄÖÜß\s-]/g, "").trim(), new Date().toLocaleDateString("de-DE")].filter(Boolean).join(", ")}
+              <div className="flex-1 flex items-center gap-1 group">
+                <input type="text"
+                  id="sig-date-input"
+                  value={state.overrideDate !== "" ? state.overrideDate : defaultDate}
+                  onChange={e => set("overrideDate", e.target.value)}
+                  className="flex-1 bg-transparent border-none outline-none p-0 m-0 focus:ring-0 print:hidden" />
+                <button type="button" onClick={() => document.getElementById("sig-date-input")?.focus()}
+                  className="p-1 text-gray-300 hover:text-[#b11217] transition-colors print:hidden" aria-label="Datum bearbeiten">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                  </svg>
+                </button>
+                <span className="hidden print:inline">
+                  {state.overrideDate !== "" ? state.overrideDate : defaultDate}
+                </span>
+              </div>
             </div>
             <div className="mt-1 print:mt-0">Ort, Datum</div>
           </div>
@@ -1571,7 +1725,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => { localStorage.removeItem(storageKey); setState(defaultState()); }}
-            className="flex-1 md:flex-none px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg text-xs hover:bg-red-100 transition-colors"
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-lg text-xs hover:bg-red-100 transition-colors"
           >
             Formular zurücksetzen
           </button>
@@ -1591,8 +1745,28 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             Drucken
           </button>
         </div>
-        <DownloadButton filename={buildPdfFilename(title, state.vorname, state.nachname)} storageKey={storageKey} disabled={!isComplete} missingCount={missing.length} checks={allChecks} />
+        <DownloadButton filename={buildPdfFilename(title, state.vorname, state.nachname)} storageKey={storageKey} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="top" hasDonation={spende > 0} />
       </div>
+
+      {/* Second page for EAP Verzicht if donation is present */}
+      {spende > 0 && (
+        <div className="hidden print:block print:break-before-page border-t border-gray-200 mt-12 pt-12" data-page-break="verzicht">
+          {/* Slicing helper: JS-based PDF capture needs a clean gap or forced page break */}
+          <div style={{ height: "60px" }} className="print:hidden" />
+          <VerzichtPageContent
+            state={{
+              ...state,
+              jahr: (state.monatVon || state.monatBis || new Date().toISOString()).slice(0, 4),
+              betrag: spende.toFixed(2),
+              spendenbetrag: spende.toFixed(2),
+              signature: state.signature
+            }}
+            overrideDate={state.overrideDate}
+            onOverrideDateChange={v => set("overrideDate", v)}
+            onSignClick={() => setShowSignModal(true)}
+          />
+        </div>
+      )}
     </div>
   );
 }

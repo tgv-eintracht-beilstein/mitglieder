@@ -25,10 +25,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .pdf-capture .print\:inline { display: inline !important; }
 .pdf-capture .print\:inline-flex { display: inline-flex !important; }
 .pdf-capture .print\:grid { display: grid !important; }
+.pdf-capture .print\:break-before-page { break-before: page !important; }
 .pdf-capture .print\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
 .pdf-capture .print\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 .pdf-capture .print\:divide-x > * + * { border-left-width: 1px !important; border-color: #e5e7eb !important; }
 .pdf-capture .print\:divide-y-0 > * + * { border-top-width: 0 !important; }
+
+/* pdf-capture: override hidden class when print:block is present */
+.pdf-capture .hidden.print\:block { display: block !important; }
+.pdf-capture .hidden.print\:flex { display: flex !important; }
+.pdf-capture .hidden.print\:inline { display: inline !important; }
 
 /* pdf-capture: keep red header bars with color */
 .pdf-capture .bg-\[\#b11217\]:not(button):not(a) {

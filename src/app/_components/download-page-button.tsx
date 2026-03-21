@@ -36,20 +36,42 @@ export default function DownloadPageButton({ filename }: { filename: string }) {
       const pageH = pdf.internal.pageSize.getHeight();
       const margin = 10;
       const usableW = pageW - margin * 2;
+      const usableH = pageH - margin * 2;
+
+      const pxToMm = usableW / 1050;
+      const breakMarkers = Array.from(iframeBody.querySelectorAll(".print\\:break-before-page"))
+        .map(el => (el as HTMLElement).offsetTop * pxToMm);
+
       const imgH = (canvas.height * usableW) / canvas.width;
-      let remaining = imgH;
+      let currentY = 0;
       let first = true;
-      while (remaining > 0) {
-        const sliceH = Math.min(remaining, pageH - margin * 2);
-        const srcY = (imgH - remaining) * (canvas.height / imgH);
-        const srcH = sliceH * (canvas.height / imgH);
+
+      while (currentY < imgH) {
+        let sliceH = Math.min(imgH - currentY, usableH);
+        
+        const nextBreak = breakMarkers.find(m => m > currentY + 5 && m < currentY + sliceH);
+        if (nextBreak) {
+          sliceH = nextBreak - currentY;
+        }
+
+        const scale = canvas.width / 1050;
+        const srcY = (currentY / pxToMm) * scale;
+        const srcH = (sliceH / pxToMm) * scale;
+
         const sliceCanvas = document.createElement("canvas");
         sliceCanvas.width = canvas.width;
         sliceCanvas.height = Math.ceil(srcH);
-        sliceCanvas.getContext("2d")!.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+        const ctx = sliceCanvas.getContext("2d");
+        if (ctx) {
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+          ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+        }
+
         if (!first) pdf.addPage();
         pdf.addImage(sliceCanvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, usableW, sliceH);
-        remaining -= sliceH;
+        
+        currentY += sliceH;
         first = false;
       }
       pdf.save(filename);
