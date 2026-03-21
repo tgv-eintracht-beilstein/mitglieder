@@ -13,7 +13,10 @@ export interface SharedAddress {
 export function loadSharedAddress(): SharedAddress {
   try {
     const raw = localStorage.getItem(SHARED_ADDRESS_KEY);
-    if (raw) return { email: "", ...JSON.parse(raw) as SharedAddress };
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<SharedAddress>;
+      return Object.assign({ nachname: "", vorname: "", strasse: "", plzOrt: "", geburtsdatum: "", telefon: "", email: "" }, parsed);
+    }
   } catch {}
   return { nachname: "", vorname: "", strasse: "", plzOrt: "", geburtsdatum: "", telefon: "", email: "" };
 }
