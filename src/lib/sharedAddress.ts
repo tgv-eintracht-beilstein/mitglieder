@@ -7,14 +7,15 @@ export interface SharedAddress {
   plzOrt: string;
   geburtsdatum: string;
   telefon: string;
+  email: string;
 }
 
 export function loadSharedAddress(): SharedAddress {
   try {
     const raw = localStorage.getItem(SHARED_ADDRESS_KEY);
-    if (raw) return JSON.parse(raw) as SharedAddress;
+    if (raw) return { email: "", ...JSON.parse(raw) as SharedAddress };
   } catch {}
-  return { nachname: "", vorname: "", strasse: "", plzOrt: "", geburtsdatum: "", telefon: "" };
+  return { nachname: "", vorname: "", strasse: "", plzOrt: "", geburtsdatum: "", telefon: "", email: "" };
 }
 
 export function saveSharedAddress(addr: SharedAddress) {

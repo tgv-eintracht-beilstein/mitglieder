@@ -68,25 +68,42 @@ export default function FormFooter({ onReset, filename = "formular.pdf", content
       const pageH = pdf.internal.pageSize.getHeight();
       const margin = 10;
       const usableW = pageW - margin * 2;
-      const imgH = (canvas.height * usableW) / canvas.width;
+      const usableH = pageH - margin * 2;
 
-      let remaining = imgH;
+      const pxToMm = usableW / 1050;
+      const breakMarkers = Array.from(iframeBody.querySelectorAll(".print\\:break-before-page"))
+        .map(el => (el as HTMLElement).offsetTop * pxToMm);
+
+      const imgH = (canvas.height * usableW) / canvas.width;
+      let currentY = 0;
       let first = true;
 
-      while (remaining > 0) {
-        const sliceH = Math.min(remaining, pageH - margin * 2);
-        const srcY = (imgH - remaining) * (canvas.height / imgH);
-        const srcH = sliceH * (canvas.height / imgH);
+      while (currentY < imgH) {
+        let sliceH = Math.min(imgH - currentY, usableH);
+        
+        const nextBreak = breakMarkers.find(m => m > currentY + 5 && m < currentY + sliceH);
+        if (nextBreak) {
+          sliceH = nextBreak - currentY;
+        }
+
+        const scale = canvas.width / 1050;
+        const srcY = (currentY / pxToMm) * scale;
+        const srcH = (sliceH / pxToMm) * scale;
 
         const sliceCanvas = document.createElement("canvas");
         sliceCanvas.width = canvas.width;
         sliceCanvas.height = Math.ceil(srcH);
-        sliceCanvas.getContext("2d")!.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+        const ctx = sliceCanvas.getContext("2d");
+        if (ctx) {
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+          ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+        }
 
         if (!first) pdf.addPage();
-        // JPEG at 85% quality — much smaller than PNG
         pdf.addImage(sliceCanvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, usableW, sliceH);
-        remaining -= sliceH;
+        
+        currentY += sliceH;
         first = false;
       }
 
@@ -105,7 +122,7 @@ export default function FormFooter({ onReset, filename = "formular.pdf", content
       <div className="flex items-center gap-2">
         <button
           onClick={onReset}
-          className="w-full md:w-auto px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg text-xs hover:bg-red-100 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
         >
           Formular zurücksetzen
         </button>
