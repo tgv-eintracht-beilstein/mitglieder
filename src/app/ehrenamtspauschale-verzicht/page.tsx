@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import SignatureModal from "@/app/_components/signature-modal";
 import FormFooter from "@/app/_components/form-footer";
-import FormHeader from "@/app/_components/form-header";
 import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
+import VerzichtPageContent from "@/app/_components/verzicht-page-content";
 
 const STORAGE_KEY = "ehrenamtspauschale_verzicht_v1";
 
@@ -21,6 +21,7 @@ interface FormState {
   betrag: string;
   spendenbetrag: string;
   signature: string;
+  overrideDate: string;
 }
 
 function defaultState(): FormState {
@@ -28,19 +29,9 @@ function defaultState(): FormState {
     nachname: "", vorname: "", strasse: "", plzOrt: "", geburtsdatum: "", telefon: "", email: "",
     jahr: String(new Date().getFullYear()),
     betrag: "", spendenbetrag: "", signature: "",
+    overrideDate: "",
   };
 }
-
-function PI({ value, children }: { value: string; children: React.ReactNode }) {
-  return (
-    <span className="relative inline-block w-full">
-      <span className="print:hidden w-full">{children}</span>
-      <span className="hidden print:inline">{value}</span>
-    </span>
-  );
-}
-
-const inputCls = "w-full bg-transparent border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-[#b11217]";
 
 export default function EhrenamtspauschaleVerzichtPage() {
   const [state, setState] = useState<FormState>(defaultState);
@@ -51,6 +42,14 @@ export default function EhrenamtspauschaleVerzichtPage() {
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Detect ?pdf=1 and activate pdf-capture mode
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('pdf') === '1') {
+        document.body.classList.add('pdf-capture');
+      }
+    }
+
     try {
       const addr = loadSharedAddress();
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -60,6 +59,8 @@ export default function EhrenamtspauschaleVerzichtPage() {
         ...(saved ?? {}),
         nachname: addr.nachname, vorname: addr.vorname, strasse: addr.strasse,
         plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon, email: addr.email,
+        // Always reset date field on page load
+        overrideDate: "",
       }));
       // Load shared signature — fall back to scanning other form stores
       let sig = loadSharedSignature();
@@ -102,29 +103,14 @@ export default function EhrenamtspauschaleVerzichtPage() {
 
   if (!hydrated) return null;
 
-  const fullName = [state.vorname, state.nachname].filter(Boolean).join(" ") || "_______________";
-  const today = new Date().toLocaleDateString("de-DE");
-  const city = state.plzOrt.replace(/^\d+\s*/, "").trim() || "_______________";
-
   const isComplete = !!(
     state.nachname && state.vorname && state.strasse && state.plzOrt &&
-    state.geburtsdatum && state.telefon && state.email && state.betrag
+    state.geburtsdatum && state.telefon && state.email && state.betrag && state.spendenbetrag && state.signature
   );
 
   return (
     <div className="overflow-x-hidden px-1 -mx-1" ref={contentRef}>
-
-      {/* PDF-only page header */}
-      <div className="pdf-only hidden items-center gap-3 mb-4 pb-3 border-b-2 border-gray-300">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/tgv-logo.png" alt="TGV Logo" width={44} height={44} />
-        <div>
-          <div className="font-bold text-base text-gray-900">TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.V.</div>
-          <div className="text-xs text-gray-500">Ehrenamtspauschale Verzicht &ndash; {state.jahr} &middot; {state.vorname} {state.nachname}</div>
-        </div>
-      </div>
-
-      {/* Toolbar */}
+      {/* Page Toolbar */}
       <div className="flex items-center justify-between mb-3 print:hidden">
         <h1 className="text-2xl font-bold text-[#b11217]">Verzicht auf Auszahlung der Ehrenamtspauschale</h1>
         <button
@@ -140,117 +126,21 @@ export default function EhrenamtspauschaleVerzichtPage() {
         </button>
       </div>
 
-      {/* Header */}
-      <FormHeader
-        title="Ehrenamtspauschale Verzicht"
-        contextFields={[
-          {
-            label: "Jahr",
-            printValue: state.jahr,
-            content: (
-              <input type="number" value={state.jahr} onChange={e => set("jahr", e.target.value)}
-                className="w-full border-b border-gray-300 bg-transparent py-0.5 text-sm focus:outline-none focus:border-[#b11217]" />
-            ),
-          },
-        ]}
-        personalFields={[
-          { label: "Nachname", key: "nachname", value: state.nachname, onChange: v => set("nachname", v) },
-          { label: "Vorname", key: "vorname", value: state.vorname, onChange: v => set("vorname", v) },
-          { label: "Straße", key: "strasse", value: state.strasse, onChange: v => set("strasse", v) },
-          { label: "PLZ / Ort", key: "plzOrt", value: state.plzOrt, onChange: v => set("plzOrt", v) },
-          { label: "Geburtsdatum", key: "geburtsdatum", type: "date", value: state.geburtsdatum, onChange: v => set("geburtsdatum", v) },
-          { label: "Telefon", key: "telefon", type: "tel", value: state.telefon, onChange: v => set("telefon", v) },
-          { label: "E-Mail", key: "email", type: "email", value: state.email, onChange: v => set("email", v), required: true },
-        ]}
+      <VerzichtPageContent
+        state={state}
+        overrideDate={state.overrideDate}
+        onOverrideDateChange={v => set("overrideDate", v)}
+        onSignClick={() => setShowSignModal(true)}
       />
 
-      {/* Verzichtserklärung */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
-        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">
-          Verzichtserklärung
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 divide-y sm:divide-y-0 print:divide-y-0 sm:divide-x print:divide-x divide-gray-100 border-b border-gray-100">
-          <div className="px-4 py-3">
-            <div className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Pauschale nach § 3 Nr. 26a EstG</div>
-            <div className="flex items-baseline gap-1">
-              <PI value={state.betrag}>
-                <input type="number" value={state.betrag} onChange={e => set("betrag", e.target.value)}
-                  placeholder="0,00"
-                  className="w-full border-b border-gray-300 bg-transparent py-0.5 text-sm focus:outline-none focus:border-[#b11217]" />
-              </PI>
-              <span className="text-sm text-gray-500 shrink-0">€</span>
-            </div>
-          </div>
-          <div className="px-4 py-3">
-            <div className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Spendenbetrag</div>
-            <div className="flex items-baseline gap-1">
-              <PI value={state.spendenbetrag}>
-                <input type="number" value={state.spendenbetrag} onChange={e => set("spendenbetrag", e.target.value)}
-                  placeholder="0,00"
-                  className="w-full border-b border-gray-300 bg-transparent py-0.5 text-sm focus:outline-none focus:border-[#b11217]" />
-              </PI>
-              <span className="text-sm text-gray-500 shrink-0">€</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="px-4 py-4 space-y-3 text-sm text-gray-600 leading-relaxed">
-          <p>
-            Für das Jahr <span className="font-medium text-gray-900">{state.jahr || "____"}</span> habe
-            ich aufgrund meiner ehrenamtlichen Tätigkeit im Turn- und Gesangverein Eintracht Beilstein
-            1823 e.V. Anspruch auf die Ehrenamtspauschale nach § 3 Nr. 26a EstG in Höhe
-            von <span className="font-medium text-gray-900">{state.betrag || "____"} €</span>.
-          </p>
-          <p>
-            Ich bin damit einverstanden, dass die mir zustehende Aufwandsentschädigung nicht an mich
-            ausgezahlt wird.
-          </p>
-          <p>
-            Den nicht ausgezahlten Betrag in Höhe
-            von <span className="font-medium text-gray-900">{state.spendenbetrag || "____"} €</span> wende
-            ich dem Turn- und Gesangverein Eintracht Beilstein 1823 e.V. als Spende zu und bitte um
-            Ausstellung einer entsprechenden Spendenbescheinigung.
-          </p>
-          <p>
-            Gleichzeitig versichere ich hiermit, dass die Steuerbefreiung nach § 3 Nr. 26a EstG nicht
-            bereits für eine andere ehrenamtliche Tätigkeit berücksichtigt wurde.
-          </p>
-        </div>
-      </div>
-
-      {/* Unterschrift */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-3">
-        <div className="grid grid-cols-2 gap-8 text-xs text-gray-400">
-          <div className="flex flex-col">
-            <div className="flex-1 border-b border-gray-400 min-h-[4rem] flex items-end pb-1 text-gray-700 font-medium text-sm">
-              {city}, {today}
-            </div>
-            <div className="mt-1">Ort, Datum</div>
-          </div>
-          <div className="flex flex-col">
-            <div className="flex-1 border-b border-gray-400 min-h-[4rem] flex flex-col justify-end">
-              {state.signature && (
-                <div className="text-[7pt] text-green-600 leading-tight mb-0.5">
-                  ✓ Einwilligung zur digitalen Unterschrift erteilt
-                </div>
-              )}
-              {state.signature ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={state.signature} alt="Unterschrift"
-                  onClick={() => setShowSignModal(true)}
-                  className="max-h-14 w-auto object-contain cursor-pen hover:opacity-80 transition-opacity print:cursor-default"
-                  title="Klicken zum Bearbeiten" />
-              ) : (
-                <button onClick={() => setShowSignModal(true)}
-                  className="mb-1 w-full px-3 py-2 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors print:hidden">
-                  Unterschreiben
-                </button>
-              )}
-            </div>
-            <div className="mt-1">Unterschrift des ehrenamtlich Tätigen</div>
-          </div>
-        </div>
+      <div className="print:hidden mt-6">
+        <FormFooter 
+          onReset={() => { localStorage.removeItem(STORAGE_KEY); setState(defaultState()); }} 
+          contentRef={contentRef} 
+          filename={buildPdfFilename("ehrenamtspauschale-verzicht", state.vorname, state.nachname)} 
+          onDownloadReady={fn => setDownloadFn(() => fn)} 
+          disabled={!isComplete} 
+        />
       </div>
 
       {showSignModal && (
@@ -262,8 +152,6 @@ export default function EhrenamtspauschaleVerzichtPage() {
           onClose={() => setShowSignModal(false)}
         />
       )}
-
-      <FormFooter onReset={() => { localStorage.removeItem(STORAGE_KEY); setState(defaultState()); }} contentRef={contentRef} filename={buildPdfFilename("ehrenamtspauschale-verzicht", state.vorname, state.nachname)} onDownloadReady={fn => setDownloadFn(() => fn)} disabled={!isComplete} />
 
       <div className="pdf-footer hidden mt-6 pt-3 border-t border-gray-200 flex items-center gap-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}

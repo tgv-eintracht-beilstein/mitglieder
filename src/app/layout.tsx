@@ -59,21 +59,28 @@ export default function RootLayout({
         </main>
 
         <footer className="bg-[#1f1f1f] text-white text-sm print:hidden">
-          <div className="max-w-screen-xl mx-auto px-6 py-8 flex flex-col items-center gap-6 text-center md:flex-row md:flex-wrap md:justify-around md:text-left md:items-start">
-            <div>
-              <strong className="block mb-1">TGV &bdquo;Eintracht&ldquo; Beilstein e. V.</strong>
-              Albert-Einstein-Str. 20 &middot; 71717 Beilstein
+          <div className="max-w-screen-xl mx-auto px-6 py-8">
+            <div className="flex flex-col items-center gap-6 text-center md:flex-row md:flex-wrap md:justify-around md:text-left md:items-start">
+              <div>
+                <strong className="block mb-1">TGV &bdquo;Eintracht&ldquo; Beilstein e. V.</strong>
+                Albert-Einstein-Str. 20 &middot; 71717 Beilstein
+              </div>
+              <div>
+                <strong className="block mb-1">Kontakt</strong>
+                Tel: +49 (0) 7062 5753<br />
+                Email: info@tgveintrachtbeilstein.de
+              </div>
+              <div>
+                <strong className="block mb-1">Bankverbindung</strong>
+                Volksbank Beilstein-Ilsfeld-Abstatt eG<br />
+                IBAN: DE63 6206 2215 0001 0770 07<br />
+                BIC: GENODES1BIA
+              </div>
             </div>
-            <div>
-              <strong className="block mb-1">Kontakt</strong>
-              Tel: +49 (0) 7062 5753<br />
-              Email: info@tgveintrachtbeilstein.de
-            </div>
-            <div>
-              <strong className="block mb-1">Bankverbindung</strong>
-              Volksbank Beilstein-Ilsfeld-Abstatt eG<br />
-              IBAN: DE63 6206 2215 0001 0770 07<br />
-              BIC: GENODES1BIA
+            <div className="mt-6 pt-4 border-t border-gray-700 text-center text-xs text-gray-400">
+              <Link href="/impressum" className="hover:text-white transition-colors">
+                Impressum & Datenschutz
+              </Link>
             </div>
           </div>
         </footer>
