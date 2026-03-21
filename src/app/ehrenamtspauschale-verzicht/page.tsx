@@ -16,6 +16,7 @@ interface FormState {
   plzOrt: string;
   geburtsdatum: string;
   telefon: string;
+  email: string;
   jahr: string;
   betrag: string;
   spendenbetrag: string;
@@ -24,7 +25,7 @@ interface FormState {
 
 function defaultState(): FormState {
   return {
-    nachname: "", vorname: "", strasse: "", plzOrt: "", geburtsdatum: "", telefon: "",
+    nachname: "", vorname: "", strasse: "", plzOrt: "", geburtsdatum: "", telefon: "", email: "",
     jahr: String(new Date().getFullYear()),
     betrag: "", spendenbetrag: "", signature: "",
   };
@@ -58,7 +59,7 @@ export default function EhrenamtspauschaleVerzichtPage() {
         ...s,
         ...(saved ?? {}),
         nachname: addr.nachname, vorname: addr.vorname, strasse: addr.strasse,
-        plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon,
+        plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon, email: addr.email,
       }));
       // Load shared signature — fall back to scanning other form stores
       let sig = loadSharedSignature();
@@ -83,7 +84,7 @@ export default function EhrenamtspauschaleVerzichtPage() {
       if (e.key !== SHARED_ADDRESS_KEY || !e.newValue) return;
       try {
         const a = JSON.parse(e.newValue);
-        setState(s => ({ ...s, nachname: a.nachname || "", vorname: a.vorname || "", strasse: a.strasse || "", plzOrt: a.plzOrt || "", geburtsdatum: a.geburtsdatum || "", telefon: a.telefon || "" }));
+        setState(s => ({ ...s, nachname: a.nachname || "", vorname: a.vorname || "", strasse: a.strasse || "", plzOrt: a.plzOrt || "", geburtsdatum: a.geburtsdatum || "", telefon: a.telefon || "", email: a.email || "" }));
       } catch {}
     }
     window.addEventListener("storage", onStorage);
@@ -93,7 +94,7 @@ export default function EhrenamtspauschaleVerzichtPage() {
   useEffect(() => {
     if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    saveSharedAddress({ nachname: state.nachname, vorname: state.vorname, strasse: state.strasse, plzOrt: state.plzOrt, geburtsdatum: state.geburtsdatum, telefon: state.telefon });
+    saveSharedAddress({ nachname: state.nachname, vorname: state.vorname, strasse: state.strasse, plzOrt: state.plzOrt, geburtsdatum: state.geburtsdatum, telefon: state.telefon, email: state.email });
   }, [state, hydrated]);
 
   const set = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -107,7 +108,7 @@ export default function EhrenamtspauschaleVerzichtPage() {
 
   const isComplete = !!(
     state.nachname && state.vorname && state.strasse && state.plzOrt &&
-    state.geburtsdatum && state.telefon && state.betrag
+    state.geburtsdatum && state.telefon && state.email && state.betrag
   );
 
   return (
@@ -159,6 +160,7 @@ export default function EhrenamtspauschaleVerzichtPage() {
           { label: "PLZ / Ort", key: "plzOrt", value: state.plzOrt, onChange: v => set("plzOrt", v) },
           { label: "Geburtsdatum", key: "geburtsdatum", type: "date", value: state.geburtsdatum, onChange: v => set("geburtsdatum", v) },
           { label: "Telefon", key: "telefon", type: "tel", value: state.telefon, onChange: v => set("telefon", v) },
+          { label: "E-Mail", key: "email", type: "email", value: state.email, onChange: v => set("email", v), required: true },
         ]}
       />
 

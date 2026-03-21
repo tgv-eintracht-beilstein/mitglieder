@@ -12,7 +12,11 @@ function PI({ value, children }: { value: string; children: React.ReactNode }) {
   );
 }
 
-const fieldCls = "w-full bg-transparent border-b border-gray-300 px-1 py-0.5 text-sm focus:outline-none focus:border-[#b11217]";
+const fieldCls = "w-full bg-transparent border-b px-1 py-0.5 text-sm focus:outline-none";
+function fieldBorder(value: string, required?: boolean, invalid?: boolean) {
+  if ((required && !value) || invalid) return "border-[#b11217] focus:border-[#b11217]";
+  return "border-gray-300 focus:border-[#b11217]";
+}
 
 export interface FormHeaderField {
   label: string;
@@ -20,12 +24,16 @@ export interface FormHeaderField {
   type?: string;
   value: string;
   onChange: (v: string) => void;
+  required?: boolean;
+  invalid?: boolean;
 }
 
 export interface FormHeaderContextField {
   label: string;
   content: React.ReactNode;
   printValue: string;
+  required?: boolean;
+  value?: string;
 }
 
 interface Props {
@@ -44,8 +52,13 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
           <div className="px-4 py-3 space-y-2">
             {contextFields.map((f) => (
               <div key={f.label}>
-                <div className="text-[10px] text-gray-400 mb-0.5">{f.label}</div>
-                {f.content}
+                <div className="text-[10px] mb-0.5 flex items-center gap-0.5">
+                  <span className={f.required && !f.value ? "text-[#b11217]" : "text-gray-400"}>{f.label}</span>
+                  {f.required && !f.value && <span className="text-[#b11217] leading-none">*</span>}
+                </div>
+                <div className={f.required && !f.value ? "rounded border border-[#b11217]" : ""}>
+                  {f.content}
+                </div>
               </div>
             ))}
           </div>
@@ -55,11 +68,14 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
           <div className="px-4 py-3 space-y-2">
             {personalFields.map((f) => (
               <div key={f.key}>
-                <div className="text-[10px] text-gray-400 mb-0.5">{f.label}</div>
+                <div className="text-[10px] mb-0.5 flex items-center gap-0.5">
+                  <span className={f.required && !f.value ? "text-[#b11217]" : "text-gray-400"}>{f.label}</span>
+                  {f.required && !f.value && <span className="text-[#b11217] leading-none">*</span>}
+                </div>
                 <PI value={f.value}>
                   {f.type === "date"
-                    ? <DateSelect value={f.value} onChange={f.onChange} className="text-sm" minYear={1900} />
-                    : <input type={f.type ?? "text"} value={f.value} onChange={e => f.onChange(e.target.value)} className={fieldCls} />
+                    ? <DateSelect value={f.value} onChange={f.onChange} className={`text-sm ${f.required && !f.value ? "[&_button]:border-[#b11217] [&_input]:border-[#b11217]" : ""}`} minYear={1900} />
+                    : <input type={f.type ?? "text"} value={f.value} onChange={e => f.onChange(e.target.value)} className={`${fieldCls} ${fieldBorder(f.value, f.required, f.invalid)}`} />
                   }
                 </PI>
               </div>

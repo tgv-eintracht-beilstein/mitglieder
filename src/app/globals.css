@@ -23,6 +23,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .pdf-capture .print\:block { display: block !important; }
 .pdf-capture .print\:flex { display: flex !important; }
 .pdf-capture .print\:inline { display: inline !important; }
+.pdf-capture .print\:inline-flex { display: inline-flex !important; }
 .pdf-capture .print\:grid { display: grid !important; }
 .pdf-capture .print\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
 .pdf-capture .print\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
@@ -333,12 +334,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     width: 100% !important;
   }
 
-  /* Checkbox alignment */
+  /* Checkbox: hide native, show SVG */
   .reisekosten-form input[type="checkbox"] {
-    border: 0.5pt solid #666 !important;
-    border-bottom: 0.5pt solid #666 !important;
-    width: 8pt !important;
-    height: 8pt !important;
+    display: none !important;
+  }
+  .reisekosten-form .print\:inline-flex {
+    display: inline-flex !important;
   }
 
   @page {
