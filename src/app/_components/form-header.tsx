@@ -48,7 +48,7 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
       {/* Screen: 2 boxes */}
       <div className="print:hidden grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">{title}</div>
+          <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide rounded-t-xl">{title.toUpperCase()}</div>
           <div className="px-4 py-3 space-y-2">
             {contextFields.map((f) => (
               <div key={f.label}>
@@ -64,7 +64,7 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">Persönliche Angaben</div>
+          <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide rounded-t-xl">PERSÖNLICHE ANGABEN</div>
           <div className="px-4 py-3 space-y-2">
             {personalFields.map((f) => (
               <div key={f.key}>
@@ -84,10 +84,9 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
         </div>
       </div>
 
-      {/* Print/PDF: 3-column with TGV center */}
       <div className="hidden print:block mb-3">
         <div>
-          <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase">{title}</div>
+          <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide">{title.toUpperCase()}</div>
           <div className="grid grid-cols-3 text-sm">
             <div className="px-3 py-2 space-y-2">
               {contextFields.map((f) => (

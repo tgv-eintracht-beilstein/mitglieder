@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const navItems = [
+  // { href: "/mitglied-werden"label: "Mitglied werden" },
   { href: "/docs", label: "Dokumente" },
   { href: "/mitgliedsbeitraege", label: "Mitgliedsbeiträge" },
   { href: "/reisekosten", label: "Reisekosten" },

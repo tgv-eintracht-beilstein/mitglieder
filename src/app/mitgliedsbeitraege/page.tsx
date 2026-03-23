@@ -1,7 +1,33 @@
 import type { Metadata } from "next";
 import PrintButton from "@/app/_components/print-button";
 import DownloadPageButton from "@/app/_components/download-page-button";
-import { ABTEILUNG_ICONS } from "@/app/_components/abteilung-icons";
+
+const ABTEILUNGEN = [
+  { name: "Fußball",       slug: "fussball" },
+  { name: "Leichtathletik",slug: "leichtathletik" },
+  { name: "Turnen",        slug: "turnen" },
+  { name: "Tischtennis",   slug: "tischtennis" },
+  { name: "Handball",      slug: "handball" },
+  { name: "Schwimmen",     slug: "schwimmen" },
+  { name: "Gymnastik",     slug: "gymnastik" },
+  { name: "Gesang",        slug: "gesang" },
+  { name: "Tennis",        slug: "tennis" },
+  { name: "Ski & Berg",    slug: "ski_und_berg" },
+];
+
+function AbteilungIcon({ slug, print = false, size = 20 }: { slug: string; print?: boolean; size?: number }) {
+  const ext = print ? "png" : "svg";
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`/abteilung.${slug}.${ext}`}
+      alt=""
+      width={size}
+      height={size}
+      className="shrink-0 object-contain"
+    />
+  );
+}
 
 export const metadata: Metadata = {
   title: 'Mitgliedsbeiträge 2026 – TGV "Eintracht" Beilstein e. V.',
@@ -41,12 +67,29 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 function SubTitle({ children }: { children: React.ReactNode }) {
-  const Icon = ABTEILUNG_ICONS[children as string];
+  // Normalize the title (decode HTML entities and trim)
+  const title = String(children)
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
+    .trim();
+  
+  // For combined sections like "Turnen & Leichtathletik", show multiple icons
+  const parts = title.split(" & ");
+  const abteilungen = parts
+    .map(part => ABTEILUNGEN.find(a => a.name === part.trim()))
+    .filter((a): a is typeof ABTEILUNGEN[0] => a !== undefined);
+
   return (
-    <h3 className="flex items-center gap-2 text-sm font-bold text-[#b11217] uppercase tracking-wider mt-6 mb-1">
-      {Icon && <Icon size={18} className="text-[#b11217] shrink-0" />}
-      {children}
-    </h3>
+    <div className="flex items-center gap-3 mt-6 mb-3 pb-3 border-b border-gray-200">
+      <div className="flex items-center gap-2">
+        {abteilungen.map((abt) => (
+          <AbteilungIcon key={abt.slug} slug={abt.slug} size={24} />
+        ))}
+      </div>
+      <h3 className="text-sm font-bold text-[#b11217] uppercase tracking-wider">
+        {children}
+      </h3>
+    </div>
   );
 }
 
@@ -191,7 +234,7 @@ export default function MitgliedsbeitraegePage() {
         />
       </Section>
 
-      <div className="flex justify-end print:hidden mt-2 mb-6 gap-2">
+      <div className="flex justify-start print:hidden mt-2 mb-6 gap-2">
         {/* Mobile: PDF download */}
         <div className="md:hidden">
           <DownloadPageButton filename="mitgliedsbeitraege-2026.pdf" />

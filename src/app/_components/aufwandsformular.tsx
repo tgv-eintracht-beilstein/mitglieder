@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import SignatureModal from "@/app/_components/signature-modal";
 import VerzichtPageContent from "./verzicht-page-content";
+import DownloadButtonBase from "./download-button";
 import FormHeader from "@/app/_components/form-header";
 import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
@@ -339,10 +340,19 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
   const desktopPanel = (
     <div className="p-3 space-y-3 min-w-[260px]">
       <div className="flex items-center gap-2">
-        <select value={displayYear} onChange={e => set(Number(e.target.value), displayMonth, day ?? curDay)}
-          className="w-24 border-b border-gray-300 bg-transparent text-sm focus:outline-none focus:border-[#b11217] px-1 py-1">
-          {years.map(y => <option key={y} value={y}>{y}</option>)}
-        </select>
+        <input
+          type="number"
+          value={displayYear}
+          onChange={e => {
+            const y = Number(e.target.value);
+            if (y >= (minYear ?? 1900) && y <= curYear + 10) {
+              set(y, displayMonth, day ?? curDay);
+            }
+          }}
+          min={minYear ?? 1900}
+          max={curYear + 10}
+          className="w-20 border-b border-gray-300 bg-transparent text-sm focus:outline-none focus:border-[#b11217] px-1 py-1 text-center"
+        />
         <select value={displayMonth} onChange={e => set(displayYear, Number(e.target.value), day ?? curDay)}
           className="flex-1 border-b border-gray-300 bg-transparent text-sm focus:outline-none focus:border-[#b11217] px-1 py-1">
           {MONTHS_DE.map((m, i) => <option key={m} value={i+1}>{m}</option>)}
@@ -461,7 +471,7 @@ export interface AufwandsformularConfig {
   showStunden?: boolean; // default true
 }
 
-function validateIban(raw: string): boolean {
+export function validateIban(raw: string): boolean {
   const iban = raw.replace(/\s+/g, "").toUpperCase();
   if (iban.length < 5) return false;
   const rearranged = iban.slice(4) + iban.slice(0, 4);
@@ -630,7 +640,7 @@ function PrintCheckbox({ checked }: { checked: boolean }) {
     <span className="hidden print:inline-flex items-center justify-center shrink-0" style={{ width: 14, height: 14 }}>
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="0.5" y="0.5" width="13" height="13" rx="1.5" stroke="#333" strokeWidth="1" fill="white"/>
-        {checked && <path d="M3 7l3 3 5-5" stroke="#111" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>}
+        {checked && <path d="M4 4l6 6M10 4l-6 6" stroke="#111" strokeWidth="1.8" strokeLinecap="round"/>}
       </svg>
     </span>
   );
@@ -784,280 +794,7 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
   );
 }
 
-function DownloadButton({ filename, storageKey: _storageKey, disabled: disabledProp, missingCount, checks, side = "bottom", hasDonation }: {
-  filename: string; storageKey: string; disabled?: boolean; missingCount?: number;
-  checks?: { label: string; valid: boolean }[];
-  side?: "top" | "bottom";
-  hasDonation?: boolean;
-}) {
-  const [loading, setLoading] = useState(false);
-  const [pos, setPos] = useState({ top: 0, bottom: 0, right: 0 });
-  const [hovered, setHovered] = useState(false);
-  const btnRef = useRef<HTMLButtonElement>(null);
 
-  function handleMouseEnter() {
-    if (btnRef.current) {
-      const r = btnRef.current.getBoundingClientRect();
-      const tooltipW = 288; // w-72
-      const distFromRight = window.innerWidth - r.right;
-      
-      // Default to aligning the right edge of the tooltip with the right edge of the button
-      let finalRight = distFromRight;
-      
-      // If the tooltip would go off the left edge of the screen, clamp it
-      if (window.innerWidth - finalRight - tooltipW < 8) {
-        finalRight = window.innerWidth - tooltipW - 8;
-      }
-      
-      // Ensure the tooltip doesn't go off the right edge of the screen
-      if (finalRight < 8) {
-        finalRight = 8;
-      }
-      
-      if (side === "top") {
-        setPos({ top: 0, bottom: window.innerHeight - r.top + 6, right: finalRight });
-      } else {
-        setPos({ top: r.bottom + 6, bottom: 0, right: finalRight });
-      }
-    }
-    setHovered(true);
-  }
-
-  async function handleDownload() {
-    setLoading(true);
-    try {
-      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-        import("html2canvas"),
-        import("jspdf"),
-      ]);
-      const iframeUrl = `${window.location.pathname}?pdf=1`;
-      const iframe = document.createElement("iframe");
-      iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:1050px;height:1px;border:0;visibility:hidden";
-      document.body.appendChild(iframe);
-      await new Promise<void>((resolve) => { iframe.onload = () => resolve(); iframe.src = iframeUrl; });
-
-      // Wait longer for content to stabilize, especially for multi-page forms
-      await new Promise(r => setTimeout(r, hasDonation ? 2000 : 1500));
-
-      const iframeDoc = iframe.contentDocument!;
-      const iframeBody = iframeDoc.body;
-
-      // Ensure pdf-capture class is applied
-      iframeDoc.documentElement.classList.add('pdf-capture');
-
-      // Wait for all images to load
-      await Promise.all(Array.from(iframeDoc.images).map(img =>
-        img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
-      ));
-
-      // Force layout recalculation
-      iframe.style.height = iframeBody.scrollHeight + "px";
-      await new Promise(r => setTimeout(r, 300));
-
-      const fullCanvas = await html2canvas(iframeBody, {
-        scale: 1.5, useCORS: true, logging: false, backgroundColor: '#ffffff',
-        width: 1050, height: iframeBody.scrollHeight,
-        windowWidth: 1050, windowHeight: iframeBody.scrollHeight,
-      });
-
-      // Find break markers more reliably - try multiple selectors
-      let breakMarkers = Array.from(iframeBody.querySelectorAll('[data-page-break="verzicht"]'));
-      if (breakMarkers.length === 0) {
-        breakMarkers = Array.from(iframeBody.querySelectorAll(".print\\:break-before-page"));
-      }
-      console.log(`Found ${breakMarkers.length} break markers, hasDonation: ${hasDonation}`);
-
-      const breakMarkersPx = breakMarkers
-        .map(el => {
-          const element = el as HTMLElement;
-          const rect = element.getBoundingClientRect();
-          const offsetTop = element.offsetTop;
-          const computedStyle = iframeDoc.defaultView?.getComputedStyle(element);
-          const isVisible = computedStyle?.display !== 'none' && computedStyle?.visibility !== 'hidden';
-          console.log(`Break marker - offsetTop: ${offsetTop}, rect.top: ${rect.top}, display: ${computedStyle?.display}, visible: ${isVisible}`);
-          return offsetTop * 1.5; // *1.5 for html2canvas scale
-        })
-        .filter(y => y > 0); // Filter out invalid positions
-
-      const canvases: HTMLCanvasElement[] = [];
-      const filenames: string[] = [];
-
-      if (hasDonation && breakMarkersPx.length > 0) {
-        const breakY = breakMarkersPx[0];
-
-        // More lenient break position validation
-        const minBreakPosition = fullCanvas.height * 0.15; // At least 15% down
-        const maxBreakPosition = fullCanvas.height * 0.95; // At most 95% down
-
-        console.log(`Break Y: ${breakY}, Canvas height: ${fullCanvas.height}, Min: ${minBreakPosition}, Max: ${maxBreakPosition}`);
-
-        if (breakY > minBreakPosition && breakY < maxBreakPosition) {
-          console.log("Creating two separate PDFs");
-
-          // Canvas for first PDF (Main form)
-          const canvas1 = document.createElement("canvas");
-          canvas1.width = fullCanvas.width;
-          canvas1.height = Math.floor(breakY);
-          const ctx1 = canvas1.getContext("2d");
-          if (ctx1) {
-            ctx1.fillStyle = "#ffffff";
-            ctx1.fillRect(0, 0, canvas1.width, canvas1.height);
-            ctx1.drawImage(fullCanvas, 0, 0, fullCanvas.width, breakY, 0, 0, fullCanvas.width, breakY);
-          }
-          canvases.push(canvas1);
-          filenames.push(filename);
-
-          // Canvas for second PDF (Verzichtserklärung)
-          const remainingHeight = fullCanvas.height - breakY;
-          const canvas2 = document.createElement("canvas");
-          canvas2.width = fullCanvas.width;
-          canvas2.height = Math.floor(remainingHeight);
-          const ctx2 = canvas2.getContext("2d");
-          if (ctx2) {
-            ctx2.fillStyle = "#ffffff";
-            ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
-            ctx2.drawImage(fullCanvas, 0, breakY, fullCanvas.width, remainingHeight, 0, 0, fullCanvas.width, remainingHeight);
-          }
-          canvases.push(canvas2);
-          // Build proper verzicht filename: verzichtserklärung-vorname-nachname-timestamp.pdf
-          const baseMatch = filename.match(/^[^-]+-(.+)\.pdf$/);
-          const nameAndTimestamp = baseMatch ? baseMatch[1] : filename.replace(/\.pdf$/, "");
-          const verzichtFilename = `verzichtserklärung-${nameAndTimestamp}.pdf`;
-          filenames.push(verzichtFilename);
-
-          console.log(`Canvas 1: ${canvas1.width}x${canvas1.height}, Canvas 2: ${canvas2.width}x${canvas2.height}`);
-        } else {
-          // Break position is invalid, fall back to single PDF
-          console.warn(`Invalid break position detected (${breakY}), generating single PDF`);
-          canvases.push(fullCanvas);
-          filenames.push(filename);
-        }
-      } else {
-        if (hasDonation) {
-          console.warn("No break markers found despite donation being present");
-        }
-        canvases.push(fullCanvas);
-        filenames.push(filename);
-      }
-
-      document.body.removeChild(iframe);
-
-      for (let i = 0; i < canvases.length; i++) {
-        try {
-          const canvas = canvases[i];
-          const currentFilename = filenames[i];
-
-          // Skip if canvas is too small (likely invalid)
-          if (canvas.height < 100) {
-            console.warn(`Skipping PDF ${i + 1} - canvas too small (${canvas.height}px)`);
-            continue;
-          }
-
-          console.log(`Generating PDF ${i + 1}/${canvases.length}: ${currentFilename} (${canvas.width}x${canvas.height})`);
-
-          const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-          const pageW = pdf.internal.pageSize.getWidth();
-          const pageH = pdf.internal.pageSize.getHeight();
-          const margin = 10;
-          const usableW = pageW - margin * 2;
-          const usableH = pageH - margin * 2;
-          const imgH = (canvas.height * usableW) / canvas.width;
-
-          let currentY = 0;
-          let firstPage = true;
-
-          while (currentY < imgH) {
-            const sliceH = Math.min(imgH - currentY, usableH);
-            const sliceCanvas = document.createElement("canvas");
-            sliceCanvas.width = canvas.width;
-            sliceCanvas.height = (sliceH * canvas.width) / usableW;
-
-            const srcY = (currentY * canvas.width) / usableW;
-
-            const sliceCtx = sliceCanvas.getContext("2d");
-            if (sliceCtx) {
-              sliceCtx.fillStyle = "#ffffff";
-              sliceCtx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-              sliceCtx.drawImage(canvas, 0, srcY, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
-            }
-
-            if (!firstPage) pdf.addPage();
-            pdf.addImage(sliceCanvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, usableW, sliceH);
-            currentY += sliceH;
-            firstPage = false;
-          }
-
-          pdf.save(currentFilename);
-          console.log(`Successfully saved: ${currentFilename}`);
-
-          // Small delay between downloads for browser to process
-          if (i < canvases.length - 1) {
-            await new Promise(r => setTimeout(r, 500));
-          }
-        } catch (pdfError) {
-          console.error(`Error generating PDF ${i + 1}:`, pdfError);
-          // Continue with next PDF even if one fails
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const sorted = checks ? [...checks].sort((a, b) => (a.valid === b.valid ? 0 : a.valid ? 1 : -1)) : [];
-
-  return (
-    <div className="relative inline-flex" onMouseEnter={handleMouseEnter} onMouseLeave={() => setHovered(false)}>
-      {hovered && disabledProp && sorted.length > 0 && (
-        <div className="fixed z-[300] w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-3 print:hidden"
-          style={{ 
-            top: side === "bottom" ? pos.top : "auto", 
-            bottom: side === "top" ? pos.bottom : "auto", 
-            right: pos.right 
-          }}>
-          <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Pflichtfelder</div>
-          <ul className="space-y-1">
-            {sorted.map(c => (
-              <li key={c.label} className="flex items-center gap-2 text-xs">
-                <span className={`shrink-0 font-bold ${c.valid ? "text-green-500" : "text-[#b11217]"}`}>{c.valid ? "✓" : "✗"}</span>
-                <span className={c.valid ? "text-gray-400" : "text-gray-800 font-medium"}>{c.label}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <button
-        ref={btnRef}
-        onClick={handleDownload}
-        disabled={loading || disabledProp}
-        className="shrink-0 w-full justify-center flex items-center gap-1.5 px-5 py-3 text-base bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap overflow-hidden text-ellipsis md:w-auto md:py-2.5 md:text-sm"
-      >
-        {loading ? (
-          <>
-            <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <circle cx="7" cy="7" r="5" strokeOpacity="0.3"/>
-              <path d="M7 2a5 5 0 015 5" strokeLinecap="round"/>
-            </svg>
-            Erstelle PDF…
-          </>
-        ) : (
-          <>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M7 1v8M4 6l3 3 3-3"/>
-              <path d="M1 10v1a2 2 0 002 2h8a2 2 0 002-2v-1"/>
-            </svg>
-            {disabledProp && missingCount
-              ? <><span>{missingCount} {missingCount === 1 ? "Pflichtfeld fehlt" : "Pflichtfelder fehlen"}</span><span className="ml-1 bg-white/20 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{missingCount}</span></>
-              : (hasDonation ? "2 PDFs herunterladen" : "PDF herunterladen")
-            }
-          </>
-        )}
-      </button>
-    </div>
-  );
-}
 
 export default function Aufwandsformular({ config }: { config: AufwandsformularConfig }) {
   const { storageKey, title, filename, showKm = true, showStunden = true } = config;
@@ -1091,8 +828,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         // personal fields always come from shared store
         nachname: addr.nachname, vorname: addr.vorname, strasse: addr.strasse,
         plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon, email: addr.email,
-        // Always reset date field on page load
-        overrideDate: "",
+        // overrideDate comes from saved state (persistent)
+        overrideDate: saved?.overrideDate ?? "",
       }));
       // Load shared signature — fall back to scanning other form stores
       let sig = loadSharedSignature();
@@ -1156,6 +893,19 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
 
   const set = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) =>
     setState((s) => ({ ...s, [key]: value })), []);
+
+  // Pre-fill Steuererklärung when aufwandsspende changes
+  useEffect(() => {
+    if (!hydrated) return;
+    const spende = parseFloat(state.aufwandsspende) || 0;
+    if (spende <= 0) return;
+    if (spende >= 3300) {
+      setState(s => ({ ...s, steuerVollHoehe: true, steuerBisZu: false, steuerNicht: false }));
+    } else {
+      setState(s => ({ ...s, steuerVollHoehe: false, steuerBisZu: true, steuerNicht: false, steuerBisZuBetrag: spende.toFixed(2) }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.aufwandsspende, hydrated]);
 
   // Auto-derive monat from row dates
   useEffect(() => {
@@ -1261,6 +1011,149 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const today = new Date().toLocaleDateString("de-DE");
   const defaultDate = [city, today].filter(s => s !== "_______________" && s !== "").join(", ");
 
+  const handleDownload = async () => {
+    try {
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+      const iframeUrl = `${window.location.pathname}?pdf=1`;
+      const iframe = document.createElement("iframe");
+      iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:1050px;height:1px;border:0";
+      document.body.appendChild(iframe);
+      await new Promise<void>((resolve) => { iframe.onload = () => resolve(); iframe.src = iframeUrl; });
+
+      // Wait longer for content to stabilize, especially for multi-page forms
+      await new Promise(r => setTimeout(r, spende > 0 ? 2000 : 1500));
+
+      const iframeDoc = iframe.contentDocument!;
+      const iframeBody = iframeDoc.body;
+
+      // Ensure pdf-capture class is applied
+      iframeDoc.documentElement.classList.add('pdf-capture');
+
+      // Wait for all images to load
+      await Promise.all(Array.from(iframeDoc.images).map(img =>
+        img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
+      ));
+
+      // Force layout recalculation
+      iframe.style.height = iframeBody.scrollHeight + "px";
+      await new Promise(r => setTimeout(r, 300));
+
+      const fullCanvas = await html2canvas(iframeBody, {
+        scale: 1.5, useCORS: true, logging: false, backgroundColor: '#ffffff',
+        width: 1050, height: iframeBody.scrollHeight,
+        windowWidth: 1050, windowHeight: iframeBody.scrollHeight,
+      });
+
+      // Find break markers more reliably - try multiple selectors
+      let breakMarkers = Array.from(iframeBody.querySelectorAll('[data-page-break="verzicht"]'));
+      if (breakMarkers.length === 0) {
+        breakMarkers = Array.from(iframeBody.querySelectorAll(".print\\:break-before-page"));
+      }
+
+      const breakMarkersPx = breakMarkers
+        .map(el => {
+          const element = el as HTMLElement;
+          const offsetTop = element.offsetTop;
+          return offsetTop * 1.5; // *1.5 for html2canvas scale
+        })
+        .filter(y => y > 0); // Filter out invalid positions
+
+      const canvases: HTMLCanvasElement[] = [];
+      const filenames: string[] = [];
+
+      if (spende > 0 && breakMarkersPx.length > 0) {
+        const breakY = breakMarkersPx[0];
+
+        // More lenient break position validation
+        const minBreakPosition = fullCanvas.height * 0.15; // At least 15% down
+        const maxBreakPosition = fullCanvas.height * 0.95; // At most 95% down
+
+        if (breakY > minBreakPosition && breakY < maxBreakPosition) {
+          // Canvas for first PDF (Main form)
+          const canvas1 = document.createElement("canvas");
+          canvas1.width = fullCanvas.width;
+          canvas1.height = Math.floor(breakY);
+          const ctx1 = canvas1.getContext("2d");
+          if (ctx1) {
+            ctx1.fillStyle = "#ffffff";
+            ctx1.fillRect(0, 0, canvas1.width, canvas1.height);
+            ctx1.drawImage(fullCanvas, 0, 0, fullCanvas.width, breakY, 0, 0, fullCanvas.width, breakY);
+          }
+          canvases.push(canvas1);
+          filenames.push(filename);
+
+          // Canvas for second PDF (Verzichtserklärung)
+          const remainingHeight = fullCanvas.height - breakY;
+          const canvas2 = document.createElement("canvas");
+          canvas2.width = fullCanvas.width;
+          canvas2.height = Math.floor(remainingHeight);
+          const ctx2 = canvas2.getContext("2d");
+          if (ctx2) {
+            ctx2.fillStyle = "#ffffff";
+            ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
+            ctx2.drawImage(fullCanvas, 0, breakY, fullCanvas.width, remainingHeight, 0, 0, fullCanvas.width, remainingHeight);
+          }
+          canvases.push(canvas2);
+          // Build proper verzicht filename
+          const verzichtFilename = buildPdfFilename("verzichtserklarung", state.vorname, state.nachname);
+          filenames.push(verzichtFilename);
+        } else {
+          canvases.push(fullCanvas);
+          filenames.push(filename);
+        }
+      } else {
+        canvases.push(fullCanvas);
+        filenames.push(filename);
+      }
+
+      document.body.removeChild(iframe);
+
+      for (let i = 0; i < canvases.length; i++) {
+        const canvas = canvases[i];
+        const currentFilename = filenames[i];
+
+        if (canvas.height < 100) continue;
+
+        const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+        const margin = 10;
+        const usableW = pageW - margin * 2;
+        const usableH = pageH - margin * 2;
+        const imgH = (canvas.height * usableW) / canvas.width;
+
+        let currentY = 0;
+        let firstPage = true;
+
+        while (currentY < imgH) {
+          const sliceH = Math.min(imgH - currentY, usableH);
+          const sliceCanvas = document.createElement("canvas");
+          sliceCanvas.width = canvas.width;
+          sliceCanvas.height = (sliceH * canvas.width) / usableW;
+          const srcY = (currentY * canvas.width) / usableW;
+          const sliceCtx = sliceCanvas.getContext("2d");
+          if (sliceCtx) {
+            sliceCtx.fillStyle = "#ffffff";
+            sliceCtx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+            sliceCtx.drawImage(canvas, 0, srcY, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
+          }
+          if (!firstPage) pdf.addPage();
+          pdf.addImage(sliceCanvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, usableW, sliceH);
+          currentY += sliceH;
+          firstPage = false;
+        }
+        pdf.save(currentFilename);
+        if (i < canvases.length - 1) await new Promise(r => setTimeout(r, 500));
+      }
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  };
+
   return (
     <div className="reisekosten-form px-1" ref={contentRef}>
 
@@ -1282,7 +1175,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       <div className="flex items-center justify-between mb-3 print:hidden">
         <h1 className="text-2xl font-bold text-[#b11217]">{title}</h1>
         <div className="hidden md:flex items-center gap-2">
-          <DownloadButton filename={buildPdfFilename(title, state.vorname, state.nachname)} storageKey={storageKey} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="bottom" hasDonation={spende > 0} />
+          <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="bottom" count={spende > 0 ? 2 : 1} onDownload={handleDownload} />
         </div>
       </div>
 
@@ -1455,8 +1348,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                   </span>
                 </td>
                 <td colSpan={2} className="px-1 py-1 print:hidden">
-                  <button type="button" onClick={() => set("aufwandsspende", Math.min(aufwand, 300).toFixed(2))}
-                    title="Aufwandsspende auf aktuellen Betrag setzen (max. 300 €)"
+                  <button type="button" onClick={() => set("aufwandsspende", Math.min(aufwand, 3300).toFixed(2))}
+                    title="Aufwandsspende auf aktuellen Betrag setzen (max. 3.300 €)"
                     className="inline-flex items-center gap-1 px-2 py-1 text-xs text-green-700 border border-green-600 rounded-lg hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap">
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
                     Aufwand spenden
@@ -1496,8 +1389,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               <input type="number" min="0" step="0.01" value={state.aufwandsspende} onChange={(e) => set("aufwandsspende", e.target.value)} placeholder="0.00"
                 className="w-28 text-right bg-transparent border-b border-[#b11217] text-[#b11217] focus:outline-none focus:border-[#b11217] tabular-nums" />
               {spende > 0 && <span className="text-[#b11217] text-sm font-semibold">€</span>}
-              <button type="button" onClick={() => set("aufwandsspende", Math.min(aufwand, 300).toFixed(2))}
-                title="Aufwandsspende auf aktuellen Betrag setzen (max. 300 €)"
+              <button type="button" onClick={() => set("aufwandsspende", Math.min(aufwand, 3300).toFixed(2))}
+                title="Aufwandsspende auf aktuellen Betrag setzen (max. 3.300 €)"
                 className="inline-flex items-center gap-1 px-2 py-1 text-xs text-green-700 border border-green-600 rounded-lg hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap">
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
                 Aufwand spenden
@@ -1624,7 +1517,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           die Aufnahme weiterer T&auml;tigkeit werde ich unverz&uuml;glich mitteilen. Mir ist bekannt,
           dass Nachteile des Vereins zu meinen Lasten gehen.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-6 pt-4 border-t border-gray-200 print:border-t-0 text-xs text-gray-400">
+        <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-6 pt-4 border-t border-gray-200 print:border-t-0 text-xs text-gray-400 print:items-end">
           <div className="flex flex-col">
             <div className="flex-1 border-b border-gray-400 print:border-0 min-h-[4rem] print:min-h-0 flex items-end pb-1 text-gray-700 font-medium">
               <div className="flex-1 flex items-center gap-1 group">
@@ -1633,12 +1526,22 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                   value={state.overrideDate !== "" ? state.overrideDate : defaultDate}
                   onChange={e => set("overrideDate", e.target.value)}
                   className="flex-1 bg-transparent border-none outline-none p-0 m-0 focus:ring-0 print:hidden" />
-                <button type="button" onClick={() => document.getElementById("sig-date-input")?.focus()}
-                  className="p-1 text-gray-300 hover:text-[#b11217] transition-colors print:hidden" aria-label="Datum bearbeiten">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-                  </svg>
-                </button>
+                <div className="flex items-center gap-0.5 print:hidden">
+                  {state.overrideDate !== "" && (
+                    <button type="button" onClick={() => set("overrideDate", "")}
+                      className="p-1 text-gray-300 hover:text-[#b11217] transition-colors" aria-label="Zurücksetzen">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  )}
+                  <button type="button" onClick={() => document.getElementById("sig-date-input")?.focus()}
+                    className="p-1 text-gray-300 hover:text-[#b11217] transition-colors" aria-label="Datum bearbeiten">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                    </svg>
+                  </button>
+                </div>
                 <span className="hidden print:inline">
                   {state.overrideDate !== "" ? state.overrideDate : defaultDate}
                 </span>
@@ -1713,12 +1616,28 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         </div>
       )}
 
-      <div className="pdf-footer hidden mt-6 pt-3 border-t border-gray-200 flex items-center gap-3">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/tgv-logo-sw.png" alt="TGV Logo" width={36} height={36} className="opacity-60 shrink-0" />
-        <span className="text-[10px] text-gray-400 leading-snug">
-          TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.V. &middot; Albert-Einstein-Str. 20 &middot; 71717 Beilstein &middot; Tel. 07062&ndash;5753
-        </span>
+      <div className="pdf-footer hidden mt-10 pt-6 border-t border-gray-100">
+        <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-400">
+          <div className="space-y-1">
+            <p className="font-bold text-gray-600 tracking-wider">KONTAKT</p>
+            <p>Albert-Einstein-Str. 20 · 71717 Beilstein</p>
+            <p>Tel. +49 (0) 7062 5753</p>
+            <p>info@tgveintrachtbeilstein.de</p>
+            <p>www.tgveintrachtbeilstein.de</p>
+          </div>
+          <div className="space-y-1">
+            <p className="font-bold text-gray-600 tracking-wider">VEREINSDATEN</p>
+            <p>Steuer-Nr. 65208/49689</p>
+            <p>Amtsgericht Stuttgart · VR 101009</p>
+            <p>Vorstand: Armin Maurer</p>
+          </div>
+          <div className="space-y-1">
+            <p className="font-bold text-gray-600 tracking-wider">BANKVERBINDUNG</p>
+            <p>Volksbank Beilstein-Ilsfeld-Abstatt eG</p>
+            <p className="font-medium text-gray-500">IBAN: DE63 6206 2215 0001 0770 07</p>
+            <p>BIC: GENODES1BIA</p>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-2 print:hidden mt-2 mb-6">
@@ -1745,7 +1664,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             Drucken
           </button>
         </div>
-        <DownloadButton filename={buildPdfFilename(title, state.vorname, state.nachname)} storageKey={storageKey} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="top" hasDonation={spende > 0} />
+        <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="top" count={spende > 0 ? 2 : 1} onDownload={handleDownload} />
       </div>
 
       {/* Second page for EAP Verzicht if donation is present */}
