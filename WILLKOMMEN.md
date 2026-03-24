@@ -32,7 +32,9 @@ Vier Formulare, die ihr bisher von Hand ausfüllen musstet, könnt ihr jetzt beq
 
 ### ✍️ Digitale Unterschrift
 
-Bei der Ehrenamtspauschale könnt ihr direkt am Bildschirm unterschreiben – mit dem Finger auf dem Handy oder mit der Maus am PC. Die Unterschrift wird im PDF eingebettet. Kein Ausdrucken, Unterschreiben und Einscannen mehr nötig.
+Bei allen Formularen könnt ihr direkt am Bildschirm unterschreiben – mit dem Finger auf dem Handy oder mit der Maus am PC. Die Unterschrift wird im PDF eingebettet. Kein Ausdrucken, Unterschreiben und Einscannen mehr nötig.
+
+**Die digitale Unterschrift ist nicht verpflichtend.** Ihr könnt die PDFs auch ohne digitale Unterschrift erstellen und herunterladen, dann wie gewohnt persönlich unterschreiben und beim Verein einreichen.
 
 ### 💡 Gut zu wissen
 
