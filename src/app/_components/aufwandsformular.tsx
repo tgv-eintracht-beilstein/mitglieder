@@ -111,7 +111,7 @@ function AbteilungIcon({ slug, print = false, size = 20 }: { slug: string; print
   );
 }
 
-function AbteilungSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+export function AbteilungSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 

@@ -54,9 +54,6 @@ export default function DownloadButton({ filename, disabled: disabledProp, missi
       return;
     }
     
-    // Default single PDF download logic (simplified version of what was in Aufwandsformular)
-    // Actually, Aufwandsformular had very specific logic for capturing iframe.
-    // If onDownload is not provided, we fall back to a generic warning or simple logic.
     console.warn("onDownload not provided to DownloadButton");
   }
 
@@ -75,7 +72,7 @@ export default function DownloadButton({ filename, disabled: disabledProp, missi
           <ul className="space-y-1">
             {sorted.map(c => (
               <li key={c.label} className="flex items-center gap-2 text-xs">
-                <span className={`shrink-0 font-bold ${c.valid ? "text-green-500" : "text-[#b11217]"}`}>{c.valid ? "✓" : "✗"}</span>
+                <span className={`shrink-0 font-bold ${c.valid ? "text-green-500" : "text-[#b11217]"}`}>{c.valid ? "\u2713" : "\u2717"}</span>
                 <span className={c.valid ? "text-gray-400" : "text-gray-800 font-medium"}>{c.label}</span>
               </li>
             ))}

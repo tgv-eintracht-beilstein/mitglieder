@@ -28,9 +28,10 @@ interface VerzichtPageContentProps {
   overrideDate?: string;
   onOverrideDateChange?: (v: string) => void;
   onSignClick?: () => void;
+  hideFooter?: boolean;
 }
 
-export default function VerzichtPageContent({ state, overrideDate, onOverrideDateChange, onSignClick }: VerzichtPageContentProps) {
+export default function VerzichtPageContent({ state, overrideDate, onOverrideDateChange, onSignClick, hideFooter }: VerzichtPageContentProps) {
   const city = state.plzOrt.replace(/^[\d\s]+/, "").replace(/[^a-zA-ZäöüÄÖÜß\s-]/g, "").trim() || "_______________";
   const today = new Date().toLocaleDateString("de-DE");
   const defaultDate = [city, today].filter(s => s !== "_______________" && s !== "").join(", ");
@@ -152,29 +153,7 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
         </div>
       </div>
 
-      <div className="pdf-footer hidden mt-10 pt-6 border-t border-gray-200">
-        <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-400">
-          <div className="space-y-1">
-            <p className="font-bold text-gray-600 tracking-wider">KONTAKT</p>
-            <p>Albert-Einstein-Str. 20 · 71717 Beilstein</p>
-            <p>Tel. +49 (0) 7062 5753</p>
-            <p>info@tgveintrachtbeilstein.de</p>
-            <p>www.tgveintrachtbeilstein.de</p>
-          </div>
-          <div className="space-y-1">
-            <p className="font-bold text-gray-600 tracking-wider">VEREINSDATEN</p>
-            <p>Steuer-Nr. 65208/49689</p>
-            <p>Amtsgericht Stuttgart · VR 101009</p>
-            <p>Vorstand: Armin Maurer</p>
-          </div>
-          <div className="space-y-1">
-            <p className="font-bold text-gray-600 tracking-wider">BANKVERBINDUNG</p>
-            <p>Volksbank Beilstein-Ilsfeld-Abstatt eG</p>
-            <p className="font-medium text-gray-500">IBAN: DE63 6206 2215 0001 0770 07</p>
-            <p>BIC: GENODES1BIA</p>
-          </div>
-        </div>
-      </div>
+
     </div>
   );
 }

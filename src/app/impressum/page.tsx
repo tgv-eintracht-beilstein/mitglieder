@@ -237,11 +237,13 @@ export default function ImpressumPage() {
                       Zahlungsart, Aufwandsspende, Steueroptionen</li>
                     <li><strong>Übungsleiterpauschale:</strong> Datum, Uhrzeiten, Stundensatz, Beschreibung, Abteilung, Zeitraum, IBAN,
                       Zahlungsart, Aufwandsspende, Steueroptionen</li>
-                    <li><strong>Ehrenamtspauschale (Verzicht):</strong> Jahr, Pauschalbetrag, Spendenbetrag</li>
+                    <li><strong>Ehrenamtspauschale:</strong> Bank, BIC, IBAN, Abteilung, Funktion, Vergütung, Verzicht, Spendenbetrag</li>
+                    <li><strong>Ehrenamtspauschale (Verzicht, alt):</strong> Jahr, Pauschalbetrag, Spendenbetrag</li>
                   </ul>
                   <p className="text-xs text-gray-500 mt-2 italic">
                     Speicherschlüssel: <code className="bg-white px-1 rounded">reisekosten_v1</code>,
                     <code className="bg-white px-1 rounded ml-1">uebungsleiterpauschale_v1</code>,
+                    <code className="bg-white px-1 rounded ml-1">ehrenamtspauschale_v2</code>,
                     <code className="bg-white px-1 rounded ml-1">ehrenamtspauschale_verzicht_v1</code>
                   </p>
                 </div>

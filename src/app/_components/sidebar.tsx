@@ -10,7 +10,7 @@ const navItems = [
   { href: "/mitgliedsbeitraege", label: "Mitgliedsbeiträge" },
   { href: "/reisekosten", label: "Reisekosten" },
   { href: "/uebungsleiterpauschale", label: "Übungsleiterpauschale" },
-  { href: "/ehrenamtspauschale-verzicht", label: "EAP-Verzicht" },
+  { href: "/ehrenamtspauschale", label: "Ehrenamtspauschale" },
 ];
 
 export default function TopNav() {
