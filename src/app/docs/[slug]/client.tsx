@@ -22,14 +22,14 @@ export default function DocPageClient({ title, preface, pdfUrl, filename }: Prop
         </div>
         <button
           onClick={() => viewerRef.current?.download()}
-          className="print:hidden flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
+          className="print:hidden flex items-center gap-1.5 px-5 py-3 text-base bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors font-medium shrink-0"
           title="Herunterladen"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M7 1v8M4 6l3 3 3-3"/>
             <path d="M1 10v1a2 2 0 002 2h8a2 2 0 002-2v-1"/>
           </svg>
-          Herunterladen
+          PDF herunterladen
         </button>
       </div>
 

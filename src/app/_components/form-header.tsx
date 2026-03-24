@@ -3,6 +3,12 @@
 import React from "react";
 import { DateSelect } from "./aufwandsformular";
 
+export function formatDateDE(v: string): string {
+  if (!v) return v;
+  const m = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}.${m[2]}.${m[1]}` : v;
+}
+
 function PI({ value, children }: { value: string; children: React.ReactNode }) {
   return (
     <span className="relative inline-block w-full">
@@ -72,7 +78,7 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
                   <span className={f.required && !f.value ? "text-[#b11217]" : "text-gray-400"}>{f.label}</span>
                   {f.required && !f.value && <span className="text-[#b11217] leading-none">*</span>}
                 </div>
-                <PI value={f.value}>
+                <PI value={f.type === "date" ? formatDateDE(f.value) : f.value}>
                   {f.type === "date"
                     ? <DateSelect value={f.value} onChange={f.onChange} className={`text-sm ${f.required && !f.value ? "[&_button]:border-[#b11217] [&_input]:border-[#b11217]" : ""}`} minYear={1823} />
                     : <input type={f.type ?? "text"} value={f.value} onChange={e => f.onChange(e.target.value)} className={`${fieldCls} ${fieldBorder(f.value, f.required, f.invalid)}`} />
@@ -105,7 +111,7 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
               {personalFields.map((f) => (
                 <div key={f.key} className="flex items-baseline gap-2">
                   <span className="text-[10px] text-gray-400 w-20 shrink-0">{f.label}</span>
-                  <span className="text-sm">{f.value}</span>
+                  <span className="text-sm">{f.type === "date" ? formatDateDE(f.value) : f.value}</span>
                 </div>
               ))}
             </div>

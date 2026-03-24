@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import SignatureModal from "@/app/_components/signature-modal";
 import VerzichtPageContent from "./verzicht-page-content";
 import DownloadButtonBase from "./download-button";
-import FormHeader from "@/app/_components/form-header";
+import FormHeader, { formatDateDE } from "@/app/_components/form-header";
 import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
 import { UEBUNGSLEITER_CATEGORIES } from "@/lib/constants";
@@ -1574,7 +1574,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           Hiermit erkl&auml;re ich,{" "}
           <span className="font-medium">{[state.vorname, state.nachname].filter(Boolean).join(" ") || "_______________"}</span>
           {" "}geb. am{" "}
-          <span className="font-medium">{state.geburtsdatum || "_______________"}</span>
+          <span className="font-medium">{formatDateDE(state.geburtsdatum) || "_______________"}</span>
           , dass ich die Steuerbefreiung nach &sect; 3 Nr. 26 EStG im laufenden Kalenderjahr
           bei den Einnahmen aus einer anderen nebenberuflichen, beg&uuml;nstigten T&auml;tigkeit
           (wie z.B. f&uuml;r: Bund, L&auml;nder, Gemeinden, Gemeindeverbände, Industrie- und
@@ -1780,7 +1780,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         </div>
       )}
 
-      <div className="pdf-footer hidden mt-10 pt-6 border-t border-gray-100">
+      <div className="pdf-footer hidden print:flex mt-10 pt-6 border-t border-gray-100">
         <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-400">
           <div className="space-y-1">
             <p className="font-bold text-gray-600 tracking-wider">KONTAKT</p>

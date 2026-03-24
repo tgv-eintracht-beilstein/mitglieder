@@ -22,6 +22,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .pdf-capture .print\:hidden { display: none !important; }
 .pdf-capture .print\:block { display: block !important; }
 .pdf-capture .print\:flex { display: flex !important; }
+.pdf-capture .print\:flex-col { flex-direction: column !important; }
+.pdf-capture .print\:min-h-screen { min-height: 100vh !important; }
 .pdf-capture .print\:inline { display: inline !important; }
 .pdf-capture .print\:inline-flex { display: inline-flex !important; }
 .pdf-capture .print\:grid { display: grid !important; }
@@ -38,8 +40,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* pdf-capture: keep red header bars with color */
 .pdf-capture .bg-\[\#b11217\]:not(button):not(a) {
-  background-color: #b11217 !important;
-  color: #fff !important;
+  background-color: transparent !important;
+  color: #b11217 !important;
+  border-left: 5px solid #b11217 !important;
+  border-radius: 0 !important;
+  font-size: 11pt !important;
+  font-weight: 300 !important;
+  letter-spacing: 0.05em !important;
+  padding: 4px 0 4px 10px !important;
+  box-shadow: none !important;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
@@ -181,6 +190,29 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .pdf-capture .verzicht-capture-root .min-h-\[48px\] { min-height: 28px !important; }
 .pdf-capture .verzicht-capture-root .space-y-4 > * + * { margin-top: 4px !important; }
 .pdf-capture .verzicht-capture-root .leading-relaxed { line-height: 1.3 !important; }
+.pdf-capture .verzicht-capture-root .bg-\[\#b11217\] .text-red-100\/90 { color: #6b7280 !important; }
+
+/* pdf-capture: form layout */
+.pdf-capture .pdf-footer {
+  margin-top: 88px !important;
+  padding-top: 16px !important;
+}
+
+/* pdf-capture: consistent header spacing */
+.pdf-capture .pdf-only {
+  margin-bottom: 44px !important;
+  padding-bottom: 16px !important;
+}
+
+/* pdf-capture: consistent section spacing */
+.pdf-capture .reisekosten-form .mb-3,
+.pdf-capture .ehrenamtspauschale-form .mb-3 {
+  margin-bottom: 6px !important;
+}
+.pdf-capture .reisekosten-form .mb-4:not(.pdf-only),
+.pdf-capture .ehrenamtspauschale-form .mb-4:not(.pdf-only) {
+  margin-bottom: 8px !important;
+}
 
 @media print {
   body {
@@ -198,6 +230,18 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding: 0 !important;
     max-width: none !important;
     min-height: 0 !important;
+  }
+
+  /* Footer positioning */
+  .pdf-footer {
+    margin-top: 48pt !important;
+    padding-top: 12pt !important;
+  }
+
+  /* Consistent header spacing */
+  .pdf-only {
+    margin-bottom: 24pt !important;
+    padding-bottom: 12pt !important;
   }
 
   .shadow-sm,
@@ -247,14 +291,23 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     border-color: transparent !important;
     margin-bottom: 4pt !important;
     box-shadow: none !important;
-    border-radius: 6pt !important;
-    overflow: hidden !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
   }
 
   /* Red title bar: fully rounded corners */
   .reisekosten-form .bg-\[\#b11217\],
-  .ehrenamtspauschale-form .bg-\[\#b11217\] {
-    border-radius: 6pt !important;
+  .ehrenamtspauschale-form .bg-\[\#b11217\],
+  .verzicht-capture-root .bg-\[\#b11217\] {
+    background-color: transparent !important;
+    color: #b11217 !important;
+    border-left: 5px solid #b11217 !important;
+    border-radius: 0 !important;
+    font-size: 11pt !important;
+    font-weight: 300 !important;
+    letter-spacing: 0.05em !important;
+    padding: 4px 0 4px 10px !important;
+    box-shadow: none !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -390,8 +443,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   .ehrenamtspauschale-form .mb-3 {
     margin-bottom: 4pt !important;
   }
-  .reisekosten-form .mb-4,
-  .ehrenamtspauschale-form .mb-4 {
+  .reisekosten-form .mb-4:not(.pdf-only),
+  .ehrenamtspauschale-form .mb-4:not(.pdf-only) {
     margin-bottom: 6pt !important;
   }
 
@@ -474,6 +527,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   }
   .verzicht-capture-root .space-y-4 > * + * {
     margin-top: 3pt !important;
+  }
+  .verzicht-capture-root .bg-\[\#b11217\] .text-red-100\/90 {
+    color: #6b7280 !important;
   }
   .verzicht-capture-root .leading-relaxed {
     line-height: 1.3 !important;

@@ -39,11 +39,11 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
   return (
     <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-8 space-y-6">
       {/* PDF-only page header */}
-      <div className="pdf-only hidden items-center gap-4 mb-6 pb-4 border-b-2 border-gray-100">
+      <div className="pdf-only hidden items-center gap-3 mb-4 pb-3 border-b-2 border-gray-300">
         <img src="/tgv-logo.png" alt="TGV Logo" width={52} height={52} />
         <div className="flex-1">
           <p className="font-bold text-lg text-gray-900 tracking-tight">TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e. V.</p>
-          <p className="text-xs text-[#b11217] font-semibold">EHRENAMTSPAUSCHALE VERZICHT &ndash; {state.jahr} &middot; {(state.vorname + " " + state.nachname).toUpperCase()}</p>
+          <p className="text-xs text-gray-500 font-semibold">EHRENAMTSPAUSCHALE VERZICHT &ndash; {state.jahr} &middot; {(state.vorname + " " + state.nachname).toUpperCase()}</p>
         </div>
       </div>
 
@@ -51,7 +51,7 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
 
       <div className="bg-[#b11217] text-white px-5 py-3 rounded-xl shadow-md shadow-red-900/10">
         <p className="text-sm font-bold tracking-widest">VERZICHT AUF AUSZAHLUNG DER EHRENAMTSPAUSCHALE</p>
-        <p className="text-[11px] text-red-100/90 font-medium mt-0.5">Grundlage: § 3 Nr. 26a EStG</p>
+        <p className="text-[11px] text-red-100/90 print:text-gray-500 font-medium mt-0.5">Grundlage: § 3 Nr. 26a EStG</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-sm text-gray-700">
