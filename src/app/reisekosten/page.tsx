@@ -9,6 +9,7 @@ export default function ReisekostenPage() {
       showStunden: false,
       showKm: true,
       showSteuererklärung: false,
+      showVerzicht: false,
     }} />
   );
 }

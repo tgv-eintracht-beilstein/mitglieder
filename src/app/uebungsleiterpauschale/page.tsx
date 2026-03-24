@@ -8,6 +8,8 @@ export default function UebungsleiterpauschaleePage() {
       filename: "uebungsleiterpauschale.pdf",
       showStunden: true,
       showKm: false,
+      showVerzicht: false,
+      enforceMaxAufwand: true,
     }} />
   );
 }

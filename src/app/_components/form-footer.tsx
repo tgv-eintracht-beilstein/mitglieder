@@ -51,7 +51,7 @@ export default function FormFooter({ onReset, filename = "formular.pdf", content
       await new Promise(r => setTimeout(r, 200));
 
       const canvas = await html2canvas(iframeBody, {
-        scale: 1.5,
+        scale: 3,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',

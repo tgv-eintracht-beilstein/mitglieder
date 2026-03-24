@@ -470,6 +470,8 @@ export interface AufwandsformularConfig {
   showKm?: boolean;      // default true
   showStunden?: boolean; // default true
   showSteuererklärung?: boolean; // default true
+  showVerzicht?: boolean; // default true – generate Verzichtserklärung PDF when spende > 0
+  enforceMaxAufwand?: boolean; // default false – when true, Aufwandsentschädigung may not exceed the tax-free limit
 }
 
 export function validateIban(raw: string): boolean {
@@ -808,7 +810,7 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
 
 
 export default function Aufwandsformular({ config }: { config: AufwandsformularConfig }) {
-  const { storageKey, title, filename, showKm = true, showStunden = true, showSteuererklärung = true } = config;
+  const { storageKey, title, filename, showKm = true, showStunden = true, showSteuererklärung = true, showVerzicht = true, enforceMaxAufwand = false } = config;
   const [state, setState] = useState<FormState>(defaultState);
   const [showSignModal, setShowSignModal] = useState(false);
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
@@ -919,6 +921,19 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.aufwandsspende, hydrated]);
 
+  // Auto-deselect payment when auszahlbetrag is 0 (full donation)
+  useEffect(() => {
+    if (!hydrated) return;
+    const a = state.rows.reduce((sum, r) => sum + calcRow(r), 0);
+    const s = parseFloat(state.aufwandsspende) || 0;
+    if (Math.max(0, a - s) === 0 && s > 0) {
+      if (state.zahlungBar || state.zahlungUeberweisung) {
+        setState(prev => ({ ...prev, zahlungBar: false, zahlungUeberweisung: false }));
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.aufwandsspende, state.rows, hydrated]);
+
   // Auto-derive monat from row dates
   useEffect(() => {
     if (!hydrated) return;
@@ -992,6 +1007,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   }
 
   const aufwand = state.rows.reduce((sum, r) => sum + calcRow(r), 0);
+  const maxAufwand = getMaxSpendenBetrag(state.monatVon || null);
+  const aufwandExceeded = enforceMaxAufwand && aufwand > maxAufwand;
   const spende = parseFloat(state.aufwandsspende) || 0;
   const endbetrag = aufwand - spende;
   const auszahlbetrag = Math.max(0, endbetrag);
@@ -1009,8 +1026,11 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
     { label: "E-Mail", valid: !!state.email },
     { label: "Abteilung", valid: !!state.abteilung },
     { label: "Auszahlbetrag oder Spende > 0", valid: auszahlbetrag > 0 || spende > 0 },
-    { label: "Zahlungsart", valid: state.zahlungBar || state.zahlungUeberweisung },
-    ...(state.zahlungUeberweisung ? [{ label: "IBAN", valid: validateIban(state.iban) }] : []),
+    ...(enforceMaxAufwand ? [{ label: `Aufwandsentschädigung ≤ ${maxAufwand.toLocaleString("de-DE")} €`, valid: !aufwandExceeded }] : []),
+    ...(auszahlbetrag > 0 ? [
+      { label: "Zahlungsart", valid: state.zahlungBar || state.zahlungUeberweisung },
+      ...(state.zahlungUeberweisung ? [{ label: "IBAN", valid: validateIban(state.iban) }] : []),
+    ] : []),
     ...(showSteuererklärung ? [{ label: "Steuererklärung", valid: state.steuerVollHoehe || state.steuerBisZu || state.steuerNicht }] : []),
     { label: "Tätigkeitsnachweis (mind. 1 vollständige Zeile)", valid: state.rows.some(r => r.datum && r.beschreibung.trim() && calcRow(r) > 0) },
     ...(state.rows.some(r => r.datum && !r.beschreibung.trim()) ? [{ label: "Bezeichnung in Tätigkeitsnachweis", valid: false }] : []),
@@ -1036,7 +1056,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       await new Promise<void>((resolve) => { iframe.onload = () => resolve(); iframe.src = iframeUrl; });
 
       // Wait longer for content to stabilize, especially for multi-page forms
-      await new Promise(r => setTimeout(r, spende > 0 ? 2000 : 1500));
+      await new Promise(r => setTimeout(r, showVerzicht && spende > 0 ? 2000 : 1500));
 
       const iframeDoc = iframe.contentDocument!;
       const iframeBody = iframeDoc.body;
@@ -1054,7 +1074,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       await new Promise(r => setTimeout(r, 300));
 
       const fullCanvas = await html2canvas(iframeBody, {
-        scale: 1.5, useCORS: true, logging: false, backgroundColor: '#ffffff',
+        scale: 3, useCORS: true, logging: false, backgroundColor: '#ffffff',
         width: 1050, height: iframeBody.scrollHeight,
         windowWidth: 1050, windowHeight: iframeBody.scrollHeight,
       });
@@ -1069,14 +1089,16 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         .map(el => {
           const element = el as HTMLElement;
           const offsetTop = element.offsetTop;
-          return offsetTop * 1.5; // *1.5 for html2canvas scale
+          return offsetTop * 3; // *3 for html2canvas scale
         })
         .filter(y => y > 0); // Filter out invalid positions
 
       const canvases: HTMLCanvasElement[] = [];
       const filenames: string[] = [];
 
-      if (spende > 0 && breakMarkersPx.length > 0) {
+      const mainFilename = buildPdfFilename(title, state.vorname, state.nachname);
+
+      if (showVerzicht && spende > 0 && breakMarkersPx.length > 0) {
         const breakY = breakMarkersPx[0];
 
         // More lenient break position validation
@@ -1095,7 +1117,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             ctx1.drawImage(fullCanvas, 0, 0, fullCanvas.width, breakY, 0, 0, fullCanvas.width, breakY);
           }
           canvases.push(canvas1);
-          filenames.push(filename);
+          filenames.push(mainFilename);
 
           // Canvas for second PDF (Verzichtserklärung)
           const remainingHeight = fullCanvas.height - breakY;
@@ -1114,11 +1136,11 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           filenames.push(verzichtFilename);
         } else {
           canvases.push(fullCanvas);
-          filenames.push(filename);
+          filenames.push(mainFilename);
         }
       } else {
         canvases.push(fullCanvas);
-        filenames.push(filename);
+        filenames.push(mainFilename);
       }
 
       document.body.removeChild(iframe);
@@ -1187,7 +1209,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       <div className="flex items-center justify-between mb-3 print:hidden">
         <h1 className="text-2xl font-bold text-[#b11217]">{title}</h1>
         <div className="hidden md:flex items-center gap-2">
-          <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="bottom" count={spende > 0 ? 2 : 1} onDownload={handleDownload} />
+          <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="bottom" count={showVerzicht && spende > 0 ? 2 : 1} onDownload={handleDownload} />
         </div>
       </div>
 
@@ -1340,9 +1362,17 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             <tfoot>
               <tr className="border-t-2 border-gray-300 bg-gray-50">
                 <td colSpan={colsBefore} className="px-3 py-2 font-bold">Aufwandsentsch&auml;digung</td>
-                <td className="px-2 py-2 text-right font-bold tabular-nums border-l border-gray-200 whitespace-nowrap">{aufwand.toFixed(2)} &euro;</td>
+                <td className={`px-2 py-2 text-right font-bold tabular-nums border-l border-gray-200 whitespace-nowrap ${aufwandExceeded ? "text-[#b11217]" : ""}`}>{aufwand.toFixed(2)} &euro;</td>
                 <td colSpan={2} className="print:hidden" />
               </tr>
+              {aufwandExceeded && (
+                <tr>
+                  <td colSpan={colsBefore + 1} className="px-3 py-1 text-xs text-[#b11217] italic">
+                    Aufwandsentschädigung übersteigt den Freibetrag von {maxAufwand.toLocaleString("de-DE")} €
+                  </td>
+                  <td colSpan={2} className="print:hidden" />
+                </tr>
+              )}
               <tr className="bg-gray-50">
                 <td colSpan={colsBefore} className="px-3 py-1">
                   <span className={`font-bold ${spende === 0 ? "text-[#b11217]" : "text-gray-800"}`}>abz&uuml;glich Aufwandsspende</span>
@@ -1389,8 +1419,13 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         <div className="md:hidden print:hidden border-t border-gray-200 px-4 py-3 space-y-1 text-sm">
           <div className="flex justify-between text-gray-600">
             <span>Aufwandsentschädigung</span>
-            <span className="tabular-nums font-medium">{aufwand.toFixed(2)} €</span>
+            <span className={`tabular-nums font-medium ${aufwandExceeded ? "text-[#b11217]" : ""}`}>{aufwand.toFixed(2)} €</span>
           </div>
+          {aufwandExceeded && (
+            <div className="text-xs text-[#b11217] italic">
+              Aufwandsentschädigung übersteigt den Freibetrag von {maxAufwand.toLocaleString("de-DE")} €
+            </div>
+          )}
           <div>
             <div className="flex justify-between items-center">
               <div>
@@ -1446,6 +1481,12 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
         <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden rounded-t-xl">Auszahlbetrag &amp; Zahlung</div>
         <div className="p-4 text-sm space-y-2">
+        {auszahlbetrag === 0 && spende > 0 ? (
+          <p className="text-green-700 text-sm font-medium">
+            Vielen Dank f&uuml;r Ihre Spende in H&ouml;he von {spende.toFixed(2)}&nbsp;&euro; an den Verein!
+          </p>
+        ) : (
+          <>
         {!state.zahlungBar && !state.zahlungUeberweisung && (
           <p className="text-xs text-[#b11217] print:hidden">* Bitte eine Zahlungsart auswählen</p>
         )}
@@ -1481,6 +1522,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               )}
             </div>
           </div>
+        )}
+          </>
         )}
         </div>
       </div>
@@ -1688,11 +1731,11 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             Drucken
           </button>
         </div>
-        <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="top" count={spende > 0 ? 2 : 1} onDownload={handleDownload} />
+        <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="top" count={showVerzicht && spende > 0 ? 2 : 1} onDownload={handleDownload} />
       </div>
 
       {/* Second page for EAP Verzicht if donation is present */}
-      {spende > 0 && (
+      {showVerzicht && spende > 0 && (
         <div className="hidden print:block print:break-before-page border-t border-gray-200 mt-12 pt-12" data-page-break="verzicht">
           {/* Slicing helper: JS-based PDF capture needs a clean gap or forced page break */}
           <div style={{ height: "60px" }} className="print:hidden" />

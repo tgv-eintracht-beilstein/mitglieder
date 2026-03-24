@@ -124,14 +124,26 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* pdf-capture: show pdf-only header/footer */
 .pdf-capture .pdf-only { display: flex !important; }
-.pdf-capture .pdf-footer { display: flex !important; align-items: center !important; }
-
-@media print {
-  .pdf-only { display: flex !important; }
-  .pdf-footer { display: flex !important; align-items: center !important; }
+.pdf-capture .pdf-footer {
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+.pdf-capture .pdf-footer > * {
+  width: 100% !important;
+}
+.pdf-capture main {
+  padding: 0 !important;
+  max-width: none !important;
 }
 .pdf-capture .reisekosten-form {
-  padding-bottom: 40px !important;
+  padding: 0 0 40px 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+.pdf-capture .reisekosten-form > * {
+  width: 100% !important;
+  max-width: none !important;
 }
 .pdf-capture table {
   width: 100% !important;
@@ -159,6 +171,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
   main {
     padding: 0 !important;
+    max-width: none !important;
     min-height: 0 !important;
   }
 
@@ -181,6 +194,24 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   }
 
   /* Remove card borders and shadows */
+  .reisekosten-form {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+  .reisekosten-form > * {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  .pdf-footer {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+  .pdf-footer > * {
+    width: 100% !important;
+  }
   .reisekosten-form .bg-white {
     border-color: transparent !important;
     margin-bottom: 4pt !important;

@@ -26,7 +26,7 @@ export default function DownloadPageButton({ filename }: { filename: string }) {
       iframe.style.height = iframeBody.scrollHeight + "px";
       await new Promise(r => setTimeout(r, 200));
       const canvas = await html2canvas(iframeBody, {
-        scale: 1.5, useCORS: true, logging: false, backgroundColor: "#ffffff",
+        scale: 3, useCORS: true, logging: false, backgroundColor: "#ffffff",
         width: 1050, height: iframeBody.scrollHeight,
         windowWidth: 1050, windowHeight: iframeBody.scrollHeight,
       });

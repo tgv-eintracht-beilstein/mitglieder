@@ -11,7 +11,7 @@ function toKebab(s: string) {
 export function buildPdfFilename(title: string, vorname: string, nachname: string): string {
   const now = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
-  const timestamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}-${pad(now.getMinutes())}`;
-  const parts = [title, vorname, nachname].map(toKebab).filter(Boolean);
-  return `${parts.join("-")}-${timestamp}.pdf`;
+  const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const parts = [title, nachname, vorname].map(toKebab).filter(Boolean);
+  return `${date}-${parts.join("-")}.pdf`;
 }
