@@ -469,6 +469,7 @@ export interface AufwandsformularConfig {
   filename: string;
   showKm?: boolean;      // default true
   showStunden?: boolean; // default true
+  showSteuererklärung?: boolean; // default true
 }
 
 export function validateIban(raw: string): boolean {
@@ -503,6 +504,16 @@ function calcRow(row: Row): number {
   const stunden = calcStunden(row.von, row.bis);
   return stunden * (parseFloat(row.satz) || 0) + (parseFloat(row.km) || 0) * KM_RATE;
 }
+
+
+function getMaxSpendenBetrag(year: string | null): number {
+  // Get the maximum spending limit based on year
+  // For 2026 and later: 3300, before 2026: 3000
+  if (!year) return 3300; // Default to current limit
+  const yearNum = parseInt(year);
+  return yearNum >= 2026 ? 3300 : 3000;
+}
+
 
 function nowRounded(): string {
   const d = new Date();
@@ -797,7 +808,7 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
 
 
 export default function Aufwandsformular({ config }: { config: AufwandsformularConfig }) {
-  const { storageKey, title, filename, showKm = true, showStunden = true } = config;
+  const { storageKey, title, filename, showKm = true, showStunden = true, showSteuererklärung = true } = config;
   const [state, setState] = useState<FormState>(defaultState);
   const [showSignModal, setShowSignModal] = useState(false);
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
@@ -899,7 +910,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
     if (!hydrated) return;
     const spende = parseFloat(state.aufwandsspende) || 0;
     if (spende <= 0) return;
-    if (spende >= 3300) {
+    const maxSpende = getMaxSpendenBetrag(state.monatVon || null);
+    if (spende >= maxSpende) {
       setState(s => ({ ...s, steuerVollHoehe: true, steuerBisZu: false, steuerNicht: false }));
     } else {
       setState(s => ({ ...s, steuerVollHoehe: false, steuerBisZu: true, steuerNicht: false, steuerBisZuBetrag: spende.toFixed(2) }));
@@ -999,7 +1011,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
     { label: "Auszahlbetrag oder Spende > 0", valid: auszahlbetrag > 0 || spende > 0 },
     { label: "Zahlungsart", valid: state.zahlungBar || state.zahlungUeberweisung },
     ...(state.zahlungUeberweisung ? [{ label: "IBAN", valid: validateIban(state.iban) }] : []),
-    { label: "Steuererklärung", valid: state.steuerVollHoehe || state.steuerBisZu || state.steuerNicht },
+    ...(showSteuererklärung ? [{ label: "Steuererklärung", valid: state.steuerVollHoehe || state.steuerBisZu || state.steuerNicht }] : []),
     { label: "Tätigkeitsnachweis (mind. 1 vollständige Zeile)", valid: state.rows.some(r => r.datum && r.beschreibung.trim() && calcRow(r) > 0) },
     ...(state.rows.some(r => r.datum && !r.beschreibung.trim()) ? [{ label: "Bezeichnung in Tätigkeitsnachweis", valid: false }] : []),
     ...(state.rows.some(r => !r.datum && r.beschreibung.trim()) ? [{ label: "Datum in Tätigkeitsnachweis", valid: false }] : []),
@@ -1348,8 +1360,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                   </span>
                 </td>
                 <td colSpan={2} className="px-1 py-1 print:hidden">
-                  <button type="button" onClick={() => set("aufwandsspende", Math.min(aufwand, 3300).toFixed(2))}
-                    title="Aufwandsspende auf aktuellen Betrag setzen (max. 3.300 €)"
+                  <button type="button" onClick={() => set("aufwandsspende", Math.min(aufwand, getMaxSpendenBetrag(state.monatVon || null)).toFixed(2))}
+                    title={`Aufwandsspende auf aktuellen Betrag setzen (max. ${getMaxSpendenBetrag(state.monatVon || null).toLocaleString("de-DE")} €)`}
                     className="inline-flex items-center gap-1 px-2 py-1 text-xs text-green-700 border border-green-600 rounded-lg hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap">
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
                     Aufwand spenden
@@ -1379,18 +1391,22 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             <span>Aufwandsentschädigung</span>
             <span className="tabular-nums font-medium">{aufwand.toFixed(2)} €</span>
           </div>
-          <div className="flex justify-between items-center">
-            <div>
-              <span className={`font-medium ${spende === 0 ? "text-[#b11217]" : "text-gray-600"}`}>abzgl. Aufwandsspende</span>
-              <div className="text-[10px] text-gray-400">Betrag, den Sie dem Verein spenden</div>
+          <div>
+            <div className="flex justify-between items-center">
+              <div>
+                <span className={`font-medium ${spende === 0 ? "text-[#b11217]" : "text-gray-600"}`}>abzgl. Aufwandsspende</span>
+                <div className="text-[10px] text-gray-400">Betrag, den Sie dem Verein spenden</div>
+              </div>
+              <div className="flex items-center justify-end gap-1">
+                {spende > 0 && <span className="text-[#b11217] font-bold text-base leading-none">−</span>}
+                <input type="number" min="0" step="0.01" value={state.aufwandsspende} onChange={(e) => set("aufwandsspende", e.target.value)} placeholder="0.00"
+                  className="w-28 text-right bg-transparent border-b border-[#b11217] text-[#b11217] focus:outline-none focus:border-[#b11217] tabular-nums" />
+                {spende > 0 && <span className="text-[#b11217] text-sm font-semibold">€</span>}
+              </div>
             </div>
-            <div className="flex items-center justify-end gap-1">
-              {spende > 0 && <span className="text-[#b11217] font-bold text-base leading-none">−</span>}
-              <input type="number" min="0" step="0.01" value={state.aufwandsspende} onChange={(e) => set("aufwandsspende", e.target.value)} placeholder="0.00"
-                className="w-28 text-right bg-transparent border-b border-[#b11217] text-[#b11217] focus:outline-none focus:border-[#b11217] tabular-nums" />
-              {spende > 0 && <span className="text-[#b11217] text-sm font-semibold">€</span>}
-              <button type="button" onClick={() => set("aufwandsspende", Math.min(aufwand, 3300).toFixed(2))}
-                title="Aufwandsspende auf aktuellen Betrag setzen (max. 3.300 €)"
+            <div className="flex justify-end mt-2">
+              <button type="button" onClick={() => set("aufwandsspende", Math.min(aufwand, getMaxSpendenBetrag(state.monatVon || null)).toFixed(2))}
+                title={`Aufwandsspende auf aktuellen Betrag setzen (max. ${getMaxSpendenBetrag(state.monatVon || null).toLocaleString("de-DE")} €)`}
                 className="inline-flex items-center gap-1 px-2 py-1 text-xs text-green-700 border border-green-600 rounded-lg hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap">
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
                 Aufwand spenden
@@ -1469,7 +1485,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         </div>
       </div>
 
-      {/* ── Legal declaration ── */}
+      {/* ── Legal declaration (Tax part) ── */}
+      {showSteuererklärung && (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4">
         <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden rounded-t-xl">Steuererklärung</div>
         <div className="p-4 text-sm">
@@ -1517,9 +1534,16 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           die Aufnahme weiterer T&auml;tigkeit werde ich unverz&uuml;glich mitteilen. Mir ist bekannt,
           dass Nachteile des Vereins zu meinen Lasten gehen.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-6 pt-4 border-t border-gray-200 print:border-t-0 text-xs text-gray-400 print:items-end">
+        </div>
+      </div>
+      )}
+
+      {/* ── Signature section (always shown) ── */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4">
+        <div className="p-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-6 text-xs text-gray-400 print:items-end">
           <div className="flex flex-col">
-            <div className="flex-1 border-b border-gray-400 print:border-0 min-h-[4rem] print:min-h-0 flex items-end pb-1 text-gray-700 font-medium">
+            <div className="flex-1 border-0 min-h-[4rem] print:min-h-0 flex items-end pb-1 text-gray-700 font-medium">
               <div className="flex-1 flex items-center gap-1 group">
                 <input type="text"
                   id="sig-date-input"
@@ -1547,11 +1571,11 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                 </span>
               </div>
             </div>
-            <div className="mt-1 print:mt-0">Ort, Datum</div>
+            <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Ort, Datum</div>
           </div>
           <div className="flex flex-col">
-            <div className="flex-1 border-b border-gray-400 print:border-0 min-h-[4rem] print:min-h-0" />
-            <div className="mt-1 print:mt-0">Unterschrift 1./2. Vors./Abt.L.</div>
+            <div className="flex-1 border-0 min-h-[4rem] print:min-h-0" />
+            <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Unterschrift 1./2. Vors./Abt.L.</div>
           </div>
           <div className="flex flex-col">
             {state.signature && (
@@ -1559,7 +1583,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                 ✓ Einwilligung zur digitalen Unterschrift erteilt
               </div>
             )}
-            <div className="flex-1 border-b border-gray-400 print:border-0 min-h-[4rem] print:min-h-0 flex flex-col justify-end">
+            <div className="flex-1 border-0 min-h-[4rem] print:min-h-0 flex flex-col justify-end">
               {state.signature ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={state.signature} alt="Unterschrift" onClick={() => setShowSignModal(true)}
@@ -1572,7 +1596,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                 </button>
               )}
             </div>
-            <div className="mt-1 print:mt-0">Unterschrift Leistungsempf&auml;nger</div>
+            <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Unterschrift Leistungsempf&auml;nger</div>
           </div>
         </div>
         </div>

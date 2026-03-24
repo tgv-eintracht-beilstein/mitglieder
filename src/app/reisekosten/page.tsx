@@ -8,6 +8,7 @@ export default function ReisekostenPage() {
       filename: "reisekosten.pdf",
       showStunden: false,
       showKm: true,
+      showSteuererklärung: false,
     }} />
   );
 }
