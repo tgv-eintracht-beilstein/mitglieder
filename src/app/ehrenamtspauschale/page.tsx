@@ -388,7 +388,8 @@ export default function EhrenamtspauschaleePage() {
             </span>
             <input type="text" value={state.iban} onChange={e => set("iban", e.target.value.toUpperCase())}
               placeholder="DE00 0000 0000 0000 0000 00"
-              className={`flex-1 ${fieldCls} ${state.iban === "" ? "border-gray-300 focus:border-[#b11217]" : validateIban(state.iban) ? "border-green-500 text-green-700 focus:border-green-500" : "border-[#b11217] text-[#b11217] focus:border-[#b11217]"} uppercase`} />
+              className={`flex-1 print:hidden ${fieldCls} ${state.iban === "" ? "border-gray-300 focus:border-[#b11217]" : validateIban(state.iban) ? "border-green-500 text-green-700 focus:border-green-500" : "border-[#b11217] text-[#b11217] focus:border-[#b11217]"} uppercase`} />
+            <span className="hidden print:inline text-sm uppercase">{state.iban}</span>
             {state.iban !== "" && (
               <span className={`shrink-0 text-xs ${validateIban(state.iban) ? "text-green-600" : "text-[#b11217]"}`}>
                 {validateIban(state.iban) ? "\u2713" : "\u2717"}
@@ -427,7 +428,60 @@ export default function EhrenamtspauschaleePage() {
         </div>
       </div>
 
-      {/* Signature section - matches PNG layout: 3 rows of 2 columns */}
+      {/* Verzicht checkbox */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3 print:hidden">
+        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">
+          Verzicht auf Auszahlung
+        </div>
+        <div className="p-4 space-y-3">
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={state.verzicht}
+              onChange={e => set("verzicht", e.target.checked)}
+              className="w-5 h-5 mt-0.5 shrink-0 accent-[#b11217]"
+            />
+            <div>
+              <span className="text-sm font-medium text-gray-800 group-hover:text-[#b11217] transition-colors">
+                Ich verzichte auf die Auszahlung der Ehrenamtspauschale
+              </span>
+              <p className="text-xs text-gray-400 mt-0.5 leading-snug">
+                Bei Aktivierung wird zusätzlich eine Verzichtserklärung erzeugt. Beide Dokumente werden beim Download als separate PDFs erstellt.
+              </p>
+            </div>
+          </label>
+
+          {state.verzicht && (
+            <div className="ml-8 mt-2">
+              <div className="text-[10px] mb-0.5 flex items-center gap-0.5">
+                <span className={spendeNum <= 0 ? "text-[#b11217]" : "text-gray-400"}>Spendenbetrag (Euro)</span>
+                {spendeNum <= 0 && <span className="text-[#b11217] leading-none">*</span>}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={state.spendenbetrag}
+                  onChange={e => set("spendenbetrag", e.target.value)}
+                  placeholder="0,00"
+                  className={`w-40 ${fieldCls} ${fieldBorder(state.spendenbetrag, true)}`}
+                />
+                <button type="button"
+                  onClick={() => set("spendenbetrag", state.verguetung)}
+                  className="inline-flex items-center gap-1 px-2 py-1 text-xs text-green-700 border border-green-600 rounded-lg hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap"
+                  title="Spendenbetrag auf Vergütung setzen"
+                >
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
+                  Aufwand spenden
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Signature section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
         <div className="p-4 text-sm space-y-6">
           {/* Row 1: Ort, Datum + Unterschrift */}
@@ -486,82 +540,29 @@ export default function EhrenamtspauschaleePage() {
             </div>
           </div>
 
-          {/* Row 2: Ort, Datum + Abteilungsleiter */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
+          {/* Row 2: Ort, Datum + Abteilungsleiter (print/PDF only) */}
+          <div className="hidden print:grid grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
             <div className="flex flex-col">
-              <div className="flex-1 border-0 min-h-[3rem] print:min-h-0" />
-              <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Ort, Datum</div>
+              <div className="flex-1 border-0 min-h-[3rem]" />
+              <div className="border-t border-gray-400 pt-1">Ort, Datum</div>
             </div>
             <div className="flex flex-col">
-              <div className="flex-1 border-0 min-h-[3rem] print:min-h-0" />
-              <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Abteilungsleiter</div>
+              <div className="flex-1 border-0 min-h-[3rem]" />
+              <div className="border-t border-gray-400 pt-1">Abteilungsleiter</div>
             </div>
           </div>
 
-          {/* Row 3: Ort, Datum + 1. Vorsitzender */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
+          {/* Row 3: Ort, Datum + 1. Vorsitzender (print/PDF only) */}
+          <div className="hidden print:grid grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
             <div className="flex flex-col">
-              <div className="flex-1 border-0 min-h-[3rem] print:min-h-0" />
-              <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Ort, Datum</div>
+              <div className="flex-1 border-0 min-h-[3rem]" />
+              <div className="border-t border-gray-400 pt-1">Ort, Datum</div>
             </div>
             <div className="flex flex-col">
-              <div className="flex-1 border-0 min-h-[3rem] print:min-h-0" />
-              <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">1. Vorsitzender</div>
+              <div className="flex-1 border-0 min-h-[3rem]" />
+              <div className="border-t border-gray-400 pt-1">1. Vorsitzender</div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Verzicht checkbox */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3 print:hidden">
-        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">
-          Verzicht auf Auszahlung
-        </div>
-        <div className="p-4 space-y-3">
-          <label className="flex items-start gap-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={state.verzicht}
-              onChange={e => set("verzicht", e.target.checked)}
-              className="w-5 h-5 mt-0.5 shrink-0 accent-[#b11217]"
-            />
-            <div>
-              <span className="text-sm font-medium text-gray-800 group-hover:text-[#b11217] transition-colors">
-                Ich verzichte auf die Auszahlung der Ehrenamtspauschale
-              </span>
-              <p className="text-xs text-gray-400 mt-0.5 leading-snug">
-                Bei Aktivierung wird zusätzlich eine Verzichtserklärung erzeugt. Beide Dokumente werden beim Download als separate PDFs erstellt.
-              </p>
-            </div>
-          </label>
-
-          {state.verzicht && (
-            <div className="ml-8 mt-2">
-              <div className="text-[10px] mb-0.5 flex items-center gap-0.5">
-                <span className={spendeNum <= 0 ? "text-[#b11217]" : "text-gray-400"}>Spendenbetrag (Euro)</span>
-                {spendeNum <= 0 && <span className="text-[#b11217] leading-none">*</span>}
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={state.spendenbetrag}
-                  onChange={e => set("spendenbetrag", e.target.value)}
-                  placeholder="0,00"
-                  className={`w-40 ${fieldCls} ${fieldBorder(state.spendenbetrag, true)}`}
-                />
-                <button type="button"
-                  onClick={() => set("spendenbetrag", state.verguetung)}
-                  className="inline-flex items-center gap-1 px-2 py-1 text-xs text-green-700 border border-green-600 rounded-lg hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap"
-                  title="Spendenbetrag auf Vergütung setzen"
-                >
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
-                  Aufwand spenden
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -603,6 +604,31 @@ export default function EhrenamtspauschaleePage() {
         />
       </div>
 
+      {/* PDF footer (single, at the very bottom of main form) */}
+      <div className="pdf-footer hidden print:flex mt-10 pt-6 border-t border-gray-100">
+        <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-400">
+          <div className="space-y-1">
+            <p className="font-bold text-gray-600 tracking-wider">KONTAKT</p>
+            <p>Albert-Einstein-Str. 20 &middot; 71717 Beilstein</p>
+            <p>Tel. +49 (0) 7062 5753</p>
+            <p>info@tgveintrachtbeilstein.de</p>
+            <p>www.tgveintrachtbeilstein.de</p>
+          </div>
+          <div className="space-y-1">
+            <p className="font-bold text-gray-600 tracking-wider">VEREINSDATEN</p>
+            <p>Steuer-Nr. 65208/49689</p>
+            <p>Amtsgericht Stuttgart &middot; VR 101009</p>
+            <p>Vorstand: Armin Maurer</p>
+          </div>
+          <div className="space-y-1">
+            <p className="font-bold text-gray-600 tracking-wider">BANKVERBINDUNG</p>
+            <p>Volksbank Beilstein-Ilsfeld-Abstatt eG</p>
+            <p className="font-medium text-gray-500">IBAN: DE63 6206 2215 0001 0770 07</p>
+            <p>BIC: GENODES1BIA</p>
+          </div>
+        </div>
+      </div>
+
       {/* Verzicht page (hidden, rendered for PDF capture only) */}
       {state.verzicht && spendeNum > 0 && (
         <div className="hidden print:block print:break-before-page border-t border-gray-200 mt-12 pt-12" data-page-break="verzicht">
@@ -626,33 +652,31 @@ export default function EhrenamtspauschaleePage() {
               hideFooter
             />
           </div>
+          <div className="pdf-footer hidden print:flex mt-10 pt-6 border-t border-gray-100">
+            <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-400">
+              <div className="space-y-1">
+                <p className="font-bold text-gray-600 tracking-wider">KONTAKT</p>
+                <p>Albert-Einstein-Str. 20 &middot; 71717 Beilstein</p>
+                <p>Tel. +49 (0) 7062 5753</p>
+                <p>info@tgveintrachtbeilstein.de</p>
+                <p>www.tgveintrachtbeilstein.de</p>
+              </div>
+              <div className="space-y-1">
+                <p className="font-bold text-gray-600 tracking-wider">VEREINSDATEN</p>
+                <p>Steuer-Nr. 65208/49689</p>
+                <p>Amtsgericht Stuttgart &middot; VR 101009</p>
+                <p>Vorstand: Armin Maurer</p>
+              </div>
+              <div className="space-y-1">
+                <p className="font-bold text-gray-600 tracking-wider">BANKVERBINDUNG</p>
+                <p>Volksbank Beilstein-Ilsfeld-Abstatt eG</p>
+                <p className="font-medium text-gray-500">IBAN: DE63 6206 2215 0001 0770 07</p>
+                <p>BIC: GENODES1BIA</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
-
-      {/* PDF footer (single, at the very bottom) */}
-      <div className="pdf-footer hidden mt-10 pt-6 border-t border-gray-100">
-        <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-400">
-          <div className="space-y-1">
-            <p className="font-bold text-gray-600 tracking-wider">KONTAKT</p>
-            <p>Albert-Einstein-Str. 20 &middot; 71717 Beilstein</p>
-            <p>Tel. +49 (0) 7062 5753</p>
-            <p>info@tgveintrachtbeilstein.de</p>
-            <p>www.tgveintrachtbeilstein.de</p>
-          </div>
-          <div className="space-y-1">
-            <p className="font-bold text-gray-600 tracking-wider">VEREINSDATEN</p>
-            <p>Steuer-Nr. 65208/49689</p>
-            <p>Amtsgericht Stuttgart &middot; VR 101009</p>
-            <p>Vorstand: Armin Maurer</p>
-          </div>
-          <div className="space-y-1">
-            <p className="font-bold text-gray-600 tracking-wider">BANKVERBINDUNG</p>
-            <p>Volksbank Beilstein-Ilsfeld-Abstatt eG</p>
-            <p className="font-medium text-gray-500">IBAN: DE63 6206 2215 0001 0770 07</p>
-            <p>BIC: GENODES1BIA</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

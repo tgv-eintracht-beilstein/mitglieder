@@ -99,7 +99,7 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
       </div>
 
       <div className="rounded-2xl border border-gray-100 p-5 bg-white shadow-sm mt-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-[11px] text-gray-400">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-[11px] text-gray-400 print:hidden">
           <div>
             <div className="border-b border-gray-300 min-h-[48px] flex items-end pb-1 text-sm font-medium text-gray-900">
               <div className="flex-1 flex items-center gap-1 group">
@@ -107,8 +107,8 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
                   id="sig-date-input-eap-content"
                   value={overrideDate !== "" ? (overrideDate ?? "") : defaultDate}
                   onChange={e => onOverrideDateChange?.(e.target.value)}
-                  className="flex-1 bg-transparent border-none outline-none p-0 m-0 focus:ring-0 print:hidden" />
-                <div className="flex items-center gap-0.5 print:hidden">
+                  className="flex-1 bg-transparent border-none outline-none p-0 m-0 focus:ring-0" />
+                <div className="flex items-center gap-0.5">
                   {overrideDate !== "" && (
                     <button type="button" onClick={() => onOverrideDateChange?.("")}
                       className="p-1 text-gray-300 hover:text-[#b11217] transition-colors" title="Zurücksetzen">
@@ -124,9 +124,6 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
                     </svg>
                   </button>
                 </div>
-                <span className="hidden print:inline">
-                  {overrideDate !== "" ? overrideDate : defaultDate}
-                </span>
               </div>
             </div>
             <p className="mt-1.5 tracking-wide font-bold">ORT, DATUM</p>
@@ -144,11 +141,28 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
               <button
                 type="button"
                 onClick={onSignClick}
-                className="mt-3 inline-flex items-center px-3 py-1.5 text-[10px] font-bold tracking-wider border border-gray-200 rounded-lg text-gray-500 hover:border-[#b11217] hover:text-[#b11217] transition-all active:scale-95 print:hidden"
+                className="mt-3 inline-flex items-center px-3 py-1.5 text-[10px] font-bold tracking-wider border border-gray-200 rounded-lg text-gray-500 hover:border-[#b11217] hover:text-[#b11217] transition-all active:scale-95"
               >
                 {state.signature ? "UNTERSCHRIFT BEARBEITEN" : "JETZT UNTERSCHREIBEN"}
               </button>
             )}
+          </div>
+        </div>
+        {/* Print: single row with shared border-top */}
+        <div className="hidden print:block text-[11px] text-gray-400">
+          <div className="grid grid-cols-2 gap-x-8 items-end min-h-[48px]">
+            <div className="text-sm font-medium text-gray-900 pb-1">
+              {overrideDate !== "" ? overrideDate : defaultDate}
+            </div>
+            <div className="pb-1">
+              {state.signature && (
+                <img src={state.signature} alt="Unterschrift" className="max-h-12 object-contain" />
+              )}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-x-8 border-t border-gray-300 pt-1">
+            <p className="tracking-wide font-bold">ORT, DATUM</p>
+            <p className="tracking-wide font-bold">UNTERSCHRIFT DES EHRENAMTLICH TÄTIGEN</p>
           </div>
         </div>
       </div>

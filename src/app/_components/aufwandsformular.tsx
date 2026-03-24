@@ -7,6 +7,7 @@ import DownloadButtonBase from "./download-button";
 import FormHeader from "@/app/_components/form-header";
 import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
+import { UEBUNGSLEITER_CATEGORIES } from "@/lib/constants";
 const KM_RATE = 0.3;
 const BESCHREIBUNGEN_KEY = "tgv_beschreibungen_v1";
 
@@ -123,7 +124,7 @@ export function AbteilungSelect({ value, onChange }: { value: string; onChange: 
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const selected = ABTEILUNGEN.find(a => a.name === value);
+  const selected = ABTEILUNGEN.find((a) => a.name === value);
 
   const items = (
     <>
@@ -161,7 +162,7 @@ export function AbteilungSelect({ value, onChange }: { value: string; onChange: 
           {value}
         </span>
       ) : (
-        <span className="hidden print:block text-sm text-gray-400">–</span>
+        <span className="hidden print:block text-sm text-gray-400">– keine Abteilung gewählt –</span>
       )}
 
       {/* Desktop dropdown */}
@@ -188,8 +189,85 @@ export function AbteilungSelect({ value, onChange }: { value: string; onChange: 
         </div>
       )}
     </div>
-  );
-}
+   );
+ }
+
+function UEbungsleiterCategorySelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+   const [open, setOpen] = useState(false);
+   const ref = useRef<HTMLDivElement>(null);
+
+   useEffect(() => {
+     function handleClick(e: MouseEvent) {
+       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+     }
+     document.addEventListener("mousedown", handleClick);
+     return () => document.removeEventListener("mousedown", handleClick);
+   }, []);
+
+   const selected = UEBUNGSLEITER_CATEGORIES.find((a) => a.name === value);
+
+   const items = (
+     <>
+       {UEBUNGSLEITER_CATEGORIES.map((a) => (
+         <button
+           key={a.name}
+           type="button"
+           onClick={() => { onChange(a.name); setOpen(false); }}
+           className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-50 text-left ${value === a.name ? "text-[#b11217] font-medium" : ""}`}
+         >
+           {a.name}
+         </button>
+       ))}
+     </>
+   );
+
+   return (
+     <div ref={ref} className="relative w-full">
+       {/* Trigger */}
+       <button
+         type="button"
+         onClick={() => setOpen(o => !o)}
+         className="print:hidden w-full flex items-center gap-2 border-b border-gray-300 bg-transparent py-0.5 text-sm focus:outline-none focus:border-[#b11217] text-left"
+       >
+         <span className={value ? "" : "text-gray-400"}>{value || "– bitte wählen –"}</span>
+         <svg className="ml-auto shrink-0 text-gray-400" width={12} height={12} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round" /></svg>
+       </button>
+
+       {/* Print view */}
+       {selected ? (
+         <span className="hidden print:block text-sm">
+           {value}
+         </span>
+       ) : (
+         <span className="hidden print:block text-sm text-gray-400">– keine Kategorie gewählt –</span>
+       )}
+
+       {/* Desktop dropdown */}
+       {open && (
+         <div className="hidden sm:block absolute z-50 top-full left-0 w-full bg-white border border-gray-200 rounded shadow-md mt-0.5 print:hidden">
+           {items}
+         </div>
+       )}
+
+       {/* Mobile fullscreen overlay */}
+       {open && (
+         <div className="sm:hidden fixed inset-0 z-50 bg-white flex flex-col print:hidden">
+           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+             <span className="font-medium text-sm">Kategorie wählen</span>
+             <button type="button" onClick={() => setOpen(false)} className="p-1 text-gray-500">
+               <svg width={20} height={20} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
+                 <path d="M4 4l12 12M16 4L4 16" />
+               </svg>
+             </button>
+           </div>
+           <div className="overflow-y-auto flex-1 divide-y divide-gray-100">
+             {items}
+           </div>
+         </div>
+       )}
+     </div>
+    );
+  }
 
 const MONTHS_DE = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
 
@@ -447,6 +525,7 @@ interface FormState {
   telefon: string;
   email: string;
   abteilung: string;
+  uebungsleiterKategorie: string;
   monatVon: string;
   monatBis: string;
   iban: string;
@@ -666,8 +745,8 @@ function emptyRow(id: number): Row {
 function defaultState(): FormState {
   return {
     nachname: "", vorname: "", strasse: "", plzOrt: "",
-    geburtsdatum: "", telefon: "", email: "", abteilung: "", monatVon: "", monatBis: "",
-    iban: "", aufwandsspende: "",
+    geburtsdatum: "", telefon: "", email: "", abteilung: "", uebungsleiterKategorie: "Jugend",
+    monatVon: "", monatBis: "", iban: "", aufwandsspende: "",
     zahlungBar: false, zahlungUeberweisung: false,
     steuerVollHoehe: false, steuerBisZu: false, steuerBisZuBetrag: "", steuerNicht: false,
     signature: "",
@@ -1217,15 +1296,24 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       <FormHeader
         title={title}
         contextFields={[
-          {
-            label: "Abteilung",
-            printValue: state.abteilung,
-            value: state.abteilung,
-            required: true,
-            content: (
-              <AbteilungSelect value={state.abteilung} onChange={v => set("abteilung", v)} />
-            ),
-          },
+           {
+             label: "Abteilung",
+             printValue: state.abteilung,
+             value: state.abteilung,
+             required: true,
+             content: (
+               <AbteilungSelect value={state.abteilung} onChange={v => set("abteilung", v)} />
+             ),
+           },
+           {
+             label: "Kategorie",
+             printValue: state.uebungsleiterKategorie,
+             value: state.uebungsleiterKategorie || "Jugend",
+             required: true,
+             content: (
+               <UEbungsleiterCategorySelect value={state.uebungsleiterKategorie || "Jugend"} onChange={v => set("uebungsleiterKategorie", v)} />
+             ),
+           },
           {
             label: "Zeitraum",
             printValue: formatMonthRange(state.monatVon, state.monatBis),
@@ -1374,11 +1462,11 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                 </tr>
               )}
               <tr className="bg-gray-50">
-                <td colSpan={colsBefore} className="px-3 py-1">
+                <td colSpan={colsBefore} className="px-3 py-1 pb-3">
                   <span className={`font-bold ${spende === 0 ? "text-[#b11217]" : "text-gray-800"}`}>abz&uuml;glich Aufwandsspende</span>
                   <span className="ml-1.5 text-[10px] text-gray-400 font-normal">Betrag, den Sie dem Verein spenden</span>
                 </td>
-                <td className="px-2 py-1 border-l border-gray-200">
+                <td className="px-2 py-1 pb-3 border-l border-gray-200">
                   <div className="flex items-center justify-end gap-1">
                     {spende > 0 && <span className="text-[#b11217] font-bold text-base leading-none print:hidden">−</span>}
                     <input type="number" min="0" step="0.01" value={state.aufwandsspende} onChange={(e) => set("aufwandsspende", e.target.value)} placeholder="0.00"
@@ -1477,57 +1565,6 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         );
       })()}
 
-      {/* ── Payment ── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
-        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden rounded-t-xl">Auszahlbetrag &amp; Zahlung</div>
-        <div className="p-4 text-sm space-y-2">
-        {auszahlbetrag === 0 && spende > 0 ? (
-          <p className="text-green-700 text-sm font-medium">
-            Vielen Dank f&uuml;r Ihre Spende in H&ouml;he von {spende.toFixed(2)}&nbsp;&euro; an den Verein!
-          </p>
-        ) : (
-          <>
-        {!state.zahlungBar && !state.zahlungUeberweisung && (
-          <p className="text-xs text-[#b11217] print:hidden">* Bitte eine Zahlungsart auswählen</p>
-        )}
-        <label className="flex items-center gap-2">
-          <input type="radio" name="zahlung" checked={state.zahlungBar} onChange={() => { set("zahlungBar", true); set("zahlungUeberweisung", false); }} className="w-4 h-4 print:hidden" />
-          <PrintCheckbox checked={state.zahlungBar} />
-          Auszahlbetrag bar erhalten
-        </label>
-        <label className="flex items-center gap-2">
-          <input type="radio" name="zahlung" checked={state.zahlungUeberweisung} onChange={() => { set("zahlungBar", false); set("zahlungUeberweisung", true); }} className="w-4 h-4 print:hidden" />
-          <PrintCheckbox checked={state.zahlungUeberweisung} />
-          Auszahlbetrag bitte &uuml;berweisen auf nachfolgende Bankverbindung
-        </label>
-        {state.zahlungUeberweisung && (
-          <div className="ml-6">
-            <div className="flex items-center gap-2">
-              <span className={`shrink-0 text-xs flex items-center gap-0.5 ${!validateIban(state.iban) ? "text-[#b11217]" : "text-gray-500"}`}>
-                IBAN:{!validateIban(state.iban) && <span className="leading-none">*</span>}
-              </span>
-              <PI value={state.iban} className="flex-1 uppercase">
-                <input type="text" value={state.iban} onChange={(e) => set("iban", e.target.value.toUpperCase())}
-                  placeholder="DE00 0000 0000 0000 0000 00"
-                  className={`w-full border-b bg-transparent px-1 py-0.5 text-sm uppercase focus:outline-none ${
-                    state.iban === "" ? "border-gray-300 focus:border-blue-500"
-                    : validateIban(state.iban) ? "border-green-500 text-green-700"
-                    : "border-[#b11217] text-[#b11217]"
-                  }`} />
-              </PI>
-              {state.iban !== "" && (
-                <span className={`shrink-0 text-xs ${validateIban(state.iban) ? "text-green-600" : "text-[#b11217]"}`}>
-                  {validateIban(state.iban) ? "✓" : "✗"}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-          </>
-        )}
-        </div>
-      </div>
-
       {/* ── Legal declaration (Tax part) ── */}
       {showSteuererklärung && (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4">
@@ -1581,12 +1618,64 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       </div>
       )}
 
+      {/* ── Payment ── */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
+        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden rounded-t-xl">Auszahlbetrag &amp; Zahlung</div>
+        <div className="p-4 text-sm space-y-2">
+        {auszahlbetrag === 0 && spende > 0 ? (
+          <p className="text-green-700 text-sm font-medium">
+            Vielen Dank f&uuml;r Ihre Spende in H&ouml;he von {spende.toFixed(2)}&nbsp;&euro; an den Verein!
+          </p>
+        ) : (
+          <>
+        {!state.zahlungBar && !state.zahlungUeberweisung && (
+          <p className="text-xs text-[#b11217] print:hidden">* Bitte eine Zahlungsart auswählen</p>
+        )}
+        <label className="flex items-center gap-2">
+          <input type="radio" name="zahlung" checked={state.zahlungBar} onChange={() => { set("zahlungBar", true); set("zahlungUeberweisung", false); }} className="w-4 h-4 print:hidden" />
+          <PrintCheckbox checked={state.zahlungBar} />
+          Auszahlbetrag bar erhalten
+        </label>
+        <label className="flex items-center gap-2">
+          <input type="radio" name="zahlung" checked={state.zahlungUeberweisung} onChange={() => { set("zahlungBar", false); set("zahlungUeberweisung", true); }} className="w-4 h-4 print:hidden" />
+          <PrintCheckbox checked={state.zahlungUeberweisung} />
+          Auszahlbetrag bitte &uuml;berweisen auf nachfolgende Bankverbindung
+        </label>
+        {state.zahlungUeberweisung && (
+          <div className="ml-6">
+            <div className="flex items-center gap-2">
+              <span className={`shrink-0 text-xs flex items-center gap-0.5 ${!validateIban(state.iban) ? "text-[#b11217]" : "text-gray-500"}`}>
+                IBAN:{!validateIban(state.iban) && <span className="leading-none">*</span>}
+              </span>
+              <PI value={state.iban} className="flex-1 uppercase">
+                <input type="text" value={state.iban} onChange={(e) => set("iban", e.target.value.toUpperCase())}
+                  placeholder="DE00 0000 0000 0000 0000 00"
+                  className={`w-full border-b bg-transparent px-1 py-0.5 text-sm uppercase focus:outline-none ${
+                    state.iban === "" ? "border-gray-300 focus:border-blue-500"
+                    : validateIban(state.iban) ? "border-green-500 text-green-700"
+                    : "border-[#b11217] text-[#b11217]"
+                  }`} />
+              </PI>
+              {state.iban !== "" && (
+                <span className={`shrink-0 text-xs ${validateIban(state.iban) ? "text-green-600" : "text-[#b11217]"}`}>
+                  {validateIban(state.iban) ? "✓" : "✗"}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+          </>
+        )}
+        </div>
+      </div>
+
       {/* ── Signature section (always shown) ── */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4">
         <div className="p-4 text-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-6 text-xs text-gray-400 print:items-end">
+        {/* Row 1: Ort, Datum + Unterschrift Leistungsempfänger */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
           <div className="flex flex-col">
-            <div className="flex-1 border-0 min-h-[4rem] print:min-h-0 flex items-end pb-1 text-gray-700 font-medium">
+            <div className="flex-1 border-0 min-h-[3rem] print:min-h-0 flex items-end pb-1 text-gray-700 font-medium">
               <div className="flex-1 flex items-center gap-1 group">
                 <input type="text"
                   id="sig-date-input"
@@ -1617,16 +1706,12 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Ort, Datum</div>
           </div>
           <div className="flex flex-col">
-            <div className="flex-1 border-0 min-h-[4rem] print:min-h-0" />
-            <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Unterschrift 1./2. Vors./Abt.L.</div>
-          </div>
-          <div className="flex flex-col">
             {state.signature && (
               <div className="text-[7pt] text-green-600 leading-tight mb-1">
                 ✓ Einwilligung zur digitalen Unterschrift erteilt
               </div>
             )}
-            <div className="flex-1 border-0 min-h-[4rem] print:min-h-0 flex flex-col justify-end">
+            <div className="flex-1 border-0 min-h-[3rem] print:min-h-0 flex flex-col justify-end">
               {state.signature ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={state.signature} alt="Unterschrift" onClick={() => setShowSignModal(true)}
@@ -1640,6 +1725,18 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               )}
             </div>
             <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Unterschrift Leistungsempf&auml;nger</div>
+          </div>
+        </div>
+
+        {/* Row 2: Unterschrift 1./2. Vors./Abt.L. (print/PDF only) */}
+        <div className="hidden print:grid grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400 mt-6">
+          <div className="flex flex-col">
+            <div className="flex-1 border-0 min-h-[3rem]" />
+            <div className="border-t border-gray-400 pt-1">Ort, Datum</div>
+          </div>
+          <div className="flex flex-col">
+            <div className="flex-1 border-0 min-h-[3rem]" />
+            <div className="border-t border-gray-400 pt-1">Unterschrift 1./2. Vors./Abt.L.</div>
           </div>
         </div>
         </div>
