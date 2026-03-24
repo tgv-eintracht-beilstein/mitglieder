@@ -176,30 +176,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   position: relative !important;
 }
 
-/* pdf-capture: condense verzicht page */
-.pdf-capture .verzicht-capture-root .space-y-6 > * + * { margin-top: 4px !important; }
-.pdf-capture .verzicht-capture-root .p-8 { padding: 8px !important; }
-.pdf-capture .verzicht-capture-root .p-6 { padding: 6px !important; }
-.pdf-capture .verzicht-capture-root .p-5 { padding: 6px !important; }
-.pdf-capture .verzicht-capture-root .gap-8 { gap: 10px !important; }
-.pdf-capture .verzicht-capture-root .gap-y-4 { row-gap: 4px !important; }
-.pdf-capture .verzicht-capture-root .mb-6 { margin-bottom: 6px !important; }
-.pdf-capture .verzicht-capture-root .pb-4 { padding-bottom: 4px !important; }
-.pdf-capture .verzicht-capture-root .pb-2 { padding-bottom: 2px !important; }
-.pdf-capture .verzicht-capture-root .mt-4 { margin-top: 6px !important; }
-.pdf-capture .verzicht-capture-root .min-h-\[48px\] { min-height: 28px !important; }
-.pdf-capture .verzicht-capture-root .space-y-4 > * + * { margin-top: 4px !important; }
-.pdf-capture .verzicht-capture-root .rounded-2xl { border-radius: 6pt !important; }
-.pdf-capture .verzicht-capture-root .border-b.border-gray-50 { border-color: #e5e7eb !important; }
-.pdf-capture .verzicht-capture-root .bg-gray-50\/50 { background: transparent !important; border: 0.5px solid #e5e7eb !important; border-radius: 6pt !important; }
-.pdf-capture .verzicht-capture-root .leading-relaxed { line-height: 1.35 !important; }
-.pdf-capture .verzicht-capture-root .text-sm { font-size: 7.5pt !important; }
-.pdf-capture .verzicht-capture-root .text-\[11px\] { font-size: 6.5pt !important; }
-.pdf-capture .verzicht-capture-root .text-xs { font-size: 6.5pt !important; }
-.pdf-capture .verzicht-capture-root .text-\[10px\] { font-size: 6pt !important; }
-.pdf-capture .verzicht-capture-root .text-\[9px\] { font-size: 5.5pt !important; }
-.pdf-capture .verzicht-capture-root .bg-\[\#b11217\] .text-red-100\/90 { color: #6b7280 !important; }
-
 /* pdf-capture: form layout */
 .pdf-capture .pdf-footer {
   margin-top: 88px !important;
@@ -510,74 +486,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   }
 
   /* Verzicht page: condense for print */
-  .verzicht-capture-root .space-y-6 > * + * {
-    margin-top: 4pt !important;
-  }
-  .verzicht-capture-root .p-8 {
-    padding: 6pt !important;
-  }
-  .verzicht-capture-root .p-6 {
-    padding: 5pt !important;
-  }
-  .verzicht-capture-root .p-5 {
-    padding: 5pt !important;
-  }
-  .verzicht-capture-root .gap-8 {
-    gap: 8pt !important;
-  }
-  .verzicht-capture-root .gap-y-4 {
-    row-gap: 3pt !important;
-  }
-  .verzicht-capture-root .mb-6 {
-    margin-bottom: 4pt !important;
-  }
-  .verzicht-capture-root .pb-4 {
-    padding-bottom: 3pt !important;
-  }
-  .verzicht-capture-root .pb-2 {
-    padding-bottom: 1pt !important;
-  }
-  .verzicht-capture-root .mt-4 {
-    margin-top: 4pt !important;
-  }
-  .verzicht-capture-root .min-h-\[48px\] {
-    min-height: 28px !important;
-  }
-  .verzicht-capture-root .space-y-4 > * + * {
-    margin-top: 3pt !important;
-  }
-  .verzicht-capture-root .bg-\[\#b11217\] .text-red-100\/90 {
-    color: #6b7280 !important;
-  }
-  .verzicht-capture-root .leading-relaxed {
-    line-height: 1.35 !important;
-  }
-  .verzicht-capture-root .text-sm {
-    font-size: 7.5pt !important;
-  }
-  .verzicht-capture-root .text-\[11px\] {
-    font-size: 6.5pt !important;
-  }
-  .verzicht-capture-root .text-xs {
-    font-size: 6.5pt !important;
-  }
-  .verzicht-capture-root .text-\[10px\] {
-    font-size: 6pt !important;
-  }
-  .verzicht-capture-root .text-\[9px\] {
-    font-size: 5.5pt !important;
-  }
-  .verzicht-capture-root .rounded-2xl {
-    border-radius: 6pt !important;
-  }
-  .verzicht-capture-root .border-b.border-gray-50 {
-    border-color: #e5e7eb !important;
-  }
-  .verzicht-capture-root .bg-gray-50\/50 {
-    background: transparent !important;
-    border: 0.5pt solid #e5e7eb !important;
-    border-radius: 6pt !important;
-  }
 }
 
 .cursor-pen {

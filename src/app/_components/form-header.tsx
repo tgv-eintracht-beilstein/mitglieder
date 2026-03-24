@@ -93,7 +93,7 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
       <div className="hidden print:block mb-3">
         <div>
           <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide">{title.toUpperCase()}</div>
-          <div className="grid grid-cols-3 text-sm">
+          <div className="grid grid-cols-2 text-sm">
             <div className="px-3 py-2 space-y-2">
               {contextFields.map((f) => (
                 <div key={f.label}>
@@ -101,11 +101,6 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
                   <span className="text-sm">{f.printValue}</span>
                 </div>
               ))}
-            </div>
-            <div className="px-3 py-2 flex flex-col justify-center text-center text-gray-700 leading-snug">
-              <div className="font-bold text-gray-900 text-sm">TGV &quot;Eintracht&quot; Beilstein 1823 e.V.</div>
-              <div className="text-xs text-gray-500 mt-0.5">Albert-Einstein-Str. 20 &middot; 71717 Beilstein</div>
-              <div className="text-xs text-gray-400 mt-0.5">Tel. 07062&ndash;5753 &middot; Fax 07062&ndash;916736</div>
             </div>
             <div className="px-3 py-2 space-y-1">
               {personalFields.map((f) => (

@@ -8,7 +8,7 @@ import VerzichtPageContent from "@/app/_components/verzicht-page-content";
 import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
 import { validateIban } from "@/lib/iban";
-import { AbteilungSelect } from "@/app/_components/aufwandsformular";
+import { AbteilungSelect, ABTEILUNGEN, AbteilungIcon } from "@/app/_components/aufwandsformular";
 
 const STORAGE_KEY = "ehrenamtspauschale_v2";
 
@@ -281,6 +281,10 @@ export default function EhrenamtspauschaleePage() {
           <div className="font-bold text-base text-gray-900">TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.V.</div>
           <div className="text-xs text-gray-500">Ehrenamtspauschale &middot; {state.abteilung || "\u2013"} &middot; {state.vorname} {state.nachname}</div>
         </div>
+        {(() => {
+          const abt = ABTEILUNGEN.find(a => a.name === state.abteilung);
+          return abt ? <AbteilungIcon slug={abt.slug} print size={36} /> : null;
+        })()}
       </div>
 
       {/* Page headline */}
@@ -405,7 +409,7 @@ export default function EhrenamtspauschaleePage() {
           Erklärung zur Ehrenamtspauschale
         </div>
         <div className="p-4 text-sm text-gray-700 space-y-4 leading-relaxed">
-          <p className="text-xs text-gray-500 italic">
+          <p className="text-sm text-gray-700">
             Erklärung für die nebenberufliche Vereinsbeschäftigung bei Berücksichtigung des Ehrenamtsfreibetrages nach
             &sect; 3 Nr. 26a EStG. Der TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e. V., Albert-Einstein-Str. 20, 71717 Beilstein wird folgende
             Erklärung zum Ehrenamtsfreibetrag nach &sect; 3 Nr. 26a EStG abgegeben:
@@ -631,7 +635,7 @@ export default function EhrenamtspauschaleePage() {
 
       {/* Verzicht page (hidden, rendered for PDF capture only) */}
       {state.verzicht && spendeNum > 0 && (
-        <div className="hidden print:block print:break-before-page border-t border-gray-200 mt-12 pt-12" data-page-break="verzicht">
+        <div className="hidden print:block print:break-before-page mt-12 pt-12" data-page-break="verzicht">
           <div style={{ height: "60px" }} className="print:hidden" />
           <div className="verzicht-capture-root">
             <VerzichtPageContent

@@ -9,6 +9,7 @@ export default function UebungsleiterpauschaleePage() {
       showStunden: true,
       showKm: false,
       showVerzicht: false,
+      showKategorie: true,
       enforceMaxAufwand: true,
     }} />
   );

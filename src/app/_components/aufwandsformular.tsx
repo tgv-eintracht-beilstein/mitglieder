@@ -85,7 +85,7 @@ function BeschreibungInput({ value, onChange, className, large }: {
   );
 }
 
-const ABTEILUNGEN: { name: string; slug: string }[] = [
+export const ABTEILUNGEN: { name: string; slug: string }[] = [
   { name: "Fußball",       slug: "fussball" },
   { name: "Leichtathletik",slug: "leichtathletik" },
   { name: "Turnen",        slug: "turnen" },
@@ -98,7 +98,7 @@ const ABTEILUNGEN: { name: string; slug: string }[] = [
   { name: "Ski & Berg",    slug: "ski_und_berg" },
 ];
 
-function AbteilungIcon({ slug, print = false, size = 20 }: { slug: string; print?: boolean; size?: number }) {
+export function AbteilungIcon({ slug, print = false, size = 20 }: { slug: string; print?: boolean; size?: number }) {
   const ext = print ? "png" : "svg";
   return (
     // eslint-disable-next-line @next/next/no-img-element
@@ -551,6 +551,7 @@ export interface AufwandsformularConfig {
   showSteuererklärung?: boolean; // default true
   showVerzicht?: boolean; // default true – generate Verzichtserklärung PDF when spende > 0
   enforceMaxAufwand?: boolean; // default false – when true, Aufwandsentschädigung may not exceed the tax-free limit
+  showKategorie?: boolean; // default false – show Übungsleiter category select (Jugend/Erwachsene)
 }
 
 export function validateIban(raw: string): boolean {
@@ -729,7 +730,7 @@ function TimeSelect({ value, onChange, className }: {
 
 function PrintCheckbox({ checked }: { checked: boolean }) {
   return (
-    <span className="hidden print:inline-flex items-center justify-center shrink-0" style={{ width: 14, height: 14 }}>
+    <span className="hidden print:inline-flex items-center justify-center shrink-0 relative top-[2px]" style={{ width: 14, height: 14 }}>
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="0.5" y="0.5" width="13" height="13" rx="1.5" stroke="#333" strokeWidth="1" fill="white"/>
         {checked && <path d="M4 4l6 6M10 4l-6 6" stroke="#111" strokeWidth="1.8" strokeLinecap="round"/>}
@@ -889,7 +890,7 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
 
 
 export default function Aufwandsformular({ config }: { config: AufwandsformularConfig }) {
-  const { storageKey, title, filename, showKm = true, showStunden = true, showSteuererklärung = true, showVerzicht = true, enforceMaxAufwand = false } = config;
+  const { storageKey, title, filename, showKm = true, showStunden = true, showSteuererklärung = true, showVerzicht = true, enforceMaxAufwand = false, showKategorie = false } = config;
   const [state, setState] = useState<FormState>(defaultState);
   const [showSignModal, setShowSignModal] = useState(false);
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
@@ -1305,7 +1306,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                <AbteilungSelect value={state.abteilung} onChange={v => set("abteilung", v)} />
              ),
            },
-           {
+           ...(showKategorie ? [{
              label: "Kategorie",
              printValue: state.uebungsleiterKategorie,
              value: state.uebungsleiterKategorie || "Jugend",
@@ -1313,7 +1314,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
              content: (
                <UEbungsleiterCategorySelect value={state.uebungsleiterKategorie || "Jugend"} onChange={v => set("uebungsleiterKategorie", v)} />
              ),
-           },
+           }] : []),
           {
             label: "Zeitraum",
             printValue: formatMonthRange(state.monatVon, state.monatBis),
@@ -1341,7 +1342,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
 
       {/* ── Table ── */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
-        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden flex items-center justify-between rounded-t-xl">
+        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase flex items-center justify-between rounded-t-xl">
           <span>Tätigkeitsnachweis</span>
           <button onClick={addRow} className="md:hidden flex items-center justify-center w-6 h-6 rounded bg-white/20 hover:bg-white/30 transition-colors" aria-label="Zeile hinzufügen">
             <svg width="12" height="12" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
@@ -1568,9 +1569,9 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       {/* ── Legal declaration (Tax part) ── */}
       {showSteuererklärung && (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4">
-        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden rounded-t-xl">Steuererklärung</div>
+        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">Steuererklärung</div>
         <div className="p-4 text-sm">
-        <p className="mb-3 text-gray-700 text-xs leading-relaxed">
+        <p className="mb-3 text-sm text-gray-700 leading-relaxed">
           Hiermit erkl&auml;re ich,{" "}
           <span className="font-medium">{[state.vorname, state.nachname].filter(Boolean).join(" ") || "_______________"}</span>
           {" "}geb. am{" "}
@@ -1582,7 +1583,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           Wirtschaftspr&uuml;ferkammern, &Auml;rztekammern, Universit&auml;ten oder der Tr&auml;ger der
           Sozialversicherung etc.) ...
         </p>
-        <div className="space-y-2 mb-1 text-xs">
+        <div className="space-y-2 mb-3 text-sm text-gray-700">
           {!state.steuerVollHoehe && !state.steuerBisZu && !state.steuerNicht && (
             <p className="text-[#b11217] print:hidden">* Bitte eine Option auswählen</p>
           )}
@@ -1591,25 +1592,22 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             <PrintCheckbox checked={state.steuerVollHoehe} />
             in voller H&ouml;he ({state.monatVon >= "2026" ? "3.300,00" : "3.000,00"} Euro)
           </label>
-          <div className="flex items-center gap-2 flex-wrap">
-            <label className="flex items-center gap-2">
-              <input type="radio" name="steuer" checked={state.steuerBisZu} onChange={() => { set("steuerVollHoehe", false); set("steuerBisZu", true); set("steuerNicht", false); }} className="w-4 h-4 print:hidden" />
-              <PrintCheckbox checked={state.steuerBisZu} />
-              bis zu
-            </label>
+          <label className="flex items-center gap-2">
+            <input type="radio" name="steuer" checked={state.steuerBisZu} onChange={() => { set("steuerVollHoehe", false); set("steuerBisZu", true); set("steuerNicht", false); }} className="w-4 h-4 print:hidden" />
+            <PrintCheckbox checked={state.steuerBisZu} />
+            <span>bis zu</span>
             <input type="number" value={state.steuerBisZuBetrag} onChange={(e) => set("steuerBisZuBetrag", e.target.value)}
               placeholder="Betrag" className="w-20 border-b border-gray-300 bg-transparent px-1 py-0.5 focus:outline-none focus:border-blue-500 print:hidden" />
-            <span className="hidden print:inline text-sm">{state.steuerBisZuBetrag}</span>
+            <span className="hidden print:inline">{state.steuerBisZuBetrag}</span>
             <span>Euro</span>
-          </div>
+          </label>
           <label className="flex items-center gap-2">
             <input type="radio" name="steuer" checked={state.steuerNicht} onChange={() => { set("steuerVollHoehe", false); set("steuerBisZu", false); set("steuerNicht", true); }} className="w-4 h-4 print:hidden" />
             <PrintCheckbox checked={state.steuerNicht} />
-            nicht
+            nicht in Anspruch genommen habe bzw. in Anspruch nehmen werde.
           </label>
         </div>
-        <p className="text-xs text-gray-600 mb-3 italic">in Anspruch genommen habe bzw. in Anspruch nehmen werde.</p>
-        <p className="text-xs text-gray-400 mb-4">
+        <p className="text-sm text-gray-700 mb-4">
           Jegliche Ver&auml;nderungen in meiner Person oder meinen T&auml;tigkeiten, insbesondere
           die Aufnahme weiterer T&auml;tigkeit werde ich unverz&uuml;glich mitteilen. Mir ist bekannt,
           dass Nachteile des Vereins zu meinen Lasten gehen.
@@ -1620,7 +1618,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
 
       {/* ── Payment ── */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
-        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase print:hidden rounded-t-xl">Auszahlbetrag &amp; Zahlung</div>
+        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">Auszahlbetrag &amp; Zahlung</div>
         <div className="p-4 text-sm space-y-2">
         {auszahlbetrag === 0 && spende > 0 ? (
           <p className="text-green-700 text-sm font-medium">
@@ -1833,7 +1831,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
 
       {/* Second page for EAP Verzicht if donation is present */}
       {showVerzicht && spende > 0 && (
-        <div className="hidden print:block print:break-before-page border-t border-gray-200 mt-12 pt-12" data-page-break="verzicht">
+        <div className="hidden print:block print:break-before-page mt-12 pt-12" data-page-break="verzicht">
           {/* Slicing helper: JS-based PDF capture needs a clean gap or forced page break */}
           <div style={{ height: "60px" }} className="print:hidden" />
           <VerzichtPageContent
