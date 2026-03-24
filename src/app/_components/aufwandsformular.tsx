@@ -366,6 +366,8 @@ export function MonthSelect({ value, onChange }: { value: string; onChange: (v: 
 export function DateSelect({ value, onChange, className, minYear }: { value: string; onChange: (v: string) => void; className?: string; minYear?: number }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
+  const [yearDraft, setYearDraft] = useState<string | null>(null);
+  const [pickMonth, setPickMonth] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -392,7 +394,7 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
       const left = Math.min(r.left, window.innerWidth - panelW - 8);
       setPos({ top: r.bottom + 4, left: Math.max(8, left) });
     }
-    setOpen(o => !o);
+    setOpen(o => { if (o) setPickMonth(false); return !o; });
   }
 
   const today = new Date();
@@ -418,25 +420,45 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
   const desktopPanel = (
     <div className="p-3 space-y-3 min-w-[260px]">
       <div className="flex items-center gap-2">
+        {pickMonth && <button type="button" onClick={() => setPickMonth(false)} className="order-last text-gray-400 hover:text-gray-600">
+          <svg width={14} height={14} viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>
+        </button>}
         <input
           type="number"
-          value={displayYear}
+          value={yearDraft ?? displayYear}
+          onFocus={e => { setYearDraft(String(displayYear)); e.target.select(); }}
+          onBlur={() => {
+            const y = Number(yearDraft);
+            if (y >= (minYear ?? curYear - 100) && y <= curYear + 10) set(y, displayMonth, day ?? curDay);
+            setYearDraft(null);
+          }}
           onChange={e => {
+            setYearDraft(e.target.value);
             const y = Number(e.target.value);
-            if (y >= (minYear ?? 1900) && y <= curYear + 10) {
-              set(y, displayMonth, day ?? curDay);
-            }
+            if (y >= (minYear ?? curYear - 100) && y <= curYear + 10) set(y, displayMonth, day ?? curDay);
           }}
           min={minYear ?? 1900}
           max={curYear + 10}
-          className="w-20 border-b border-gray-300 bg-transparent text-sm focus:outline-none focus:border-[#b11217] px-1 py-1 text-center"
+          className={`w-20 border-b bg-transparent text-sm focus:outline-none px-1 py-1 text-center ${yearDraft !== null && (isNaN(Number(yearDraft)) || Number(yearDraft) < (minYear ?? curYear - 100)) ? "border-red-500 text-red-600" : "border-gray-300 focus:border-[#b11217]"}`}
         />
-        <select value={displayMonth} onChange={e => set(displayYear, Number(e.target.value), day ?? curDay)}
-          className="flex-1 border-b border-gray-300 bg-transparent text-sm focus:outline-none focus:border-[#b11217] px-1 py-1">
-          {MONTHS_DE.map((m, i) => <option key={m} value={i+1}>{m}</option>)}
-        </select>
+        <button type="button" onClick={() => setPickMonth(p => !p)}
+          className="flex-1 border-b border-gray-300 bg-transparent text-sm focus:outline-none hover:border-[#b11217] px-1 py-1 text-left">
+          {MONTHS_DE[displayMonth - 1]} ▾
+        </button>
       </div>
-      <div className="grid grid-cols-7 gap-1">
+      {pickMonth ? (
+        <div className="grid grid-cols-3 gap-1">
+          {MONTHS_DE.map((m, i) => (
+            <button key={m} type="button"
+              onClick={() => { set(displayYear, i + 1, day ?? curDay); setPickMonth(false); }}
+              className={`text-xs rounded px-1 py-2 transition-colors
+                ${displayMonth === i + 1 ? "bg-[#b11217] text-white font-medium" : "hover:bg-gray-100 text-gray-700"}`}>
+              {m}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-7 gap-1">
         {["Mo","Di","Mi","Do","Fr","Sa","So"].map(d => (
           <div key={d} className="text-center text-[10px] text-gray-400 font-medium py-1">{d}</div>
         ))}
@@ -457,7 +479,8 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
             </button>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 
@@ -794,7 +817,15 @@ function RowEditModal({ row, onSave, onDelete, onClose, showKm = true, showStund
         {showStunden && (
           <div>
             <label className="text-xs text-gray-400">von</label>
-            <TimeSelect value={draft.von} onChange={v => f("von", v)} className="w-full text-base" />
+            <TimeSelect value={draft.von} onChange={v => {
+              const [oh, om] = draft.von.split(":").map(Number);
+              const [bh, bm] = draft.bis.split(":").map(Number);
+              const diff = draft.bis !== "00:00" || draft.von !== "00:00" ? (bh * 60 + bm) - (oh * 60 + om) : 60;
+              const [nh, nm] = v.split(":").map(Number);
+              const nb = Math.max(0, Math.min(nh * 60 + nm + diff, 23 * 60 + 59));
+              f("von", v);
+              f("bis", `${String(Math.floor(nb / 60)).padStart(2, "0")}:${String(nb % 60).padStart(2, "0")}`);
+            }} className="w-full text-base" />
           </div>
         )}
         {showStunden && (
@@ -1394,7 +1425,15 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                   </td>
                   {showStunden && (
                     <td className="border-r border-gray-100 px-1 py-1.5 text-center">
-                      <PI value={row.von}><TimeSelect value={row.von} onChange={v => updateRow(row.id, "von", v)} /></PI>
+                      <PI value={row.von}><TimeSelect value={row.von} onChange={v => {
+                        const [oh, om] = row.von.split(":").map(Number);
+                        const [bh, bm] = row.bis.split(":").map(Number);
+                        const diff = row.bis !== "00:00" || row.von !== "00:00" ? (bh * 60 + bm) - (oh * 60 + om) : 60;
+                        const [nh, nm] = v.split(":").map(Number);
+                        const nb = Math.max(0, Math.min(nh * 60 + nm + diff, 23 * 60 + 59));
+                        updateRow(row.id, "von", v);
+                        updateRow(row.id, "bis", `${String(Math.floor(nb / 60)).padStart(2, "0")}:${String(nb % 60).padStart(2, "0")}`);
+                      }} /></PI>
                     </td>
                   )}
                   {showStunden && (
