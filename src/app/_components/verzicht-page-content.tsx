@@ -25,8 +25,8 @@ interface VerzichtPageContentProps {
     spendenbetrag: string;
     signature: string;
   };
-  overrideDate?: string;
-  onOverrideDateChange?: (v: string) => void;
+  overrideDate?: string | null;
+  onOverrideDateChange?: (v: string | null) => void;
   onSignClick?: () => void;
   hideFooter?: boolean;
 }
@@ -116,12 +116,12 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
                 <div className="flex-1 flex items-center gap-1 group">
                   <input type="text"
                     id="sig-date-input-eap-content"
-                    value={overrideDate !== "" ? (overrideDate ?? "") : defaultDate}
+                    value={overrideDate != null ? overrideDate : defaultDate}
                     onChange={e => onOverrideDateChange?.(e.target.value)}
                     className="flex-1 bg-transparent border-none outline-none p-0 m-0 focus:ring-0 print:hidden" />
                   <div className="flex items-center gap-0.5 print:hidden">
-                    {overrideDate !== "" && (
-                      <button type="button" onClick={() => onOverrideDateChange?.("")}
+                    {overrideDate != null && (
+                      <button type="button" onClick={() => onOverrideDateChange?.(null)}
                         className="p-1 text-gray-300 hover:text-[#b11217] transition-colors" title="Zurücksetzen">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -136,7 +136,7 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
                     </button>
                   </div>
                   <span className="hidden print:inline">
-                    {overrideDate !== "" ? overrideDate : defaultDate}
+                    {overrideDate != null ? overrideDate : defaultDate}
                   </span>
                 </div>
               </div>

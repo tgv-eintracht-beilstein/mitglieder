@@ -18,7 +18,7 @@ function PI({ value, children }: { value: string; children: React.ReactNode }) {
   );
 }
 
-const fieldCls = "w-full bg-transparent border-b px-1 py-0.5 text-sm focus:outline-none";
+const fieldCls = "w-full bg-transparent border-b px-1 py-0.5 text-sm focus:outline-none transition-colors";
 function fieldBorder(value: string, required?: boolean, invalid?: boolean) {
   if ((required && !value) || invalid) return "border-[#b11217] focus:border-[#b11217]";
   return "border-gray-300 focus:border-[#b11217]";
@@ -62,7 +62,7 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
                   <span className={f.required && !f.value ? "text-[#b11217]" : "text-gray-400"}>{f.label}</span>
                   {f.required && !f.value && <span className="text-[#b11217] leading-none">*</span>}
                 </div>
-                <div className={f.required && !f.value ? "rounded border border-[#b11217]" : ""}>
+                <div className={f.required && !f.value ? "[&_input]:border-[#b11217] [&_select]:border-[#b11217] [&_button]:border-[#b11217]" : ""}>
                   {f.content}
                 </div>
               </div>

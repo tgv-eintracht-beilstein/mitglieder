@@ -55,8 +55,8 @@ function BeschreibungInput({ value, onChange, className, large }: {
 
   const isEmpty = !value.trim();
   const baseCls = large
-    ? `w-full border-b bg-transparent py-2 text-base focus:outline-none ${isEmpty ? "border-[#b11217] focus:border-[#b11217]" : "border-gray-300 focus:border-[#b11217]"}`
-    : `w-full bg-transparent border-b px-1 py-1 text-xs focus:outline-none ${isEmpty ? "border-[#b11217] focus:border-[#b11217]" : "border-gray-300 focus:border-blue-400"}`;
+    ? `w-full border-b bg-transparent py-2 text-base focus:outline-none transition-colors ${isEmpty ? "border-[#b11217] focus:border-[#b11217]" : "border-gray-300 focus:border-[#b11217]"}`
+    : `w-full bg-transparent border-b px-1 py-1 text-xs focus:outline-none transition-colors ${isEmpty ? "border-[#b11217] focus:border-[#b11217]" : "border-gray-300 focus:border-blue-400"}`;
 
   return (
     <div ref={ref} className={`relative ${className ?? ""}`}>
@@ -439,7 +439,7 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
           }}
           min={minYear ?? 1900}
           max={curYear + 10}
-          className={`w-20 border-b bg-transparent text-sm focus:outline-none px-1 py-1 text-center ${yearDraft !== null && (isNaN(Number(yearDraft)) || Number(yearDraft) < (minYear ?? curYear - 100)) ? "border-red-500 text-red-600" : "border-gray-300 focus:border-[#b11217]"}`}
+          className={`w-20 border-b bg-transparent text-sm focus:outline-none px-1 py-1 text-center transition-colors ${yearDraft !== null && (isNaN(Number(yearDraft)) || Number(yearDraft) < (minYear ?? curYear - 100)) ? "border-red-500 text-red-600" : "border-gray-300 focus:border-[#b11217]"}`}
         />
         <button type="button" onClick={() => setPickMonth(p => !p)}
           className="flex-1 border-b border-gray-300 bg-transparent text-sm focus:outline-none hover:border-[#b11217] px-1 py-1 text-left">
@@ -560,7 +560,7 @@ interface FormState {
   steuerBisZuBetrag: string;
   steuerNicht: boolean;
   signature: string;
-  overrideDate: string;
+  overrideDate: string | null;
   rows: Row[];
   nextId: number;
 }
@@ -641,7 +641,8 @@ function TimeSelect({ value, onChange, className }: {
   // Local draft for mobile — only committed on checkmark
   const [draftH, setDraftH] = useState<string>("00");
   const [draftM, setDraftM] = useState<string>("00");
-  const [dirty, setDirty] = useState(false);
+  const [pickedH, setPickedH] = useState(false);
+  const [pickedM, setPickedM] = useState(false);
 
   useEffect(() => {
     function close() { setOpen(false); }
@@ -670,7 +671,8 @@ function TimeSelect({ value, onChange, className }: {
     const [h, m] = value ? value.split(":") : ["00", "00"];
     setDraftH(h);
     setDraftM(m);
-    setDirty(false);
+    setPickedH(false);
+    setPickedM(false);
     setOpen(o => !o);
   }
 
@@ -697,7 +699,10 @@ function TimeSelect({ value, onChange, className }: {
         <div className="grid grid-cols-6 gap-1">
           {hours.map(h => (
             <button key={h} type="button"
-              onClick={() => large ? (setDraftH(h), setDirty(true)) : pickDesktop(h, displayM)}
+              onClick={() => {
+                if (large) { setDraftH(h); setPickedH(true); if (pickedM) { onChange(`${h}:${displayM}`); setOpen(false); } }
+                else pickDesktop(h, displayM);
+              }}
               className={`rounded transition-colors ${btnH} ${displayH === h ? "bg-[#b11217] text-white font-medium" : "hover:bg-gray-100 text-gray-700"}`}>
               {h}
             </button>
@@ -707,7 +712,10 @@ function TimeSelect({ value, onChange, className }: {
         <div className="grid grid-cols-4 gap-2">
           {MINUTES.map(m => (
             <button key={m} type="button"
-              onClick={() => large ? (setDraftM(m), setDirty(true)) : pickDesktop(displayH, m)}
+              onClick={() => {
+                if (large) { setDraftM(m); setPickedM(true); if (pickedH) { onChange(`${displayH}:${m}`); setOpen(false); } }
+                else pickDesktop(displayH, m);
+              }}
               className={`rounded transition-colors ${btnM} ${displayM === m ? "bg-[#b11217] text-white font-medium" : "hover:bg-gray-100 text-gray-700"}`}>
               :{m}
             </button>
@@ -733,8 +741,8 @@ function TimeSelect({ value, onChange, className }: {
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
               <span className="font-medium text-sm tabular-nums">{draftLabel}</span>
               <div className="flex items-center gap-2">
-                {dirty && (
-                  <button type="button" onClick={() => { onChange(draftLabel); setDirty(false); setOpen(false); }} className="p-1 text-green-600">
+                {(pickedH || pickedM) && (
+                  <button type="button" onClick={() => { onChange(draftLabel); setOpen(false); }} className="p-1 text-green-600">
                     <svg width={22} height={22} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M4 10l5 5 7-8"/></svg>
                   </button>
                 )}
@@ -774,7 +782,7 @@ function defaultState(): FormState {
     zahlungBar: false, zahlungUeberweisung: false,
     steuerVollHoehe: false, steuerBisZu: false, steuerBisZuBetrag: "", steuerNicht: false,
     signature: "",
-    overrideDate: "",
+    overrideDate: null,
     rows: [emptyRow(1)],
     nextId: 2,
   };
@@ -797,7 +805,7 @@ function RowEditModal({ row, onSave, onDelete, onClose, showKm = true, showStund
   const f = <K extends keyof Row>(k: K, v: Row[K]) => setDraft(d => ({ ...d, [k]: v }));
   const stunden = calcStunden(draft.von, draft.bis);
   const ergebnis = stunden * (parseFloat(draft.satz) || 0) + (parseFloat(draft.km) || 0) * KM_RATE;
-  const fieldCls = "w-full border-b border-gray-300 bg-transparent py-2 text-base focus:outline-none focus:border-[#b11217]";
+  const fieldCls = "w-full border-b border-gray-300 bg-transparent py-2 text-base focus:outline-none focus:border-[#b11217] transition-colors";
 
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col">
@@ -953,7 +961,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         nachname: addr.nachname, vorname: addr.vorname, strasse: addr.strasse,
         plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon, email: addr.email,
         // overrideDate comes from saved state (persistent)
-        overrideDate: saved?.overrideDate ?? "",
+        overrideDate: saved?.overrideDate ?? null,
       }));
       // Load shared signature — fall back to scanning other form stores
       let sig = loadSharedSignature();
@@ -1687,7 +1695,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               <PI value={state.iban} className="flex-1 uppercase">
                 <input type="text" value={state.iban} onChange={(e) => set("iban", e.target.value.toUpperCase())}
                   placeholder="DE00 0000 0000 0000 0000 00"
-                  className={`w-full border-b bg-transparent px-1 py-0.5 text-sm uppercase focus:outline-none ${
+                  className={`w-full border-b bg-transparent px-1 py-0.5 text-sm uppercase focus:outline-none transition-colors ${
                     state.iban === "" ? "border-gray-300 focus:border-blue-500"
                     : validateIban(state.iban) ? "border-green-500 text-green-700"
                     : "border-[#b11217] text-[#b11217]"
@@ -1716,12 +1724,12 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               <div className="flex-1 flex items-center gap-1 group">
                 <input type="text"
                   id="sig-date-input"
-                  value={state.overrideDate !== "" ? state.overrideDate : defaultDate}
+                  value={state.overrideDate !== null ? state.overrideDate : defaultDate}
                   onChange={e => set("overrideDate", e.target.value)}
                   className="flex-1 bg-transparent border-none outline-none p-0 m-0 focus:ring-0 print:hidden" />
                 <div className="flex items-center gap-0.5 print:hidden">
-                  {state.overrideDate !== "" && (
-                    <button type="button" onClick={() => set("overrideDate", "")}
+                  {state.overrideDate !== null && (
+                    <button type="button" onClick={() => set("overrideDate", null)}
                       className="p-1 text-gray-300 hover:text-[#b11217] transition-colors" aria-label="Zurücksetzen">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -1736,7 +1744,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                   </button>
                 </div>
                 <span className="hidden print:inline">
-                  {state.overrideDate !== "" ? state.overrideDate : defaultDate}
+                  {state.overrideDate !== null ? state.overrideDate : defaultDate}
                 </span>
               </div>
             </div>

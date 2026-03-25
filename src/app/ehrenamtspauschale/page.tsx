@@ -34,7 +34,7 @@ interface FormState {
   zahlungBar: boolean;
   zahlungUeberweisung: boolean;
   signature: string;
-  overrideDate: string;
+  overrideDate: string | null;
 }
 
 function defaultState(): FormState {
@@ -46,7 +46,7 @@ function defaultState(): FormState {
     jahr: String(new Date().getFullYear()),
     verzicht: false, spendenbetrag: "",
     zahlungBar: false, zahlungUeberweisung: false,
-    signature: "", overrideDate: "",
+    signature: "", overrideDate: null,
   };
 }
 
@@ -85,7 +85,6 @@ export default function EhrenamtspauschaleePage() {
         ...(saved ?? {}),
         nachname: addr.nachname, vorname: addr.vorname, strasse: addr.strasse,
         plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon, email: addr.email,
-        overrideDate: "",
       }));
       let sig = loadSharedSignature();
       if (!sig) {
@@ -170,7 +169,6 @@ export default function EhrenamtspauschaleePage() {
     { label: "Funktion", valid: !!state.funktion },
     { label: "Vergütung", valid: verguetungNum > 0 },
     { label: `Vergütung \u2264 ${limit} \u20ac`, valid: !limitExceeded },
-    { label: "Unterschrift", valid: !!state.signature },
     ...(state.verzicht ? [
       { label: "Spendenbetrag", valid: spendeNum > 0 },
     ] : []),
@@ -186,7 +184,7 @@ export default function EhrenamtspauschaleePage() {
   const today = new Date().toLocaleDateString("de-DE");
   const defaultDate = [city, today].filter(s => s !== "_______________" && s !== "").join(", ");
 
-  const fieldCls = "w-full bg-transparent border-b px-1 py-0.5 text-sm focus:outline-none";
+  const fieldCls = "w-full bg-transparent border-b px-1 py-0.5 text-sm focus:outline-none transition-colors";
   function fieldBorder(value: string, required?: boolean, invalid?: boolean) {
     if ((required && !value) || invalid) return "border-[#b11217] focus:border-[#b11217]";
     return "border-gray-300 focus:border-[#b11217]";
@@ -518,12 +516,12 @@ export default function EhrenamtspauschaleePage() {
                 <div className="flex-1 flex items-center gap-1 group">
                   <input type="text"
                     id="sig-date-input-ea"
-                    value={state.overrideDate !== "" ? state.overrideDate : defaultDate}
+                    value={state.overrideDate !== null ? state.overrideDate : defaultDate}
                     onChange={e => set("overrideDate", e.target.value)}
                     className="flex-1 bg-transparent border-none outline-none p-0 m-0 focus:ring-0 print:hidden" />
                   <div className="flex items-center gap-0.5 print:hidden">
-                    {state.overrideDate !== "" && (
-                      <button type="button" onClick={() => set("overrideDate", "")}
+                    {state.overrideDate !== null && (
+                      <button type="button" onClick={() => set("overrideDate", null)}
                         className="p-1 text-gray-300 hover:text-[#b11217] transition-colors" title="Zurücksetzen">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -538,7 +536,7 @@ export default function EhrenamtspauschaleePage() {
                     </button>
                   </div>
                   <span className="hidden print:inline">
-                    {state.overrideDate !== "" ? state.overrideDate : defaultDate}
+                    {state.overrideDate !== null ? state.overrideDate : defaultDate}
                   </span>
                 </div>
               </div>
