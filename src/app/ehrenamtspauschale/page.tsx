@@ -31,6 +31,8 @@ interface FormState {
   jahr: string;
   verzicht: boolean;
   spendenbetrag: string;
+  zahlungBar: boolean;
+  zahlungUeberweisung: boolean;
   signature: string;
   overrideDate: string;
 }
@@ -43,6 +45,7 @@ function defaultState(): FormState {
     abteilung: "", funktion: "", verguetung: "",
     jahr: String(new Date().getFullYear()),
     verzicht: false, spendenbetrag: "",
+    zahlungBar: false, zahlungUeberweisung: false,
     signature: "", overrideDate: "",
   };
 }
@@ -122,6 +125,29 @@ export default function EhrenamtspauschaleePage() {
   const set = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) =>
     setState((s) => ({ ...s, [key]: value })), []);
 
+  // Auto-deselect payment when auszahlbetrag is 0 (full donation)
+  useEffect(() => {
+    if (!hydrated) return;
+    if (state.verzicht) {
+      // Auto-set spendenbetrag to verguetung when verzicht is checked
+      if (state.spendenbetrag !== state.verguetung) {
+        setState(prev => ({ ...prev, spendenbetrag: prev.verguetung }));
+      }
+      const v = parseFloat(state.verguetung) || 0;
+      const s = parseFloat(state.verguetung) || 0;
+      if (s > 0 && Math.max(0, v - s) === 0) {
+        if (state.zahlungBar || state.zahlungUeberweisung) {
+          setState(prev => ({ ...prev, zahlungBar: false, zahlungUeberweisung: false }));
+        }
+      }
+    } else {
+      if (state.spendenbetrag) {
+        setState(prev => ({ ...prev, spendenbetrag: "" }));
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.verzicht, state.verguetung, hydrated]);
+
   if (!hydrated) return null;
 
   const verguetungNum = parseFloat(state.verguetung) || 0;
@@ -129,6 +155,8 @@ export default function EhrenamtspauschaleePage() {
   const jahrNum = parseInt(state.jahr) || new Date().getFullYear();
   const limit = getEhrenamtLimit(jahrNum);
   const limitExceeded = verguetungNum > limit;
+  const auszahlbetrag = Math.max(0, verguetungNum - spendeNum);
+  const spendeWithinLimit = state.verzicht && spendeNum > 0 && spendeNum <= limit;
 
   const allChecks: { label: string; valid: boolean }[] = [
     { label: "Nachname", valid: !!state.nachname },
@@ -138,7 +166,6 @@ export default function EhrenamtspauschaleePage() {
     { label: "Geburtsdatum", valid: !!state.geburtsdatum },
     { label: "Telefon", valid: !!state.telefon },
     { label: "E-Mail", valid: !!state.email },
-    { label: "IBAN", valid: validateIban(state.iban) },
     { label: "Abteilung", valid: !!state.abteilung },
     { label: "Funktion", valid: !!state.funktion },
     { label: "Vergütung", valid: verguetungNum > 0 },
@@ -147,6 +174,10 @@ export default function EhrenamtspauschaleePage() {
     ...(state.verzicht ? [
       { label: "Spendenbetrag", valid: spendeNum > 0 },
     ] : []),
+    ...(auszahlbetrag === 0 && state.verzicht && spendeWithinLimit ? [] : [
+      { label: "Zahlungsart", valid: state.zahlungBar || state.zahlungUeberweisung },
+      ...(state.zahlungUeberweisung ? [{ label: "IBAN", valid: validateIban(state.iban) }] : []),
+    ]),
   ];
   const missing = allChecks.filter(c => !c.valid);
   const isComplete = missing.length === 0;
@@ -382,27 +413,6 @@ export default function EhrenamtspauschaleePage() {
         ]}
       />
 
-      {/* Bankverbindung */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
-        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">Bankverbindung</div>
-        <div className="px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className={`shrink-0 text-xs flex items-center gap-0.5 ${!validateIban(state.iban) ? "text-[#b11217]" : "text-gray-500"}`}>
-              IBAN{!validateIban(state.iban) && <span className="leading-none">*</span>}
-            </span>
-            <input type="text" value={state.iban} onChange={e => set("iban", e.target.value.toUpperCase())}
-              placeholder="DE00 0000 0000 0000 0000 00"
-              className={`flex-1 print:hidden ${fieldCls} ${state.iban === "" ? "border-gray-300 focus:border-[#b11217]" : validateIban(state.iban) ? "border-green-500 text-green-700 focus:border-green-500" : "border-[#b11217] text-[#b11217] focus:border-[#b11217]"} uppercase`} />
-            <span className="hidden print:inline text-sm uppercase">{state.iban}</span>
-            {state.iban !== "" && (
-              <span className={`shrink-0 text-xs ${validateIban(state.iban) ? "text-green-600" : "text-[#b11217]"}`}>
-                {validateIban(state.iban) ? "\u2713" : "\u2717"}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Legal declaration */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
         <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">
@@ -437,51 +447,64 @@ export default function EhrenamtspauschaleePage() {
         <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">
           Verzicht auf Auszahlung
         </div>
-        <div className="p-4 space-y-3">
-          <label className="flex items-start gap-3 cursor-pointer group">
+        <div className="p-4">
+          <label className="flex items-center gap-3 cursor-pointer group">
             <input
               type="checkbox"
               checked={state.verzicht}
               onChange={e => set("verzicht", e.target.checked)}
-              className="w-5 h-5 mt-0.5 shrink-0 accent-[#b11217]"
+              className="w-5 h-5 shrink-0 accent-[#b11217]"
             />
-            <div>
-              <span className="text-sm font-medium text-gray-800 group-hover:text-[#b11217] transition-colors">
-                Ich verzichte auf die Auszahlung der Ehrenamtspauschale
-              </span>
-              <p className="text-xs text-gray-400 mt-0.5 leading-snug">
-                Bei Aktivierung wird zusätzlich eine Verzichtserklärung erzeugt. Beide Dokumente werden beim Download als separate PDFs erstellt.
-              </p>
-            </div>
+            <span className="text-sm font-medium text-gray-800 group-hover:text-[#b11217] transition-colors">
+              Ich verzichte auf die Auszahlung der Ehrenamtspauschale
+            </span>
           </label>
+        </div>
+      </div>
 
-          {state.verzicht && (
-            <div className="ml-8 mt-2">
-              <div className="text-[10px] mb-0.5 flex items-center gap-0.5">
-                <span className={spendeNum <= 0 ? "text-[#b11217]" : "text-gray-400"}>Spendenbetrag (Euro)</span>
-                {spendeNum <= 0 && <span className="text-[#b11217] leading-none">*</span>}
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={state.spendenbetrag}
-                  onChange={e => set("spendenbetrag", e.target.value)}
-                  placeholder="0,00"
-                  className={`w-40 ${fieldCls} ${fieldBorder(state.spendenbetrag, true)}`}
-                />
-                <button type="button"
-                  onClick={() => set("spendenbetrag", state.verguetung)}
-                  className="inline-flex items-center gap-1 px-2 py-1 text-xs text-green-700 border border-green-600 rounded-lg hover:bg-green-600 hover:text-white transition-colors whitespace-nowrap"
-                  title="Spendenbetrag auf Vergütung setzen"
-                >
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>
-                  Aufwand spenden
-                </button>
-              </div>
+      {/* Auszahlbetrag & Zahlung */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
+        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">Auszahlbetrag &amp; Zahlung</div>
+        <div className="p-4 text-sm space-y-2">
+        {auszahlbetrag === 0 && state.verzicht && spendeWithinLimit ? (
+          <p className="text-green-700 text-sm font-medium">
+            Vielen Dank f&uuml;r Ihre Spende in H&ouml;he von {spendeNum.toFixed(2)}&nbsp;&euro; an den Verein!
+          </p>
+        ) : (
+          <>
+        {!state.zahlungBar && !state.zahlungUeberweisung && (
+          <p className="text-xs text-[#b11217] print:hidden">* Bitte eine Zahlungsart auswählen</p>
+        )}
+        <label className="flex items-center gap-2">
+          <input type="radio" name="zahlung" checked={state.zahlungBar} onChange={() => { set("zahlungBar", true); set("zahlungUeberweisung", false); }} className="w-4 h-4 print:hidden" />
+          <PrintCheckbox checked={state.zahlungBar} />
+          Auszahlbetrag bar erhalten
+        </label>
+        <label className="flex items-center gap-2">
+          <input type="radio" name="zahlung" checked={state.zahlungUeberweisung} onChange={() => { set("zahlungBar", false); set("zahlungUeberweisung", true); }} className="w-4 h-4 print:hidden" />
+          <PrintCheckbox checked={state.zahlungUeberweisung} />
+          Auszahlbetrag bitte &uuml;berweisen auf nachfolgende Bankverbindung
+        </label>
+        {state.zahlungUeberweisung && (
+          <div className="ml-6">
+            <div className="flex items-center gap-2">
+              <span className={`shrink-0 text-xs flex items-center gap-0.5 ${!validateIban(state.iban) ? "text-[#b11217]" : "text-gray-500"}`}>
+                IBAN:{!validateIban(state.iban) && <span className="leading-none">*</span>}
+              </span>
+              <input type="text" value={state.iban} onChange={e => set("iban", e.target.value.toUpperCase())}
+                placeholder="DE00 0000 0000 0000 0000 00"
+                className={`flex-1 print:hidden ${fieldCls} ${state.iban === "" ? "border-gray-300 focus:border-[#b11217]" : validateIban(state.iban) ? "border-green-500 text-green-700 focus:border-green-500" : "border-[#b11217] text-[#b11217] focus:border-[#b11217]"} uppercase`} />
+              <span className="hidden print:inline text-sm uppercase">{state.iban}</span>
+              {state.iban !== "" && (
+                <span className={`shrink-0 text-xs ${validateIban(state.iban) ? "text-green-600" : "text-[#b11217]"}`}>
+                  {validateIban(state.iban) ? "\u2713" : "\u2717"}
+                </span>
+              )}
             </div>
-          )}
+          </div>
+        )}
+          </>
+        )}
         </div>
       </div>
 
