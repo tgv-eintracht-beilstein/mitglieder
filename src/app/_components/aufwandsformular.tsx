@@ -1345,7 +1345,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                <AbteilungSelect value={state.abteilung} onChange={v => set("abteilung", v)} />
              ),
            },
-           ...(showKategorie ? [{
+           ...(showKategorie && state.abteilung ? [{
              label: "Kategorie",
              printValue: state.uebungsleiterKategorie,
              value: state.uebungsleiterKategorie || "Jugend",
