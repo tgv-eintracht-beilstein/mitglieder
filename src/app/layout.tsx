@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import TopNav from "@/app/_components/sidebar";
+import AuthButton from "@/app/_components/auth-button";
 import { Suspense } from "react";
 import PdfModeDetector from "@/app/_components/pdf-mode-detector";
 import "./globals.css";
@@ -48,8 +49,9 @@ export default function RootLayout({
               </h1>
               <p className="text-xs text-red-200">Mitgliederbereich</p>
             </div>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-3">
               <TopNav />
+              {/* <AuthButton /> */}
             </div>
           </div>
         </header>

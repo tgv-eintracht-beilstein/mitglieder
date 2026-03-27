@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getTokens, callApi } from "@/lib/auth";
 
 const pages = [
   // {
@@ -61,9 +65,31 @@ const pages = [
       </svg>
     ),
   },
+  // {
+  //   href: "/api-zugang",
+  //   label: "API-Zugang",
+  //   desc: "API-Schlüssel erstellen und Dokumentation für Integrationen",
+  //   icon: (
+  //     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+  //       <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+  //     </svg>
+  //   ),
+  // },
 ];
 
 export default function Home() {
+  const [apiResult, setApiResult] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const tokens = getTokens();
+    if (tokens) {
+      callApi("/api")
+        .then((data) => setApiResult(JSON.stringify(data)))
+        .catch((e) => setApiError(e.message));
+    }
+  }, []);
+
   return (
     <div className="max-w-2xl mx-auto mt-10">
       <div className="mb-10">
@@ -75,6 +101,17 @@ export default function Home() {
           Wählen Sie einen Bereich aus, um fortzufahren.
         </p>
       </div>
+
+      {apiResult && (
+        <div className="mb-6 bg-green-50 border border-green-200 rounded-xl px-5 py-4 text-sm text-green-800">
+          <span className="font-semibold">API-Antwort:</span> {apiResult}
+        </div>
+      )}
+      {apiError && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-xl px-5 py-4 text-sm text-red-800">
+          <span className="font-semibold">API-Fehler:</span> {apiError}
+        </div>
+      )}
 
       <div className="grid gap-3">
         {pages.map(({ href, label, desc, icon }) => (

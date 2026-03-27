@@ -8,6 +8,7 @@ import FormHeader, { formatDateDE } from "@/app/_components/form-header";
 import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
 import { UEBUNGSLEITER_CATEGORIES } from "@/lib/constants";
+import { syncSave, syncLoad, subscribe, uploadPdfAndSaveVersion } from "@/lib/sync";
 const KM_RATE = 0.3;
 const BESCHREIBUNGEN_KEY = "tgv_beschreibungen_v1";
 
@@ -952,35 +953,40 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
 
     try {
       const addr = loadSharedAddress();
-      const raw = localStorage.getItem(storageKey);
-      const saved = raw ? JSON.parse(raw) as FormState : null;
-      setState(s => ({
-        ...s,
-        ...(saved ?? {}),
-        // personal fields always come from shared store
-        nachname: addr.nachname, vorname: addr.vorname, strasse: addr.strasse,
-        plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon, email: addr.email,
-        // overrideDate comes from saved state (persistent)
-        overrideDate: saved?.overrideDate ?? null,
-      }));
-      // Load shared signature — fall back to scanning other form stores
-      let sig = loadSharedSignature();
-      if (!sig) {
-        const otherKeys = ["uebungsleiterpauschale_v1", "reisekosten_v1", "ehrenamtspauschale_verzicht_v1"];
-        for (const k of otherKeys) {
-          if (k === storageKey) continue;
-          try {
-            const r = localStorage.getItem(k);
-            if (r) { const p = JSON.parse(r); if (p?.signature) { sig = p.signature; break; } }
-          } catch {}
+      (async () => {
+        const saved = await syncLoad<FormState>(storageKey);
+        setState(s => {
+          const base = { ...s, ...(saved ?? {}), overrideDate: saved?.overrideDate ?? null };
+          return {
+            ...base,
+            ...(addr.nachname && { nachname: addr.nachname }),
+            ...(addr.vorname && { vorname: addr.vorname }),
+            ...(addr.strasse && { strasse: addr.strasse }),
+            ...(addr.plzOrt && { plzOrt: addr.plzOrt }),
+            ...(addr.geburtsdatum && { geburtsdatum: addr.geburtsdatum }),
+            ...(addr.telefon && { telefon: addr.telefon }),
+            ...(addr.email && { email: addr.email }),
+          };
+        });
+        let sig = loadSharedSignature();
+        if (!sig) {
+          const otherKeys = ["uebungsleiterpauschale_v1", "reisekosten_v1", "ehrenamtspauschale_verzicht_v1"];
+          for (const k of otherKeys) {
+            if (k === storageKey) continue;
+            try {
+              const r = localStorage.getItem(k);
+              if (r) { const p = JSON.parse(r); if (p?.signature) { sig = p.signature; break; } }
+            } catch {}
+          }
+          if (!sig && saved?.signature) sig = saved.signature;
+          if (sig) saveSharedSignature(sig);
         }
-        // Also check current form
-        if (!sig && saved?.signature) sig = saved.signature;
-        if (sig) saveSharedSignature(sig);
-      }
-      setSharedSignature(sig);
-    } catch {}
-    setHydrated(true);
+        setSharedSignature(sig);
+        setHydrated(true);
+      })();
+    } catch {
+      setHydrated(true);
+    }
   }, [storageKey]);
 
   // Detect ?s= share param
@@ -1020,8 +1026,17 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   useEffect(() => {
     if (!hydrated) return;
     localStorage.setItem(storageKey, JSON.stringify(state));
+    syncSave(storageKey, state);
     saveSharedAddress({ nachname: state.nachname, vorname: state.vorname, strasse: state.strasse, plzOrt: state.plzOrt, geburtsdatum: state.geburtsdatum, telefon: state.telefon, email: state.email });
   }, [state, hydrated, storageKey]);
+
+  // Real-time subscription
+  useEffect(() => {
+    if (!hydrated) return;
+    return subscribe(storageKey, (_key, data) => {
+      setState(data as FormState);
+    });
+  }, [hydrated, storageKey]);
 
   const set = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) =>
     setState((s) => ({ ...s, [key]: value })), []);
@@ -1264,6 +1279,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
 
       document.body.removeChild(iframe);
 
+      const pdfBlobs: { blob: Blob; title: string; vorname: string; nachname: string }[] = [];
       for (let i = 0; i < canvases.length; i++) {
         const canvas = canvases[i];
         const currentFilename = filenames[i];
@@ -1299,8 +1315,13 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           firstPage = false;
         }
         pdf.save(currentFilename);
+        pdfBlobs.push({ blob: pdf.output("blob"), title, vorname: state.vorname, nachname: state.nachname });
         if (i < canvases.length - 1) await new Promise(r => setTimeout(r, 500));
       }
+      // Upload PDFs to S3 and save version
+      try {
+        await uploadPdfAndSaveVersion(storageKey, state, pdfBlobs, `PDF Export – ${new Date().toLocaleDateString("de-DE")}`);
+      } catch {}
     } catch (e) {
       console.error(e);
       throw e;

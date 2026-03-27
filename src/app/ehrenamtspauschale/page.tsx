@@ -7,6 +7,7 @@ import DownloadButton from "@/app/_components/download-button";
 import VerzichtPageContent from "@/app/_components/verzicht-page-content";
 import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
+import { syncSave, syncLoad, subscribe, uploadPdfAndSaveVersion } from "@/lib/sync";
 import { validateIban } from "@/lib/iban";
 import { AbteilungSelect, ABTEILUNGEN, AbteilungIcon } from "@/app/_components/aufwandsformular";
 
@@ -76,31 +77,40 @@ export default function EhrenamtspauschaleePage() {
       }
     }
 
-    try {
-      const addr = loadSharedAddress();
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const saved = raw ? JSON.parse(raw) as FormState : null;
-      setState(s => ({
-        ...s,
-        ...(saved ?? {}),
-        nachname: addr.nachname, vorname: addr.vorname, strasse: addr.strasse,
-        plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon, email: addr.email,
-      }));
-      let sig = loadSharedSignature();
-      if (!sig) {
-        const otherKeys = ["uebungsleiterpauschale_v1", "reisekosten_v1", "ehrenamtspauschale_verzicht_v1"];
-        for (const k of otherKeys) {
-          try {
-            const r = localStorage.getItem(k);
-            if (r) { const p = JSON.parse(r); if (p?.signature) { sig = p.signature; break; } }
-          } catch {}
+    (async () => {
+      try {
+        const addr = loadSharedAddress();
+        const saved = await syncLoad<FormState>(STORAGE_KEY);
+        setState(s => {
+          const base = { ...s, ...(saved ?? {}) };
+          // Only override personal fields from shared address if non-empty
+          return {
+            ...base,
+            ...(addr.nachname && { nachname: addr.nachname }),
+            ...(addr.vorname && { vorname: addr.vorname }),
+            ...(addr.strasse && { strasse: addr.strasse }),
+            ...(addr.plzOrt && { plzOrt: addr.plzOrt }),
+            ...(addr.geburtsdatum && { geburtsdatum: addr.geburtsdatum }),
+            ...(addr.telefon && { telefon: addr.telefon }),
+            ...(addr.email && { email: addr.email }),
+          };
+        });
+        let sig = loadSharedSignature();
+        if (!sig) {
+          const otherKeys = ["uebungsleiterpauschale_v1", "reisekosten_v1", "ehrenamtspauschale_verzicht_v1"];
+          for (const k of otherKeys) {
+            try {
+              const r = localStorage.getItem(k);
+              if (r) { const p = JSON.parse(r); if (p?.signature) { sig = p.signature; break; } }
+            } catch {}
+          }
+          if (!sig && saved?.signature) sig = saved.signature;
+          if (sig) saveSharedSignature(sig);
         }
-        if (!sig && saved?.signature) sig = saved.signature;
-        if (sig) saveSharedSignature(sig);
-      }
-      setSharedSignature(sig);
-    } catch {}
-    setHydrated(true);
+        setSharedSignature(sig);
+      } catch {}
+      setHydrated(true);
+    })();
   }, []);
 
   useEffect(() => {
@@ -115,9 +125,18 @@ export default function EhrenamtspauschaleePage() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
+  // Real-time subscription — update form when data changes on another device
+  useEffect(() => {
+    if (!hydrated) return;
+    return subscribe(STORAGE_KEY, (_key, data) => {
+      setState(data as FormState);
+    });
+  }, [hydrated]);
+
   useEffect(() => {
     if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    syncSave(STORAGE_KEY, state);
     saveSharedAddress({ nachname: state.nachname, vorname: state.vorname, strasse: state.strasse, plzOrt: state.plzOrt, geburtsdatum: state.geburtsdatum, telefon: state.telefon, email: state.email });
   }, [state, hydrated]);
 
@@ -294,6 +313,25 @@ export default function EhrenamtspauschaleePage() {
       pdf.save(filenames[i]);
       if (i < canvases.length - 1) await new Promise(r => setTimeout(r, 500));
     }
+    // Upload PDFs to S3 and save version
+    try {
+      const pdfBlobs = canvases.map((canvas, i) => {
+        if (canvas.height < 100) return null;
+        const pdfDoc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+        const pageW = pdfDoc.internal.pageSize.getWidth();
+        const margin = 10;
+        const usableW = pageW - margin * 2;
+        const imgH = (canvas.height * usableW) / canvas.width;
+        pdfDoc.addImage(canvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, usableW, imgH);
+        return {
+          blob: pdfDoc.output("blob"),
+          title: "ehrenamtspauschale",
+          vorname: state.vorname,
+          nachname: state.nachname,
+        };
+      }).filter(Boolean) as { blob: Blob; title: string; vorname: string; nachname: string }[];
+      await uploadPdfAndSaveVersion(STORAGE_KEY, state, pdfBlobs, `PDF Export – ${new Date().toLocaleDateString("de-DE")}`);
+    } catch {}
   };
 
   // Year options: current year +/- 2

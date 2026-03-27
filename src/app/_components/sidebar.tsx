@@ -7,10 +7,12 @@ import { useState } from "react";
 const navItems = [
   // { href: "/mitglied-werden"label: "Mitglied werden" },
   { href: "/docs", label: "Dokumente" },
+  { href: "/formulare", label: "Formulare" },
   { href: "/mitgliedsbeitraege", label: "Mitgliedsbeiträge" },
   { href: "/reisekosten", label: "Reisekosten" },
   { href: "/uebungsleiterpauschale", label: "Übungsleiterpauschale" },
   { href: "/ehrenamtspauschale", label: "Ehrenamtspauschale" },
+  // { href: "/api-zugang", label: "API" },
 ];
 
 export default function TopNav() {
