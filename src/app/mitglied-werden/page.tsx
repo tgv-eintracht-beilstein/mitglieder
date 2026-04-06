@@ -8,7 +8,7 @@ import { validateIban } from "@/lib/iban";
 import { ABTEILUNGEN, AbteilungIcon, DateSelect } from "@/app/_components/aufwandsformular";
 import { loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import type { FormState, Person, Address } from "./types";
-import { defaultState, emptyPerson, emptyAddress } from "./types";
+import { defaultState, emptyPerson } from "./types";
 import { generateAllPdfs } from "./pdf-utils";
 
 const STORAGE_KEY = "mitglied_werden_v1";
@@ -53,63 +53,24 @@ function AbteilungenPicker({ selected, onChange }: { selected: string[]; onChang
   );
 }
 
-function AddressModal({ address, onSave, onClose }: { address: Address; onSave: (a: Address) => void; onClose: () => void }) {
-  const [d, setD] = useState(address);
-  const u = (k: keyof Address, v: string) => setD((s) => ({ ...s, [k]: v }));
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-base font-semibold">Adresse</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
-        </div>
-        <div className="p-5 space-y-3">
-          {([["Straße, Hausnummer", "strasse"], ["PLZ", "plz"], ["Ort", "ort"]] as const).map(([lbl, key]) => (
-            <div key={key}>
-              <div className="text-[10px] text-gray-400 mb-0.5">{lbl}</div>
-              <input type="text" value={d[key]} onChange={(e) => u(key, e.target.value)} className={`${fieldCls} border-gray-300 focus:border-[#b11217]`} />
-            </div>
-          ))}
-        </div>
-        <div className="p-5 border-t border-gray-100 flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Abbrechen</button>
-          <button onClick={() => { onSave(d); onClose(); }} className="px-4 py-2 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors">Speichern</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AddressLine({ person, adressen, onEdit, onAdd }: {
+function AddressFields({ person, adressen, onUpdate }: {
   person: Person; adressen: Address[];
-  onEdit: (a: Address) => void; onAdd: () => void;
+  onUpdate: (a: Address) => void;
 }) {
   const cur = adressen.find((a) => a.id === person.addressId);
+  if (!cur) return null;
+  const u = (k: keyof Address, v: string) => onUpdate({ ...cur, [k]: v });
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-x-4 gap-y-2 items-end">
-      <div className="grid grid-cols-[2fr_80px_1fr] gap-2">
-        <div>
-          <div className="text-[10px] text-gray-400 mb-0.5">Straße</div>
-          <div className={`${fieldCls} ${fb(cur?.strasse || "", true)} cursor-pointer min-h-[1.5rem]`} onClick={() => cur ? onEdit(cur) : onAdd()}>
-            {cur?.strasse || <span className="text-gray-300">–</span>}
-          </div>
-        </div>
-        <div>
-          <div className="text-[10px] text-gray-400 mb-0.5">PLZ</div>
-          <div className={`${fieldCls} ${fb(cur?.plz || "", true)} cursor-pointer min-h-[1.5rem]`} onClick={() => cur ? onEdit(cur) : onAdd()}>
-            {cur?.plz || <span className="text-gray-300">–</span>}
-          </div>
-        </div>
-        <div>
-          <div className="text-[10px] text-gray-400 mb-0.5">Ort</div>
-          <div className={`${fieldCls} ${fb(cur?.ort || "", true)} cursor-pointer min-h-[1.5rem]`} onClick={() => cur ? onEdit(cur) : onAdd()}>
-            {cur?.ort || <span className="text-gray-300">–</span>}
-          </div>
-        </div>
-      </div>
-      {adressen.length > 1 && (
-        <span className="text-xs text-gray-400">{adressen.filter(a => a.id !== person.addressId).map(a => a.label || [a.strasse, a.plz, a.ort].filter(Boolean).join(", ")).join(" · ")}</span>
-      )}
+    <div className="grid grid-cols-[2fr_80px_1fr] gap-2">
+      <Field label="Straße, Hausnummer" value={cur.strasse} required>
+        <input type="text" value={cur.strasse} onChange={(e) => u("strasse", e.target.value)} className={`${fieldCls} ${fb(cur.strasse, true)}`} />
+      </Field>
+      <Field label="PLZ" value={cur.plz} required>
+        <input type="text" value={cur.plz} onChange={(e) => u("plz", e.target.value)} className={`${fieldCls} ${fb(cur.plz, true)}`} />
+      </Field>
+      <Field label="Ort" value={cur.ort} required>
+        <input type="text" value={cur.ort} onChange={(e) => u("ort", e.target.value)} className={`${fieldCls} ${fb(cur.ort, true)}`} />
+      </Field>
     </div>
   );
 }
@@ -221,7 +182,6 @@ function MitgliedWerdenPage() {
   const [hydrated, setHydrated] = useState(false);
   const [signTarget, setSignTarget] = useState<SignTarget | null>(null);
   const [sharedSig, setSharedSig] = useState("");
-  const [editAddr, setEditAddr] = useState<Address | null>(null);
 
   useEffect(() => {
     try {
@@ -333,11 +293,7 @@ function MitgliedWerdenPage() {
                   <input type="email" value={p.email} onChange={(e) => updatePerson(p.id, { email: e.target.value })} className={`${fieldCls} border-gray-300 focus:border-[#b11217]`} />
                 </Field>
               </div>
-              <AddressLine
-                  person={p} adressen={state.adressen}
-                  onEdit={(a) => setEditAddr(a)}
-                  onAdd={() => setEditAddr(emptyAddress())}
-                />
+              <AddressFields person={p} adressen={state.adressen} onUpdate={(a) => saveAddress(a)} />
               <Field label="Abteilung(en)" value={p.abteilungen.length ? "ok" : ""} required>
                 <AbteilungenPicker selected={p.abteilungen} onChange={(v) => updatePerson(p.id, { abteilungen: v })} />
               </Field>
@@ -406,7 +362,7 @@ function MitgliedWerdenPage() {
       {/* SEPA */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
         <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">SEPA-Lastschriftmandat</div>
-        <div className="px-4 py-3 space-y-2">
+        <div className="px-4 py-3 space-y-3">
           <Field label="Kontoinhaber (falls abweichend)" value="skip">
             <input type="text" value={state.kontoinhaber} onChange={(e) => set("kontoinhaber", e.target.value)}
               placeholder={firstP ? `${firstP.vorname} ${firstP.nachname}` : ""}
@@ -416,53 +372,48 @@ function MitgliedWerdenPage() {
             <input type="text" value={state.iban} onChange={(e) => set("iban", e.target.value.toUpperCase())} placeholder="DE00 0000 0000 0000 0000 00"
               className={`${fieldCls} uppercase ${state.iban === "" ? "border-[#b11217] focus:border-[#b11217]" : validateIban(state.iban) ? "border-green-500 text-green-700 focus:border-green-500" : "border-[#b11217] text-[#b11217] focus:border-[#b11217]"}`} />
           </Field>
-        </div>
-      </div>
-
-      {/* Signature for SEPA */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
-        <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">Unterschrift SEPA-Mandat</div>
-        <div className="p-4 text-sm space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
-            <div className="flex flex-col">
-              <div className="flex-1 border-0 min-h-[3rem] print:min-h-0 flex items-end pb-1 text-gray-700 font-medium">
-                <input type="text" id="sig-date-mw"
-                  value={state.overrideDate !== null ? state.overrideDate : defaultDate}
-                  onChange={(e) => set("overrideDate", e.target.value)}
-                  className="flex-1 bg-transparent border-none outline-none p-0 m-0 focus:ring-0 print:hidden" />
-                {state.overrideDate !== null && (
-                  <button type="button" onClick={() => set("overrideDate", null)} className="p-1 text-gray-300 hover:text-[#b11217] transition-colors print:hidden" title="Zurücksetzen">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                )}
-                <span className="hidden print:inline">{state.overrideDate !== null ? state.overrideDate : defaultDate}</span>
-              </div>
-              <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Ort, Datum</div>
-            </div>
-            <div className="flex flex-col">
-              {state.signature && <div className="text-[7pt] text-green-600 leading-tight mb-1">&#10003; Einwilligung zur digitalen Unterschrift erteilt</div>}
-              <div className="flex-1 border-0 min-h-[3rem] print:min-h-0 flex flex-col justify-end">
-                {state.signature ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={state.signature} alt="Unterschrift" onClick={() => setSignTarget("sepa")}
-                    style={{ imageRendering: "auto" }}
-                    className="max-h-14 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity print:cursor-default" title="Klicken zum Bearbeiten" />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => setSignTarget("sepa")}
-                      className="mb-1 px-4 py-2 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors print:hidden">
-                      Unterschreiben
+          <div className="pt-3 border-t border-gray-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
+              <div className="flex flex-col">
+                <div className="flex-1 border-0 min-h-[3rem] print:min-h-0 flex items-end pb-1 text-gray-700 font-medium">
+                  <input type="text" id="sig-date-mw"
+                    value={state.overrideDate !== null ? state.overrideDate : defaultDate}
+                    onChange={(e) => set("overrideDate", e.target.value)}
+                    className="flex-1 bg-transparent border-none outline-none p-0 m-0 focus:ring-0 print:hidden" />
+                  {state.overrideDate !== null && (
+                    <button type="button" onClick={() => set("overrideDate", null)} className="p-1 text-gray-300 hover:text-[#b11217] transition-colors print:hidden" title="Zurücksetzen">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
-                    {state.personen[0]?.signature && (
-                      <button type="button" onClick={() => set("signature", state.personen[0].signature)}
-                        className="mb-1 px-4 py-2 text-sm border border-gray-200 rounded-lg hover:border-[#b11217] hover:text-[#b11217] transition-colors print:hidden">
-                        Von Person 1 übernehmen
-                      </button>
-                    )}
-                  </div>
-                )}
+                  )}
+                  <span className="hidden print:inline">{state.overrideDate !== null ? state.overrideDate : defaultDate}</span>
+                </div>
+                <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Ort, Datum</div>
               </div>
-              <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Unterschrift Kontoinhaber</div>
+              <div className="flex flex-col">
+                {state.signature && <div className="text-[7pt] text-green-600 leading-tight mb-1">&#10003; Einwilligung zur digitalen Unterschrift erteilt</div>}
+                <div className="flex-1 border-0 min-h-[3rem] print:min-h-0 flex flex-col justify-end">
+                  {state.signature ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={state.signature} alt="Unterschrift" onClick={() => setSignTarget("sepa")}
+                      style={{ imageRendering: "auto" }}
+                      className="max-h-14 w-auto object-contain cursor-pointer hover:opacity-80 transition-opacity print:cursor-default" title="Klicken zum Bearbeiten" />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setSignTarget("sepa")}
+                        className="mb-1 px-4 py-2 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors print:hidden">
+                        Unterschreiben
+                      </button>
+                      {state.personen[0]?.signature && (
+                        <button type="button" onClick={() => set("signature", state.personen[0].signature)}
+                          className="mb-1 px-4 py-2 text-sm border border-gray-200 rounded-lg hover:border-[#b11217] hover:text-[#b11217] transition-colors print:hidden">
+                          Von Person 1 übernehmen
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Unterschrift Kontoinhaber</div>
+              </div>
             </div>
           </div>
         </div>
@@ -505,12 +456,6 @@ function MitgliedWerdenPage() {
           }}
           onClose={() => setSignTarget(null)}
         />
-      )}
-
-      {editAddr && (
-        <AddressModal address={editAddr}
-          onSave={(addr) => saveAddress(addr)}
-          onClose={() => setEditAddr(null)} />
       )}
     </div>
   );
