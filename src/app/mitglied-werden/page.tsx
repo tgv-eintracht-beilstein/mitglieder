@@ -8,7 +8,7 @@ import { validateIban } from "@/lib/iban";
 import { ABTEILUNGEN, AbteilungIcon, DateSelect } from "@/app/_components/aufwandsformular";
 import { loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import type { FormState, Person, Address } from "./types";
-import { defaultState, emptyPerson } from "./types";
+import { defaultState, emptyPerson, emptyAddress } from "./types";
 import { generateAllPdfs } from "./pdf-utils";
 
 const STORAGE_KEY = "mitglied_werden_v1";
@@ -186,7 +186,21 @@ function MitgliedWerdenPage() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setState(JSON.parse(raw));
+      if (raw) {
+        const s: FormState = JSON.parse(raw);
+        // Migrate: ensure each person has their own address
+        const seen = new Set<string>();
+        for (const p of s.personen) {
+          if (seen.has(p.addressId)) {
+            const src = s.adressen.find((a) => a.id === p.addressId);
+            const copy = { ...emptyAddress(), strasse: src?.strasse || "", plz: src?.plz || "", ort: src?.ort || "" };
+            s.adressen.push(copy);
+            p.addressId = copy.id;
+          }
+          seen.add(p.addressId);
+        }
+        setState(s);
+      }
     } catch {}
     setSharedSig(loadSharedSignature());
     setHydrated(true);
@@ -208,9 +222,11 @@ function MitgliedWerdenPage() {
   const addPerson = useCallback(() => {
     setState((s) => {
       const last = s.personen[s.personen.length - 1];
-      const p = emptyPerson(last?.addressId || s.adressen[0]?.id || "");
+      const lastAddr = last ? s.adressen.find((a) => a.id === last.addressId) : null;
+      const newAddr = { ...emptyAddress(), strasse: lastAddr?.strasse || "", plz: lastAddr?.plz || "", ort: lastAddr?.ort || "" };
+      const p = emptyPerson(newAddr.id);
       if (last) { p.nachname = last.nachname; p.abteilungen = [...last.abteilungen]; p.signature = last.signature; }
-      return { ...s, personen: [...s.personen, p] };
+      return { ...s, adressen: [...s.adressen, newAddr], personen: [...s.personen, p] };
     });
   }, []);
 

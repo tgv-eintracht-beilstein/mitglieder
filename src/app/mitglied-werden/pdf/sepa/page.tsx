@@ -22,42 +22,72 @@ export default function SepaPdf() {
   const addr = first ? state.adressen.find((a) => a.id === first.addressId) : null;
   const today = new Date().toLocaleDateString("de-DE");
   const city = addr?.ort || "Beilstein";
-  const namen = state.personen.map((p) => `${p.vorname} ${p.nachname}`).join(", ");
   const inhaber = state.kontoinhaber || (first ? `${first.vorname} ${first.nachname}` : "");
 
-  return (
-    <div className="p-6 text-sm text-gray-700 leading-relaxed">
-      <PdfHeader subtitle={`SEPA-Lastschriftmandat · ${inhaber}`} />
-      <h1 className="text-lg font-bold text-[#b11217] mb-4">SEPA-Lastschriftmandat</h1>
+  const fieldCls = "border-b border-gray-300 py-1 min-h-[1.5rem] text-sm";
+  const labelCls = "text-[9px] text-gray-400 uppercase tracking-wider mb-0.5";
 
-      <div className="border border-gray-200 rounded-lg p-4 mb-4">
-        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Gläubiger</div>
-        <p>TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V.</p>
-        <p>Albert-Einstein-Str. 20, 71717 Beilstein</p>
+  return (
+    <div className="p-8 text-sm text-gray-700 leading-relaxed">
+      <PdfHeader />
+      <h1 className="text-lg font-bold text-[#b11217] uppercase tracking-wide mb-4">SEPA Lastschriftmandat</h1>
+
+      <div className="text-xs text-gray-600 space-y-2 mb-6">
+        <p>
+          Ich ermächtige den TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V. bis auf Widerruf, Zahlungen von meinem Konto mittels
+          Lastschrift einzuziehen. Zugleich weise ich mein Kreditinstitut an, die vom TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V.
+          auf mein Konto gezogenen Lastschriften einzulösen. Das untenstehende Kreditinstitut wird bei Nichteinlösung
+          einer erhobenen Lastschrift, bei Widerspruch oder nach Kontoauflösung ermächtigt, dem TGV
+          &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V. auf Anforderung Name und Anschrift des/der Verfügungsberechtigen
+          mitzuteilen, damit ein Anspruch erhoben werden kann. Entstehende Kosten für Rücklastschriften seitens der
+          Bank gehen zu meinen Lasten.
+        </p>
+        <p>
+          Bei Rechnungsstellung wird zur Deckung der Mehrkosten ein Aufwandszuschlag in Höhe von &euro;&thinsp;5,00 erhoben.
+        </p>
+        <p>
+          Gläubiger-Identifikationsnummer: DE66ZZZ00000274455
+        </p>
       </div>
 
-      <div className="border border-gray-200 rounded-lg p-4 mb-4">
-        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Zahlungspflichtiger / Kontoinhaber</div>
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div><span className="text-gray-400 text-xs">Kontoinhaber</span><br />{inhaber}</div>
-          <div><span className="text-gray-400 text-xs">Anschrift</span><br />{addr?.strasse}, {addr?.plz} {addr?.ort}</div>
-          <div className="col-span-2"><span className="text-gray-400 text-xs">IBAN</span><br /><span className="font-mono tracking-wider">{state.iban}</span></div>
+      <div className="space-y-3 mb-6">
+        <div>
+          <div className={labelCls}>Kontoinhaber (Vorname, Name)</div>
+          <div className={fieldCls}>{inhaber}</div>
+        </div>
+        <div>
+          <div className={labelCls}>Straße, Hausnummer</div>
+          <div className={fieldCls}>{addr?.strasse}</div>
+        </div>
+        <div>
+          <div className={labelCls}>PLZ, Ort</div>
+          <div className={fieldCls}>{addr?.plz} {addr?.ort}</div>
+        </div>
+        <div>
+          <div className={labelCls}>Bank</div>
+          <div className={fieldCls}></div>
+        </div>
+        <div>
+          <div className={labelCls}>BIC</div>
+          <div className={fieldCls}></div>
+        </div>
+        <div>
+          <div className={labelCls}>IBAN</div>
+          <div className={`${fieldCls} font-mono tracking-wider`}>{state.iban}</div>
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-lg p-4 mb-4">
-        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Mitglieder</div>
-        <p>{namen}</p>
+      <div className="text-xs text-gray-600 space-y-2 mb-8">
+        <p>
+          Ihre Mandatsreferenznummer wird Ihre zukünftige Mitgliedsnummer sein.
+        </p>
+        <p>
+          Einzugsdaten und fällige Beträge entnehmen Sie bitte dem Dokument Vereins- und Abteilungsbeiträge,
+          der Finanz- und Beitragsordnung.
+        </p>
       </div>
 
-      <div className="space-y-3 text-sm mb-6">
-        <p>Ich ermächtige den TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V., Zahlungen von meinem Konto mittels Lastschrift einzuziehen. Zugleich weise ich mein Kreditinstitut an, die vom Verein auf mein Konto gezogenen Lastschriften einzulösen.</p>
-        <p>Die Beiträge des Vereins werden durch Abbuchungsermächtigung im Lastschriftverfahren erhoben (vgl. Beitragsordnung §&thinsp;2 Abs.&thinsp;12). Die Einzugsermächtigung kann jederzeit schriftlich widerrufen werden.</p>
-        <p>Hinweis: Ich kann innerhalb von acht Wochen, beginnend mit dem Belastungsdatum, die Erstattung des belasteten Betrages verlangen. Es gelten dabei die mit meinem Kreditinstitut vereinbarten Bedingungen.</p>
-        <p>Ich bin verpflichtet, Kontenänderungen umgehend der Geschäftsstelle mitzuteilen (vgl. Beitragsordnung §&thinsp;2 Abs.&thinsp;5). Bei Rücklastschriften werden die anfallenden Gebühren dem Mitglied in Rechnung gestellt.</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-8 mt-16 text-xs text-gray-400 items-end">
+      <div className="grid grid-cols-2 gap-8 mt-12 text-xs text-gray-400 items-end">
         <div>
           <div className="h-14 flex items-end pb-1 text-gray-700 font-medium">{city}, {today}</div>
           <div className="border-t border-gray-400 pt-1">Ort, Datum</div>
@@ -72,7 +102,7 @@ export default function SepaPdf() {
               </>
             )}
           </div>
-          <div className="border-t border-gray-400 pt-1">Unterschrift Kontoinhaber</div>
+          <div className="border-t border-gray-400 pt-1">Unterschrift</div>
         </div>
       </div>
 

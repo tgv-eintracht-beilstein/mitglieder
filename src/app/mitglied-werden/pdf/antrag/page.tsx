@@ -14,6 +14,15 @@ function formatDate(v: string) {
   return m ? `${m[3]}.${m[2]}.${m[1]}` : v;
 }
 
+function isMinor(geb: string) {
+  if (!geb) return false;
+  const [y, m, d] = geb.split("-").map(Number);
+  const t = new Date();
+  let a = t.getFullYear() - y;
+  if (t.getMonth() + 1 < m || (t.getMonth() + 1 === m && t.getDate() < d)) a--;
+  return a < 18;
+}
+
 export default function Wrapper() {
   return <Suspense><AntragPdf /></Suspense>;
 }
@@ -34,60 +43,87 @@ function AntragPdf() {
   const p = state.personen[idx];
   if (!p) return null;
   const addr = state.adressen.find((a) => a.id === p.addressId);
-
   const today = new Date().toLocaleDateString("de-DE");
   const city = addr?.ort || "Beilstein";
 
+  const fieldCls = "border-b border-gray-300 py-1 min-h-[1.5rem] text-sm";
+  const labelCls = "text-[9px] text-gray-400 uppercase tracking-wider mb-0.5";
+
   return (
-    <div className="p-6 text-sm text-gray-700 leading-relaxed">
-      <PdfHeader subtitle={`Aufnahmeantrag · ${p.vorname} ${p.nachname}`} />
-      <h1 className="text-lg font-bold text-[#b11217] mb-4">Aufnahmeantrag</h1>
+    <div className="p-8 text-sm text-gray-700 leading-relaxed">
+      <PdfHeader />
+      <h1 className="text-lg font-bold text-[#b11217] uppercase tracking-wide mb-6">Aufnahmeantrag</h1>
 
-      <p className="mb-4">Hiermit beantrage ich die Aufnahme in den TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V.</p>
-
-      <div className="border border-gray-200 rounded-lg p-4 mb-4">
-        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Persönliche Angaben</div>
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div><span className="text-gray-400 text-xs">Nachname</span><br />{p.nachname}</div>
-          <div><span className="text-gray-400 text-xs">Vorname</span><br />{p.vorname}</div>
-          <div><span className="text-gray-400 text-xs">Geburtsdatum</span><br />{formatDate(p.geburtsdatum)}</div>
-          <div><span className="text-gray-400 text-xs">Telefon</span><br />{p.telefon}</div>
-          <div><span className="text-gray-400 text-xs">Anschrift</span><br />{addr?.strasse}, {addr?.plz} {addr?.ort}</div>
-          <div><span className="text-gray-400 text-xs">E-Mail</span><br />{p.email}</div>
+      <div className="space-y-3 mb-6">
+        <div>
+          <div className={labelCls}>Eintrittsdatum</div>
+          <div className={fieldCls}>{today}</div>
+        </div>
+        <div>
+          <div className={labelCls}>Straße, Hausnummer</div>
+          <div className={fieldCls}>{addr?.strasse}</div>
+        </div>
+        <div>
+          <div className={labelCls}>PLZ, Ort</div>
+          <div className={fieldCls}>{addr?.plz} {addr?.ort}</div>
+        </div>
+        <div>
+          <div className={labelCls}>Telefon</div>
+          <div className={fieldCls}>{p.telefon}</div>
+        </div>
+        <div>
+          <div className={labelCls}>E-Mail</div>
+          <div className={fieldCls}>{p.email}</div>
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-lg p-4 mb-4">
-        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Gewünschte Abteilung(en)</div>
-        {p.abteilungen.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {p.abteilungen.map((name) => {
-              const abt = ABTEILUNGEN.find((a) => a.name === name);
-              return (
-                <span key={name} className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-50 rounded-full text-sm">
-                  {abt && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={`/abteilung.${abt.slug}.png`} alt="" width={16} height={16} />
-                  )}
-                  {name}
-                </span>
-              );
-            })}
-          </div>
-        ) : (
-          <span className="text-gray-400">– keine Abteilung gewählt –</span>
-        )}
-      </div>
-
-      <p className="text-xs text-gray-500 mb-6">
-        Ich erkenne die Satzung und die Ordnungen des Vereins in der jeweils gültigen Fassung an.
-        Mir ist bekannt, dass die Mitgliedschaft durch freiwilligen Austritt zum Ende des laufenden
-        Jahres unter Einhaltung einer Kündigungsfrist von 30 Tagen beendet werden kann. Die Kündigung
-        muss dem Vorstand schriftlich zugestellt werden (§&thinsp;6 Abs.&thinsp;3 der Satzung). Die Beitragspflicht
-        richtet sich nach der Beitragsordnung in der jeweils gültigen Fassung.
+      <p className="text-xs text-gray-500 mb-3">
+        Mitgliedschaft für folgende Personen (es muss für jede Person eine Datenschutzerklärung ausgefüllt werden):
       </p>
 
-      <div className="grid grid-cols-2 gap-8 mt-16 text-xs text-gray-400 items-end">
+      <table className="w-full border-collapse mb-6 text-xs">
+        <thead>
+          <tr className="border-b-2 border-gray-300">
+            <th className="text-left py-1.5 font-bold text-gray-500 uppercase tracking-wider">Name</th>
+            <th className="text-left py-1.5 font-bold text-gray-500 uppercase tracking-wider">Vorname</th>
+            <th className="text-left py-1.5 font-bold text-gray-500 uppercase tracking-wider">Geschlecht</th>
+            <th className="text-left py-1.5 font-bold text-gray-500 uppercase tracking-wider">Geburtsdatum</th>
+            <th className="text-left py-1.5 font-bold text-gray-500 uppercase tracking-wider">Abteilung</th>
+          </tr>
+        </thead>
+        <tbody>
+          {state.personen.map((person) => {
+            const abtNames = person.abteilungen.map((name) => {
+              const abt = ABTEILUNGEN.find((a) => a.name === name);
+              return abt ? name : name;
+            });
+            return (
+              <tr key={person.id} className="border-b border-gray-200">
+                <td className="py-2">{person.nachname}</td>
+                <td className="py-2">{person.vorname}</td>
+                <td className="py-2"></td>
+                <td className="py-2">{formatDate(person.geburtsdatum)}</td>
+                <td className="py-2">{abtNames.join(", ")}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <div className="text-xs text-gray-600 space-y-2 mb-8">
+        <p>
+          Mit der Genehmigung durch alle Erziehungsberechtigten übernehmen die bzw. übernimmt der
+          Unterzeichnende die Haftung für die Beitragspflicht. Mit der Unterzeichnung bzw. Genehmigung durch den
+          Erziehungsberechtigten werden die Satzung sowie alle Vereinsordnungen, insbesondere die Beitragsordnung,
+          anerkannt. Die benannten Ordnungen des TGV &bdquo;Eintracht&ldquo; Beilstein sind in der Geschäftsstelle erhältlich.
+        </p>
+        <p>
+          Kündigungen sind ausschließlich zum Jahresende (31.12.) möglich und müssen der Geschäftsstelle bis
+          zum 30.11. des Jahres in schriftlicher Form vorliegen.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-8 mt-12 text-xs text-gray-400 items-end">
         <div>
           <div className="h-14 flex items-end pb-1 text-gray-700 font-medium">{city}, {today}</div>
           <div className="border-t border-gray-400 pt-1">Ort, Datum</div>
@@ -102,7 +138,7 @@ function AntragPdf() {
               </>
             )}
           </div>
-          <div className="border-t border-gray-400 pt-1">Unterschrift {p.vorname} {p.nachname}{p.geburtsdatum && (() => { const [y,m,d] = p.geburtsdatum.split("-").map(Number); const t = new Date(); let a = t.getFullYear()-y; if(t.getMonth()+1<m||(t.getMonth()+1===m&&t.getDate()<d))a--; return a < 18 ? " / Erziehungsberechtigte/r" : ""; })()}</div>
+          <div className="border-t border-gray-400 pt-1">Unterschrift{isMinor(p.geburtsdatum) ? " (Erziehungsberechtigte/r)" : ""}</div>
         </div>
       </div>
 
