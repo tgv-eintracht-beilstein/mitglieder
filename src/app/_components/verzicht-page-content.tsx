@@ -153,7 +153,8 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={state.signature} alt="Unterschrift"
                     onClick={onSignClick}
-                    className="max-h-14 w-auto object-contain cursor-pen hover:opacity-80 transition-opacity print:cursor-default"
+                    style={{ height: 56, width: "auto", imageRendering: "auto", objectFit: "contain" }}
+                    className="cursor-pen hover:opacity-80 transition-opacity print:cursor-default"
                     title="Klicken zum Bearbeiten" />
                 ) : (
                   onSignClick && (

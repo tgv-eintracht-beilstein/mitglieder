@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-import TopNav from "@/app/_components/sidebar";
+import MobileNav, { LeftNav, RightNav } from "@/app/_components/sidebar";
 import AuthButton from "@/app/_components/auth-button";
 import { Suspense } from "react";
 import PdfModeDetector from "@/app/_components/pdf-mode-detector";
@@ -29,34 +29,42 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} bg-[#f6f7f9] text-gray-800`}>
         <Suspense><PdfModeDetector /></Suspense>
-        {/* Top header */}
-        <header className="bg-gradient-to-r from-[#b11217] to-[#8f0f13] text-white print:hidden">
-          <div className="max-w-screen-xl mx-auto px-6 py-4 flex items-center gap-4">
-            <Link href="/">
-              <Image
-                src="/tgv-logo.png"
-                alt="TGV Logo"
-                width={48}
-                height={48}
-                className="bg-white rounded-lg p-1 shrink-0 hover:opacity-90 transition-opacity"
-                loading="eager"
-                unoptimized
-              />
-            </Link>
-            <div className="flex-1 min-w-0 hidden md:block">
-              <h1 className="text-lg font-bold leading-tight whitespace-nowrap">
-                TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e. V.
-              </h1>
-              <p className="text-xs text-red-200">Mitgliederbereich</p>
-            </div>
-            <div className="ml-auto flex items-center gap-3">
-              <TopNav />
-              {/* <AuthButton /> */}
+        {/* Top header — matches WordPress TGV style */}
+        <header className="site-header fixed top-0 left-0 right-0 z-30 border-b border-[#6b0a0e] text-white print:hidden">
+          <div className="max-w-screen-xl mx-auto px-6">
+            <div className="flex items-center justify-between h-16">
+              {/* Left nav (desktop) */}
+              <div className="hidden [@media(min-width:1280px)]:flex items-center flex-1">
+                <LeftNav />
+              </div>
+
+              {/* Center logo — overlaps below header */}
+              <Link href="/" className="flex items-center justify-center shrink-0 mx-6 lg:mx-10 relative z-10 !no-underline group">
+                <Image
+                  src="/tgv-logo.png"
+                  alt="TGV Logo"
+                  width={56}
+                  height={56}
+                  className="site-logo relative drop-shadow-lg"
+                  loading="eager"
+                  unoptimized
+                />
+              </Link>
+
+              {/* Right nav (desktop) + mobile toggle */}
+              <div className="flex items-center flex-1 justify-end">
+                <div className="hidden [@media(min-width:1280px)]:flex">
+                  <RightNav />
+                </div>
+                <div className="[@media(min-width:1280px)]:hidden print:hidden">
+                  <MobileNav />
+                </div>
+              </div>
             </div>
           </div>
         </header>
 
-        <main className="max-w-screen-xl mx-auto py-8 px-4 md:px-8 min-h-[calc(100vh-64px)]">
+        <main className="max-w-screen-xl mx-auto py-8 px-4 md:px-8 min-h-[calc(100vh-64px)] pt-24">
           {children}
         </main>
 

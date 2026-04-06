@@ -7,6 +7,57 @@
   --primary-dark: #8f0f13;
 }
 
+/* Animated header gradient — matches WordPress TGV */
+@property --cloud1-x {
+  inherits: false;
+  initial-value: 20%;
+  syntax: '<percentage>';
+}
+@property --cloud2-x {
+  inherits: false;
+  initial-value: 70%;
+  syntax: '<percentage>';
+}
+@property --cloud3-x {
+  inherits: false;
+  initial-value: 45%;
+  syntax: '<percentage>';
+}
+
+.site-header {
+  overflow: visible;
+  background:
+    radial-gradient(ellipse 40% 120% at var(--cloud1-x) 50%, rgba(220, 38, 38, 0.6), transparent 70%),
+    radial-gradient(ellipse 35% 150% at var(--cloud2-x) 40%, rgba(143, 15, 19, 0.7), transparent 60%),
+    radial-gradient(ellipse 30% 130% at var(--cloud3-x) 60%, rgba(0, 0, 0, 0.5), transparent 65%),
+    radial-gradient(ellipse 80% 200% at 50% 100%, #dc2626, #8f0f13 40%, #111 90%);
+  animation: header-clouds 12s ease-in-out infinite;
+}
+
+@keyframes header-clouds {
+  0%, 100% {
+    --cloud1-x: 20%;
+    --cloud2-x: 70%;
+    --cloud3-x: 45%;
+  }
+  33% {
+    --cloud1-x: 55%;
+    --cloud2-x: 30%;
+    --cloud3-x: 75%;
+  }
+  66% {
+    --cloud1-x: 80%;
+    --cloud2-x: 50%;
+    --cloud3-x: 15%;
+  }
+}
+
+/* Logo overlaps below header */
+.site-logo {
+  transition: all 0.3s;
+  margin-top: 50%;
+}
+
 /* Force 24h display on all time inputs */
 input[type="time"] {
   -webkit-appearance: none;
@@ -160,6 +211,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   width: 100% !important;
 }
 .pdf-capture .ehrenamtspauschale-form > * {
+  width: 100% !important;
+  max-width: none !important;
+}
+.pdf-capture .mitglied-werden-form {
+  padding: 0 0 40px 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+.pdf-capture .mitglied-werden-form > * {
   width: 100% !important;
   max-width: none !important;
 }

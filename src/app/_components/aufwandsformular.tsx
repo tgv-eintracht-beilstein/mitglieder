@@ -1203,6 +1203,16 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
       ));
 
+      // Force signature images to render at natural aspect ratio
+      Array.from(iframeDoc.images).forEach((img) => {
+        if (img.alt === "Unterschrift" && img.naturalWidth && img.naturalHeight) {
+          const h = img.getBoundingClientRect().height || 56;
+          const w = (img.naturalWidth / img.naturalHeight) * h;
+          img.style.width = `${w}px`;
+          img.style.height = `${h}px`;
+        }
+      });
+
       // Force layout recalculation
       iframe.style.height = iframeBody.scrollHeight + "px";
       await new Promise(r => setTimeout(r, 300));
@@ -1781,7 +1791,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               {state.signature ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={state.signature} alt="Unterschrift" onClick={() => setShowSignModal(true)}
-                  className="max-h-14 w-auto object-contain cursor-pen hover:opacity-80 transition-opacity print:cursor-default"
+                  style={{ height: 56, width: "auto", imageRendering: "auto", objectFit: "contain" }}
+                  className="cursor-pen hover:opacity-80 transition-opacity print:cursor-default"
                   title="Klicken zum Bearbeiten" />
               ) : (
                 <button onClick={() => setShowSignModal(true)}

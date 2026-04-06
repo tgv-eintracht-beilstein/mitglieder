@@ -4,83 +4,90 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-const navItems = [
-  // { href: "/mitglied-werden"label: "Mitglied werden" },
+const leftItems = [
   { href: "/docs", label: "Dokumente" },
-  { href: "/formulare", label: "Formulare" },
   { href: "/mitgliedsbeitraege", label: "Mitgliedsbeiträge" },
+  { href: "/mitglied-werden", label: "Mitglied werden" },
+];
+
+const rightItems = [
   { href: "/reisekosten", label: "Reisekosten" },
   { href: "/uebungsleiterpauschale", label: "Übungsleiterpauschale" },
   { href: "/ehrenamtspauschale", label: "Ehrenamtspauschale" },
-  // { href: "/api-zugang", label: "API" },
 ];
 
-export default function TopNav() {
+const allItems = [...leftItems, ...rightItems];
+
+const linkCls = (active: boolean) =>
+  `inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-sm font-semibold transition-all duration-200 !no-underline ${
+    active ? "bg-white text-[#8f0f13] border-white" : "border-white/30 text-white hover:bg-white hover:text-[#8f0f13]"
+  }`;
+
+export function LeftNav() {
+  const pathname = usePathname();
+  return (
+    <nav className="flex items-center gap-2">
+      {leftItems.map(({ href, label }) => (
+        <Link key={href} href={href} className={linkCls(pathname === href)}>{label}</Link>
+      ))}
+    </nav>
+  );
+}
+
+export function RightNav() {
+  const pathname = usePathname();
+  return (
+    <nav className="flex items-center gap-2">
+      {rightItems.map(({ href, label }) => (
+        <Link key={href} href={href} className={linkCls(pathname === href)}>{label}</Link>
+      ))}
+      <a href="https://tgveintrachtbeilstein.de"
+        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/30 text-sm font-semibold text-white hover:bg-white hover:text-[#8f0f13] transition-all duration-200 !no-underline">
+        Webseite
+      </a>
+    </nav>
+  );
+}
+
+export default function MobileNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      {/* Desktop nav */}
-      <nav className="hidden [@media(min-width:1075px)]:flex items-center gap-1 print:hidden">
-        {navItems.map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              pathname === href
-                ? "bg-white text-[#b11217]"
-                : "text-red-100 hover:bg-white/20 hover:text-white"
-            }`}
-          >
-            {label}
-          </Link>
-        ))}
-      </nav>
-
-      {/* Mobile hamburger button */}
       <button
-        className="[@media(max-width:1074px)]:flex hidden print:hidden p-2 rounded-lg hover:bg-white/20 transition-colors"
+        className="p-2 rounded-lg text-white hover:bg-white/10 transition-colors"
         onClick={() => setOpen(true)}
         aria-label="Menü öffnen"
       >
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <line x1="3" y1="6" x2="19" y2="6" />
-          <line x1="3" y1="11" x2="19" y2="11" />
-          <line x1="3" y1="16" x2="19" y2="16" />
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+          <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
         </svg>
       </button>
 
-      {/* Fullscreen mobile menu */}
       {open && (
-        <div className="fixed inset-0 z-50 bg-gradient-to-b from-[#b11217] to-[#8f0f13] flex flex-col print:hidden">
-          <div className="flex justify-end p-5">
-            <button
-              onClick={() => setOpen(false)}
-              aria-label="Menü schließen"
-              className="p-2 rounded-lg hover:bg-white/20 transition-colors text-white"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <line x1="4" y1="4" x2="20" y2="20" />
-                <line x1="20" y1="4" x2="4" y2="20" />
-              </svg>
-            </button>
-          </div>
-          <nav className="flex flex-col items-center justify-center flex-1 gap-6">
-            {navItems.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setOpen(false)}
-                className={`text-2xl font-semibold transition-colors ${
-                  pathname === href
-                    ? "text-white"
-                    : "text-red-200 hover:text-white"
-                }`}
-              >
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center" style={{
+          background: "radial-gradient(ellipse 40% 120% at 20% 50%, rgba(220,38,38,0.6), transparent 70%), radial-gradient(ellipse 35% 150% at 70% 40%, rgba(143,15,19,0.7), transparent 60%), radial-gradient(ellipse 30% 130% at 45% 60%, rgba(0,0,0,0.5), transparent 65%), radial-gradient(ellipse 80% 200% at 50% 100%, #dc2626, #8f0f13 40%, #111 90%)",
+        }}>
+          <button onClick={() => setOpen(false)} aria-label="Menü schließen"
+            className="absolute top-5 right-5 p-2 rounded-lg text-white hover:bg-white/10 transition-colors">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <nav className="flex flex-col items-center gap-2 w-full max-w-xs">
+            {allItems.map(({ href, label }) => (
+              <Link key={href} href={href} onClick={() => setOpen(false)}
+                className={`block px-4 py-3 rounded-full text-lg font-semibold transition-colors !no-underline ${
+                  pathname === href ? "text-white bg-white/10" : "text-white hover:bg-white/10"
+                }`}>
                 {label}
               </Link>
             ))}
+            <a href="https://tgveintrachtbeilstein.de"
+              className="block px-4 py-3 rounded-full text-lg font-semibold text-white hover:bg-white/10 transition-colors !no-underline">
+              Webseite
+            </a>
           </nav>
         </div>
       )}

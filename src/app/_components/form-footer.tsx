@@ -46,6 +46,16 @@ export default function FormFooter({ onReset, filename = "formular.pdf", content
         )
       );
 
+      // Force signature images to render at natural aspect ratio
+      Array.from(iframeDoc.images).forEach((img) => {
+        if (img.alt === "Unterschrift" && img.naturalWidth && img.naturalHeight) {
+          const h = img.getBoundingClientRect().height || 56;
+          const w = (img.naturalWidth / img.naturalHeight) * h;
+          img.style.width = `${w}px`;
+          img.style.height = `${h}px`;
+        }
+      });
+
       // Size iframe to full content height
       iframe.style.height = iframeBody.scrollHeight + "px";
       await new Promise(r => setTimeout(r, 200));

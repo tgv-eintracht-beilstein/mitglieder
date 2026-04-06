@@ -23,6 +23,15 @@ export default function DownloadPageButton({ filename }: { filename: string }) {
       await Promise.all(Array.from(iframeDoc.images).map(img =>
         img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
       ));
+      // Force signature images to render at natural aspect ratio
+      Array.from(iframeDoc.images).forEach((img) => {
+        if (img.alt === "Unterschrift" && img.naturalWidth && img.naturalHeight) {
+          const h = img.getBoundingClientRect().height || 56;
+          const w = (img.naturalWidth / img.naturalHeight) * h;
+          img.style.width = `${w}px`;
+          img.style.height = `${h}px`;
+        }
+      });
       iframe.style.height = iframeBody.scrollHeight + "px";
       await new Promise(r => setTimeout(r, 200));
       const canvas = await html2canvas(iframeBody, {
