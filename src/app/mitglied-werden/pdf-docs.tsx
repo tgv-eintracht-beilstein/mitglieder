@@ -140,7 +140,7 @@ export function SepaDoc({ state, addr, city, today }: {
         Bank gehen zu meinen Lasten.
       </Text>
       <Text style={s.p}>Bei Rechnungsstellung wird zur Deckung der Mehrkosten ein Aufwandszuschlag in Höhe von 5,00 € erhoben.</Text>
-      <Text style={[s.p, { fontWeight: 500 }]}>Gläubiger-Identifikationsnummer: DE66ZZZ00000274455</Text>
+      <Text style={[s.p, { fontWeight: 600 }]}>Gläubiger-Identifikationsnummer: DE66ZZZ00000274455</Text>
 
       <InfoGrid
         left={[

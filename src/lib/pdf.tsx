@@ -13,11 +13,11 @@ import {
 /* ── Fonts ── */
 
 Font.register({
-  family: "Inter",
+  family: "SourceSansPro",
   fonts: [
-    { src: "/fonts/Inter-Regular.ttf", fontWeight: 400 },
-    { src: "/fonts/Inter-Medium.ttf", fontWeight: 500 },
-    { src: "/fonts/Inter-Bold.ttf", fontWeight: 700 },
+    { src: "/fonts/SourceSansPro-Regular.ttf", fontWeight: 400 },
+    { src: "/fonts/SourceSansPro-Semibold.ttf", fontWeight: 600 },
+    { src: "/fonts/SourceSansPro-Bold.ttf", fontWeight: 700 },
   ],
 });
 
@@ -32,7 +32,7 @@ const G = {
 /* ── Styles ── */
 
 export const s = StyleSheet.create({
-  page: { fontFamily: "Inter", fontSize: 9, color: G[700], paddingTop: 30, paddingBottom: 55, paddingHorizontal: 35 },
+  page: { fontFamily: "SourceSansPro", fontSize: 9, color: G[700], paddingTop: 30, paddingBottom: 55, paddingHorizontal: 35 },
   // header
   headerRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 16, paddingBottom: 10, borderBottomWidth: 2, borderBottomColor: G[300] },
   headerLogo: { width: 36, height: 36 },
@@ -145,7 +145,7 @@ export function Sig({ label, signature, dateLabel, dateValue }: {
       <View style={{ flexDirection: "row", gap: 24, height: 48, alignItems: "flex-end" }}>
         {dateLabel !== undefined && (
           <View style={{ flex: 1, justifyContent: "flex-end" }}>
-            <Text style={{ fontSize: 9, fontWeight: 500, color: G[700] }}>{dateValue || " "}</Text>
+            <Text style={{ fontSize: 9, fontWeight: 600, color: G[700] }}>{dateValue || " "}</Text>
           </View>
         )}
         <View style={{ flex: 1, justifyContent: "flex-end" }}>

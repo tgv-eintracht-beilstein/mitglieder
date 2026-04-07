@@ -160,7 +160,7 @@ export function AufwandsformularDoc({ state, config, dateValue }: {
       <View style={{ marginBottom: 10 }}>
         <Text style={s.h2}>Auszahlbetrag & Zahlung</Text>
         {auszahlbetrag === 0 && spende > 0 ? (
-          <Text style={[s.p, { color: "#16a34a", fontWeight: 500 }]}>
+          <Text style={[s.p, { color: "#16a34a", fontWeight: 600 }]}>
             Vielen Dank für Ihre Spende in Höhe von {spende.toFixed(2)} € an den Verein!
           </Text>
         ) : (
@@ -189,7 +189,7 @@ export function VerzichtDoc({ state, dateValue }: {
 }) {
   return (
     <Page size="A4" style={s.page}>
-      <PdfHeader />
+      <PdfHeader subtitle={`Ehrenamtspauschale Verzicht – ${state.vorname} ${state.nachname}`} />
       <Text style={s.h1}>Verzicht auf Auszahlung der Ehrenamtspauschale</Text>
 
       <Text style={s.h2}>Angaben zum Verzicht</Text>

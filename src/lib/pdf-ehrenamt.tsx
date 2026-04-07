@@ -63,7 +63,7 @@ export function EhrenamtspauschaleDoc({ state, dateValue, limit }: {
 
       <Text style={s.h2}>Auszahlbetrag & Zahlung</Text>
       {auszahlbetrag === 0 && state.verzicht ? (
-        <Text style={[s.p, { color: "#16a34a", fontWeight: 500 }]}>
+        <Text style={[s.p, { color: "#16a34a", fontWeight: 600 }]}>
           Vielen Dank für Ihre Spende in Höhe von {state.spendenbetrag || state.verguetung || "0,00"} € an den Verein!
         </Text>
       ) : (
