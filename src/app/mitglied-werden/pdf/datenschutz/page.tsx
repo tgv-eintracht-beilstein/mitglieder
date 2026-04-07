@@ -71,24 +71,20 @@ function DatenschutzPdf() {
 
       <p className="text-xs text-gray-600 mb-4">
         Ich bestätige das Vorstehende zur Kenntnis genommen zu haben und willige ein, dass der TGV &bdquo;Eintracht&ldquo; Beilstein 1823
-        e.&thinsp;V. und seinen Gliederungen/Abteilungen folgende Daten zu meiner Person wie angegeben auf den Vereins- bzw.
-        Abteilungswebseiten, Pressemitteilungen in der lokalen Presse und Meldungen an Verbände öffentlich verwenden darf.
-        Bitte gewünschtes ankreuzen.
+        e.&thinsp;V. und seinen Gliederungen/Abteilungen folgende Daten zu meiner Person auf den Vereins- bzw.
+        Abteilungswebseiten, Pressemitteilungen in der lokalen Presse und Meldungen an Verbände öffentlich verwenden darf:
       </p>
 
-      <div className="space-y-2 mb-6 text-xs text-gray-700">
-        {[
-          "Vorname & Nachname, Geburtsdatum, Alter, Adresse & Kontaktdaten (Telefon, E-Mail)",
-          "Funktionen bei Funktionären",
-          "Fotos während Vereinsaktivitäten",
-          "Sonstige Daten (z.B. Spielerpass-Nr., ID-Nr., Übungsleiterlizenzen, Mannschaftsgruppe)",
-        ].map((text) => (
-          <label key={text} className="flex items-start gap-2">
-            <span className="mt-0.5 w-4 h-4 shrink-0 border border-gray-400 rounded-sm inline-flex items-center justify-center text-[#b11217] font-bold text-[10px]">&#10003;</span>
-            <span>{text}</span>
-          </label>
-        ))}
-      </div>
+      <ul className="list-disc pl-6 text-xs text-gray-700 space-y-1 mb-6">
+        <li>Vorname &amp; Nachname, Geburtsdatum, Alter, Adresse &amp; Kontaktdaten (Telefon, E-Mail)</li>
+        <li>Funktionen bei Funktionären</li>
+        <li>Fotos während Vereinsaktivitäten</li>
+        <li>Sonstige Daten (z.&thinsp;B. Spielerpass-Nr., ID-Nr., Übungsleiterlizenzen, Mannschaftsgruppe)</li>
+      </ul>
+
+      <p className="text-xs text-gray-600 mb-4">
+        Darüber hinaus bestätige ich, die <span className="font-semibold">Datenschutzverordnung</span> des TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V. gelesen und akzeptiert zu haben.
+      </p>
 
       <div className="grid grid-cols-2 gap-8 mt-10 text-xs text-gray-400 items-end">
         <div>

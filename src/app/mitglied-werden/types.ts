@@ -17,6 +17,7 @@ export interface Person {
   addressId: string;
   istPartner: boolean;
   signature: string;
+  datenschutzAkzeptiert: boolean;
 }
 
 export interface FormState {
@@ -51,6 +52,7 @@ export function emptyPerson(addressId = ""): Person {
     addressId,
     istPartner: false,
     signature: "",
+    datenschutzAkzeptiert: false,
   };
 }
 

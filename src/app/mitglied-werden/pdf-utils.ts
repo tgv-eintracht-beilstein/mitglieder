@@ -1,14 +1,7 @@
 import type { FormState } from "./types";
 
-async function renderIframeToPdf(
-  url: string,
-  filename: string,
-  waitMs = 2000
-) {
-  const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-    import("html2canvas"),
-    import("jspdf"),
-  ]);
+async function renderToCanvas(url: string, waitMs = 2000) {
+  const { default: html2canvas } = await import("html2canvas");
 
   const iframe = document.createElement("iframe");
   iframe.style.cssText =
@@ -28,14 +21,10 @@ async function renderIframeToPdf(
     Array.from(doc.images).map((img) =>
       img.complete
         ? Promise.resolve()
-        : new Promise((r) => {
-            img.onload = r;
-            img.onerror = r;
-          })
+        : new Promise((r) => { img.onload = r; img.onerror = r; })
     )
   );
 
-  // Force signature images to render at natural aspect ratio
   Array.from(doc.images).forEach((img) => {
     if (img.alt === "Unterschrift" && img.naturalWidth && img.naturalHeight) {
       const h = img.getBoundingClientRect().height || 40;
@@ -47,6 +36,13 @@ async function renderIframeToPdf(
 
   iframe.style.height = body.scrollHeight + "px";
   await new Promise((r) => setTimeout(r, 300));
+
+  // Replace thin-spaces / zero-width chars before html2canvas parses the DOM
+  const walker = doc.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const n = walker.currentNode as Text;
+    if (n.nodeValue) n.nodeValue = n.nodeValue.replace(/[\u2009\u200B\u200C\u200D\uFEFF]/g, " ");
+  }
 
   const canvas = await html2canvas(body, {
     scale: 3,
@@ -60,8 +56,10 @@ async function renderIframeToPdf(
   });
 
   document.body.removeChild(iframe);
+  return canvas;
+}
 
-  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+function addCanvasToPdf(pdf: InstanceType<typeof import("jspdf").default>, canvas: HTMLCanvasElement, isFirst: boolean) {
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
   const margin = 10;
@@ -70,7 +68,7 @@ async function renderIframeToPdf(
   const imgH = (canvas.height * usableW) / canvas.width;
 
   let currentY = 0;
-  let first = true;
+  let first = isFirst;
 
   while (currentY < imgH) {
     const sliceH = Math.min(imgH - currentY, usableH);
@@ -84,75 +82,44 @@ async function renderIframeToPdf(
     if (ctx) {
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-      ctx.drawImage(
-        canvas,
-        0,
-        srcY,
-        canvas.width,
-        srcH,
-        0,
-        0,
-        canvas.width,
-        srcH
-      );
+      ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
     }
 
     if (!first) pdf.addPage();
-    pdf.addImage(
-      sliceCanvas.toDataURL("image/jpeg", 0.85),
-      "JPEG",
-      margin,
-      margin,
-      usableW,
-      sliceH
-    );
+    pdf.addImage(sliceCanvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, usableW, sliceH);
     currentY += sliceH;
     first = false;
   }
-
-  pdf.save(filename);
 }
 
 function toKebab(s: string) {
-  return s
-    .toLowerCase()
-    .replace(/ä/g, "ae")
-    .replace(/ö/g, "oe")
-    .replace(/ü/g, "ue")
-    .replace(/ß/g, "ss")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-function fname(prefix: string, vorname: string, nachname: string) {
-  const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  return `${date}-${[prefix, nachname, vorname].map(toKebab).filter(Boolean).join("-")}.pdf`;
+  return s.toLowerCase()
+    .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
 export async function generateAllPdfs(state: FormState) {
+  const { default: jsPDF } = await import("jspdf");
+  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const base = window.location.pathname;
+  let isFirst = true;
 
-  // For each person: Datenschutz + Mitgliedsantrag
   for (let i = 0; i < state.personen.length; i++) {
-    const p = state.personen[i];
-    await renderIframeToPdf(
-      `${base}/pdf/datenschutz?idx=${i}`,
-      fname("datenschutz", p.vorname, p.nachname)
-    );
-    await new Promise((r) => setTimeout(r, 400));
-    await renderIframeToPdf(
-      `${base}/pdf/antrag?idx=${i}`,
-      fname("mitgliedsantrag", p.vorname, p.nachname)
-    );
-    await new Promise((r) => setTimeout(r, 400));
+    const canvas1 = await renderToCanvas(`${base}/pdf/datenschutz?idx=${i}`);
+    addCanvasToPdf(pdf, canvas1, isFirst);
+    isFirst = false;
+
+    const canvas2 = await renderToCanvas(`${base}/pdf/antrag?idx=${i}`);
+    addCanvasToPdf(pdf, canvas2, false);
   }
 
-  // One SEPA form
+  const canvas3 = await renderToCanvas(`${base}/pdf/sepa`);
+  addCanvasToPdf(pdf, canvas3, false);
+
   const first = state.personen[0];
-  await renderIframeToPdf(
-    `${base}/pdf/sepa`,
-    fname("sepa-mandat", first?.vorname || "", first?.nachname || "")
-  );
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const name = [first?.nachname, first?.vorname].map(toKebab).filter(Boolean).join("-");
+  pdf.save(`${date}-mitgliedsantrag${name ? `-${name}` : ""}.pdf`);
 }

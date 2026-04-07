@@ -179,7 +179,7 @@ export default function ImpressumPage() {
         </div>
 
         {/* Datenschutzerklärung */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <div id="datenschutz" className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
           <h2 className="text-2xl font-semibold text-gray-900">Datenschutzerklärung</h2>
 
           <section>

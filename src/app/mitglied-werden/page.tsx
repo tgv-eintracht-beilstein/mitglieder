@@ -264,11 +264,12 @@ function MitgliedWerdenPage() {
       { label: `${lbl}: Geburtsdatum`, valid: !!p.geburtsdatum },
       { label: `${lbl}: Abteilung`, valid: p.abteilungen.length > 0 },
       { label: `${lbl}: Adresse`, valid: !!(addr?.strasse && addr?.plz && addr?.ort) },
+      { label: `${lbl}: Datenschutz`, valid: p.datenschutzAkzeptiert },
     );
   }
   const missing = checks.filter((c) => !c.valid);
   const isComplete = missing.length === 0;
-  const pdfCount = state.personen.length * 2 + 1;
+  const pdfCount = 1;
 
   return (
     <div className="mitglied-werden-form px-1">
@@ -286,7 +287,9 @@ function MitgliedWerdenPage() {
             <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl flex items-center justify-between">
               <span>Person {i + 1}{p.vorname || p.nachname ? ` – ${p.vorname} ${p.nachname}` : ""}</span>
               {state.personen.length > 1 && (
-                <button onClick={() => removePerson(p.id)} className="text-red-200 hover:text-white transition-colors text-xs">Entfernen</button>
+                <button onClick={() => removePerson(p.id)} className="text-red-200 hover:text-white transition-colors" title="Entfernen">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
               )}
             </div>
             <div className="px-4 py-3 space-y-3">
@@ -320,9 +323,16 @@ function MitgliedWerdenPage() {
                   <span className="text-sm text-gray-700">Zweitmitglied (Ehe-/Lebenspartner)</span>
                 </label>
               )}
+              {/* Datenschutz — required per person */}
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" checked={p.datenschutzAkzeptiert} onChange={(e) => updatePerson(p.id, { datenschutzAkzeptiert: e.target.checked })} className="w-4 h-4 shrink-0 mt-0.5 accent-[#b11217]" />
+                <span className={`text-sm ${!p.datenschutzAkzeptiert ? "text-[#b11217]" : "text-gray-700"}`}>
+                  Ich habe die <a href="/impressum#datenschutz" target="_blank" className="underline hover:text-[#b11217]" onClick={(e) => e.stopPropagation()}>Datenschutzverordnung</a> gelesen und willige ein, dass der TGV &bdquo;Eintracht&ldquo; Beilstein meine Daten (Name, Geburtsdatum, Adresse, Kontaktdaten, Fotos, Vereinsfunktionen) auf Vereins- und Abteilungswebseiten, in Pressemitteilungen und bei Verbandsmeldungen veröffentlichen darf. <span className="text-[#b11217]">*</span>
+                </span>
+              </label>
               {/* Per-person signature */}
               <div className="pt-2 border-t border-gray-100">
-                <div className="text-[10px] text-gray-400 mb-1">Unterschrift</div>
+                <div className="text-[10px] text-gray-400 mb-1">Unterschrift <span className="text-gray-300">(optional – kann auch handschriftlich auf dem Ausdruck erfolgen)</span></div>
                 {p.signature ? (
                   <div className="flex items-center gap-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -428,7 +438,7 @@ function MitgliedWerdenPage() {
                     </div>
                   )}
                 </div>
-                <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Unterschrift Kontoinhaber</div>
+                <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Unterschrift Kontoinhaber <span className="text-gray-300">(optional)</span></div>
               </div>
             </div>
           </div>

@@ -2,26 +2,58 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const leftItems = [
   { href: "/docs", label: "Dokumente" },
   { href: "/mitgliedsbeitraege", label: "Mitgliedsbeiträge" },
-  { href: "/mitglied-werden", label: "Mitglied werden" },
 ];
 
-const rightItems = [
+const formulare = [
+  { href: "/mitglied-werden", label: "Mitglied werden" },
   { href: "/reisekosten", label: "Reisekosten" },
   { href: "/uebungsleiterpauschale", label: "Übungsleiterpauschale" },
   { href: "/ehrenamtspauschale", label: "Ehrenamtspauschale" },
 ];
 
-const allItems = [...leftItems, ...rightItems];
+const allItems = [...leftItems, ...formulare];
 
 const linkCls = (active: boolean) =>
   `inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-sm font-semibold transition-all duration-200 !no-underline ${
     active ? "bg-white text-[#8f0f13] border-white" : "border-white/30 text-white hover:bg-white hover:text-[#8f0f13]"
   }`;
+
+function FormulareDropdown() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const active = formulare.some((f) => pathname === f.href);
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button onClick={() => setOpen(!open)} className={linkCls(active)}>
+        Formulare
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${open ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-[200px] z-50">
+          {formulare.map(({ href, label }) => (
+            <Link key={href} href={href} onClick={() => setOpen(false)}
+              className={`block px-4 py-2 text-sm font-medium transition-colors !no-underline ${
+                pathname === href ? "text-[#8f0f13] bg-red-50" : "text-gray-700 hover:bg-gray-50 hover:text-[#8f0f13]"
+              }`}>{label}</Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function LeftNav() {
   const pathname = usePathname();
@@ -30,17 +62,14 @@ export function LeftNav() {
       {leftItems.map(({ href, label }) => (
         <Link key={href} href={href} className={linkCls(pathname === href)}>{label}</Link>
       ))}
+      <FormulareDropdown />
     </nav>
   );
 }
 
 export function RightNav() {
-  const pathname = usePathname();
   return (
     <nav className="flex items-center gap-2">
-      {rightItems.map(({ href, label }) => (
-        <Link key={href} href={href} className={linkCls(pathname === href)}>{label}</Link>
-      ))}
       <a href="https://tgveintrachtbeilstein.de"
         className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/30 text-sm font-semibold text-white hover:bg-white hover:text-[#8f0f13] transition-all duration-200 !no-underline">
         Webseite
