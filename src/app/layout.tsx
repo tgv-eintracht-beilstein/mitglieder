@@ -37,7 +37,7 @@ export default function RootLayout({
               </div>
 
               {/* Center logo — overlaps below header */}
-              <Link href="/" className="flex items-center justify-center shrink-0 mx-6 lg:mx-10 relative z-10 !no-underline group">
+              <Link href="https://tgveintrachtbeilstein.de" className="flex items-center justify-center shrink-0 mx-6 lg:mx-10 relative z-10 !no-underline group">
                 <Image
                   src="/tgv-logo.png"
                   alt="TGV Logo"
