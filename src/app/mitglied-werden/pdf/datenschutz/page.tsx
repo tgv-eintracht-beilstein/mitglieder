@@ -47,7 +47,7 @@ function DatenschutzPdf() {
 
       <div className="text-xs text-gray-600 space-y-3 mb-6">
         <p>
-          Der TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V. weist hiermit darauf hin, dass ausreichende technische Maßnahmen zur
+          Der TGV „Eintracht" Beilstein 1823 e. V. weist hiermit darauf hin, dass ausreichende technische Maßnahmen zur
           Gewährleistung des Datenschutzes getroffen wurden. Dennoch kann bei einer Veröffentlichung von personenbezogenen
           Mitgliederdaten im Internet ein umfassender Datenschutz nicht garantiert werden. Daher nimmt das Vereinsmitglied die
           Risiken für eine eventuelle Persönlichkeitsverletzung zur Kenntnis und ist sich bewusst, dass:
@@ -70,8 +70,8 @@ function DatenschutzPdf() {
       </div>
 
       <p className="text-xs text-gray-600 mb-4">
-        Ich bestätige das Vorstehende zur Kenntnis genommen zu haben und willige ein, dass der TGV &bdquo;Eintracht&ldquo; Beilstein 1823
-        e.&thinsp;V. und seinen Gliederungen/Abteilungen folgende Daten zu meiner Person auf den Vereins- bzw.
+        Ich bestätige das Vorstehende zur Kenntnis genommen zu haben und willige ein, dass der TGV „Eintracht" Beilstein 1823
+        e. V. und seinen Gliederungen/Abteilungen folgende Daten zu meiner Person auf den Vereins- bzw.
         Abteilungswebseiten, Pressemitteilungen in der lokalen Presse und Meldungen an Verbände öffentlich verwenden darf:
       </p>
 
@@ -79,11 +79,11 @@ function DatenschutzPdf() {
         <li>Vorname &amp; Nachname, Geburtsdatum, Alter, Adresse &amp; Kontaktdaten (Telefon, E-Mail)</li>
         <li>Funktionen bei Funktionären</li>
         <li>Fotos während Vereinsaktivitäten</li>
-        <li>Sonstige Daten (z.&thinsp;B. Spielerpass-Nr., ID-Nr., Übungsleiterlizenzen, Mannschaftsgruppe)</li>
+        <li>Sonstige Daten (z. B. Spielerpass-Nr., ID-Nr., Übungsleiterlizenzen, Mannschaftsgruppe)</li>
       </ul>
 
       <p className="text-xs text-gray-600 mb-4">
-        Darüber hinaus bestätige ich, die <span className="font-semibold">Datenschutzverordnung</span> des TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V. gelesen und akzeptiert zu haben.
+        Darüber hinaus bestätige ich, die <span className="font-semibold">Datenschutzverordnung</span> des TGV „Eintracht" Beilstein 1823 e. V. gelesen und akzeptiert zu haben.
       </p>
 
       <div className="grid grid-cols-2 gap-8 mt-10 text-xs text-gray-400 items-end">

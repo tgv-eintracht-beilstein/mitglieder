@@ -37,13 +37,6 @@ async function renderToCanvas(url: string, waitMs = 2000) {
   iframe.style.height = body.scrollHeight + "px";
   await new Promise((r) => setTimeout(r, 300));
 
-  // Replace thin-spaces / zero-width chars before html2canvas parses the DOM
-  const walker = doc.createTreeWalker(body, NodeFilter.SHOW_TEXT);
-  while (walker.nextNode()) {
-    const n = walker.currentNode as Text;
-    if (n.nodeValue) n.nodeValue = n.nodeValue.replace(/[\u2009\u200B\u200C\u200D\uFEFF]/g, " ");
-  }
-
   const canvas = await html2canvas(body, {
     scale: 3,
     useCORS: true,

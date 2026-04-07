@@ -34,16 +34,16 @@ export default function SepaPdf() {
 
       <div className="text-xs text-gray-600 space-y-2 mb-6">
         <p>
-          Ich ermächtige den TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V. bis auf Widerruf, Zahlungen von meinem Konto mittels
-          Lastschrift einzuziehen. Zugleich weise ich mein Kreditinstitut an, die vom TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V.
+          Ich ermächtige den TGV „Eintracht" Beilstein 1823 e. V. bis auf Widerruf, Zahlungen von meinem Konto mittels
+          Lastschrift einzuziehen. Zugleich weise ich mein Kreditinstitut an, die vom TGV „Eintracht" Beilstein 1823 e. V.
           auf mein Konto gezogenen Lastschriften einzulösen. Das untenstehende Kreditinstitut wird bei Nichteinlösung
           einer erhobenen Lastschrift, bei Widerspruch oder nach Kontoauflösung ermächtigt, dem TGV
-          &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V. auf Anforderung Name und Anschrift des/der Verfügungsberechtigen
+          „Eintracht" Beilstein 1823 e. V. auf Anforderung Name und Anschrift des/der Verfügungsberechtigen
           mitzuteilen, damit ein Anspruch erhoben werden kann. Entstehende Kosten für Rücklastschriften seitens der
           Bank gehen zu meinen Lasten.
         </p>
         <p>
-          Bei Rechnungsstellung wird zur Deckung der Mehrkosten ein Aufwandszuschlag in Höhe von &euro;&thinsp;5,00 erhoben.
+          Bei Rechnungsstellung wird zur Deckung der Mehrkosten ein Aufwandszuschlag in Höhe von € 5,00 erhoben.
         </p>
         <p>
           Gläubiger-Identifikationsnummer: DE66ZZZ00000274455

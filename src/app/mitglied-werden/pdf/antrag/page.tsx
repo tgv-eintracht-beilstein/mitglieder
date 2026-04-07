@@ -115,7 +115,7 @@ function AntragPdf() {
           Mit der Genehmigung durch alle Erziehungsberechtigten übernehmen die bzw. übernimmt der
           Unterzeichnende die Haftung für die Beitragspflicht. Mit der Unterzeichnung bzw. Genehmigung durch den
           Erziehungsberechtigten werden die Satzung sowie alle Vereinsordnungen, insbesondere die Beitragsordnung,
-          anerkannt. Die benannten Ordnungen des TGV &bdquo;Eintracht&ldquo; Beilstein sind in der Geschäftsstelle erhältlich.
+          anerkannt. Die benannten Ordnungen des TGV „Eintracht" Beilstein sind in der Geschäftsstelle erhältlich.
         </p>
         <p>
           Kündigungen sind ausschließlich zum Jahresende (31.12.) möglich und müssen der Geschäftsstelle bis

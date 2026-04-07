@@ -327,7 +327,7 @@ function MitgliedWerdenPage() {
               <label className="flex items-start gap-2 cursor-pointer">
                 <input type="checkbox" checked={p.datenschutzAkzeptiert} onChange={(e) => updatePerson(p.id, { datenschutzAkzeptiert: e.target.checked })} className="w-4 h-4 shrink-0 mt-0.5 accent-[#b11217]" />
                 <span className={`text-sm ${!p.datenschutzAkzeptiert ? "text-[#b11217]" : "text-gray-700"}`}>
-                  Ich habe die <a href="/impressum#datenschutz" target="_blank" className="underline hover:text-[#b11217]" onClick={(e) => e.stopPropagation()}>Datenschutzverordnung</a> gelesen und willige ein, dass der TGV &bdquo;Eintracht&ldquo; Beilstein meine Daten (Name, Geburtsdatum, Adresse, Kontaktdaten, Fotos, Vereinsfunktionen) auf Vereins- und Abteilungswebseiten, in Pressemitteilungen und bei Verbandsmeldungen veröffentlichen darf. <span className="text-[#b11217]">*</span>
+                  Ich habe die <a href="/impressum#datenschutz" target="_blank" className="underline hover:text-[#b11217]" onClick={(e) => e.stopPropagation()}>Datenschutzverordnung</a> gelesen und willige ein, dass der TGV „Eintracht" Beilstein meine Daten (Name, Geburtsdatum, Adresse, Kontaktdaten, Fotos, Vereinsfunktionen) auf Vereins- und Abteilungswebseiten, in Pressemitteilungen und bei Verbandsmeldungen veröffentlichen darf. <span className="text-[#b11217]">*</span>
                 </span>
               </label>
               {/* Per-person signature */}
