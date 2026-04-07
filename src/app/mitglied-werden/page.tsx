@@ -269,7 +269,7 @@ function MitgliedWerdenPage() {
   }
   const missing = checks.filter((c) => !c.valid);
   const isComplete = missing.length === 0;
-  const pdfCount = 1;
+  const pdfCount = state.personen.length * 2 + 1;
 
   return (
     <div className="mitglied-werden-form px-1">
