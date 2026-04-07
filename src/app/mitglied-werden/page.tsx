@@ -9,6 +9,7 @@ import { ABTEILUNGEN, AbteilungIcon, DateSelect } from "@/app/_components/aufwan
 import { loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import type { FormState, Person, Address } from "./types";
 import { defaultState, emptyPerson, emptyAddress } from "./types";
+import { DATENSCHUTZ_KATEGORIEN } from "./types";
 import { generateAllPdfs } from "./pdf-utils";
 
 const STORAGE_KEY = "mitglied_werden_v1";
@@ -181,6 +182,7 @@ function MitgliedWerdenPage() {
   const [state, setState] = useState<FormState>(defaultState);
   const [hydrated, setHydrated] = useState(false);
   const [signTarget, setSignTarget] = useState<SignTarget | null>(null);
+  const [dsEditPersonId, setDsEditPersonId] = useState<string | null>(null);
   const [sharedSig, setSharedSig] = useState("");
 
   useEffect(() => {
@@ -288,7 +290,7 @@ function MitgliedWerdenPage() {
               <span>Person {i + 1}{p.vorname || p.nachname ? ` – ${p.vorname} ${p.nachname}` : ""}</span>
               {state.personen.length > 1 && (
                 <button onClick={() => removePerson(p.id)} className="text-red-200 hover:text-white transition-colors" title="Entfernen">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
                 </button>
               )}
             </div>
@@ -316,8 +318,10 @@ function MitgliedWerdenPage() {
               <Field label="Abteilung(en)" value={p.abteilungen.length ? "ok" : ""} required>
                 <AbteilungenPicker selected={p.abteilungen} onChange={(v) => updatePerson(p.id, { abteilungen: v })} />
               </Field>
-              {/* Ehe-/Lebenspartner — only show if no other person has it checked */}
-              {(!state.personen.some((o) => o.istPartner && o.id !== p.id)) && (
+              {/* Ehe-/Lebenspartner — only show when ≥2 adults and no other person has it */}
+              {(getAge(p.geburtsdatum) === null || (getAge(p.geburtsdatum) ?? 0) >= 18) &&
+               state.personen.filter((o) => { const a = getAge(o.geburtsdatum); return a === null || a >= 18; }).length >= 2 &&
+               !state.personen.some((o) => o.istPartner && o.id !== p.id) && (
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={p.istPartner} onChange={(e) => updatePerson(p.id, { istPartner: e.target.checked })} className="w-4 h-4 accent-[#b11217]" />
                   <span className="text-sm text-gray-700">Zweitmitglied (Ehe-/Lebenspartner)</span>
@@ -325,11 +329,21 @@ function MitgliedWerdenPage() {
               )}
               {/* Datenschutz — required per person */}
               <label className="flex items-start gap-2 cursor-pointer">
-                <input type="checkbox" checked={p.datenschutzAkzeptiert} onChange={(e) => updatePerson(p.id, { datenschutzAkzeptiert: e.target.checked })} className="w-4 h-4 shrink-0 mt-0.5 accent-[#b11217]" />
+                <input type="checkbox" checked={p.datenschutzAkzeptiert} onChange={(e) => {
+                  const checked = e.target.checked;
+                  updatePerson(p.id, { datenschutzAkzeptiert: checked, ...(checked ? { datenschutzKategorien: [...DATENSCHUTZ_KATEGORIEN] } : {}) });
+                }} className="w-4 h-4 shrink-0 mt-0.5 accent-[#b11217]" />
                 <span className={`text-sm ${!p.datenschutzAkzeptiert ? "text-[#b11217]" : "text-gray-700"}`}>
-                  Ich habe die <a href="/impressum#datenschutz" target="_blank" className="underline hover:text-[#b11217]" onClick={(e) => e.stopPropagation()}>Datenschutzverordnung</a> gelesen und willige ein, dass der TGV „Eintracht" Beilstein meine Daten (Name, Geburtsdatum, Adresse, Kontaktdaten, Fotos, Vereinsfunktionen) auf Vereins- und Abteilungswebseiten, in Pressemitteilungen und bei Verbandsmeldungen veröffentlichen darf. <span className="text-[#b11217]">*</span>
+                  Ich habe die <a href="/impressum#datenschutz" target="_blank" className="underline hover:text-[#b11217]" onClick={(e) => e.stopPropagation()}>Datenschutzverordnung</a> gelesen und willige ein, dass der TGV "Eintracht" Beilstein meine Daten veröffentlichen darf. <span className="text-[#b11217]">*</span>
                 </span>
               </label>
+              {p.datenschutzAkzeptiert && (
+                <div className="ml-6 flex items-center gap-2 text-[10px] text-gray-400">
+                  <span>Alle {(p.datenschutzKategorien ?? []).length} Kategorien ausgewählt</span>
+                  <button type="button" onClick={(e) => { e.preventDefault(); setDsEditPersonId(p.id); }}
+                    className="text-[#b11217] hover:underline">Bearbeiten</button>
+                </div>
+              )}
               {/* Per-person signature */}
               <div className="pt-2 border-t border-gray-100">
                 <div className="text-[10px] text-gray-400 mb-1">Unterschrift <span className="text-gray-300">(optional – kann auch handschriftlich auf dem Ausdruck erfolgen)</span></div>
@@ -340,10 +354,6 @@ function MitgliedWerdenPage() {
                       style={{ imageRendering: "auto" }}
                       onClick={() => setSignTarget({ personId: p.id })} title="Klicken zum Bearbeiten" />
                     <span className="text-[10px] text-green-600">&#10003; Unterschrieben</span>
-                    {state.personen.length > 1 && i > 0 && state.personen[0].signature && state.personen[0].signature !== p.signature && (
-                      <button type="button" onClick={() => updatePerson(p.id, { signature: state.personen[0].signature })}
-                        className="text-[10px] text-gray-400 hover:text-[#b11217] transition-colors">Von Person 1 übernehmen</button>
-                    )}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
@@ -351,12 +361,6 @@ function MitgliedWerdenPage() {
                       className="px-3 py-1.5 text-xs bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors">
                       Unterschreiben
                     </button>
-                    {state.personen.length > 1 && i > 0 && state.personen[0].signature && (
-                      <button type="button" onClick={() => updatePerson(p.id, { signature: state.personen[0].signature })}
-                        className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:border-[#b11217] hover:text-[#b11217] transition-colors">
-                        Von Person 1 übernehmen
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
@@ -429,12 +433,6 @@ function MitgliedWerdenPage() {
                         className="mb-1 px-4 py-2 text-sm bg-[#b11217] text-white rounded-lg hover:bg-[#8f0f13] transition-colors print:hidden">
                         Unterschreiben
                       </button>
-                      {state.personen[0]?.signature && (
-                        <button type="button" onClick={() => set("signature", state.personen[0].signature)}
-                          className="mb-1 px-4 py-2 text-sm border border-gray-200 rounded-lg hover:border-[#b11217] hover:text-[#b11217] transition-colors print:hidden">
-                          Von Person 1 übernehmen
-                        </button>
-                      )}
                     </div>
                   )}
                 </div>
@@ -453,6 +451,39 @@ function MitgliedWerdenPage() {
         </button>
         <DownloadButton filename="mitgliedsantrag.pdf" disabled={!isComplete} missingCount={missing.length} checks={checks} side="top" count={pdfCount} onDownload={() => generateAllPdfs(state)} />
       </div>
+
+      {dsEditPersonId && (() => {
+        const p = state.personen.find((x) => x.id === dsEditPersonId);
+        if (!p) return null;
+        const cats = p.datenschutzKategorien ?? [...DATENSCHUTZ_KATEGORIEN];
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setDsEditPersonId(null)}>
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-5" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-900">Datenschutz-Kategorien</h3>
+                <button onClick={() => setDsEditPersonId(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+              </div>
+              <p className="text-xs text-gray-500 mb-3">{p.vorname} {p.nachname} – Welche Daten dürfen veröffentlicht werden?</p>
+              <div className="space-y-2">
+                {DATENSCHUTZ_KATEGORIEN.map((k) => (
+                  <label key={k} className="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" checked={cats.includes(k)}
+                      onChange={(e) => {
+                        const next = e.target.checked ? [...cats, k] : cats.filter((c) => c !== k);
+                        updatePerson(p.id, { datenschutzKategorien: next });
+                      }} className="w-4 h-4 shrink-0 mt-0.5 accent-[#b11217]" />
+                    <span className="text-sm text-gray-700">{k}</span>
+                  </label>
+                ))}
+              </div>
+              <button onClick={() => setDsEditPersonId(null)}
+                className="mt-4 w-full py-2 bg-[#b11217] text-white rounded-lg text-sm font-medium hover:bg-[#8f0f13] transition-colors">
+                Fertig
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {signTarget && (
         <SignatureModal

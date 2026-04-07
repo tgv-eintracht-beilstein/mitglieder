@@ -88,6 +88,15 @@ export default function DocsIndex() {
           downloadHref="https://github.com/tgv-eintracht-beilstein/design/archive/master.zip"
         />
       </Section>
+
+      <Section title="Hilfe">
+        <div className="rounded-lg border border-gray-100 px-4 py-3 hover:border-[#b11217] hover:shadow-sm transition-all group">
+          <Link href="/docs/faq" className="block">
+            <div className="font-semibold text-gray-900 group-hover:text-[#b11217] transition-colors">Häufig gestellte Fragen</div>
+            <div className="text-xs text-gray-400 mt-0.5">Antworten auf die wichtigsten Fragen rund um Mitgliedschaft, Formulare und Vereinsorganisation</div>
+          </Link>
+        </div>
+      </Section>
     </>
   );
 }

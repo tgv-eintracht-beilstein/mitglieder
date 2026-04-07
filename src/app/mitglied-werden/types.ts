@@ -18,7 +18,15 @@ export interface Person {
   istPartner: boolean;
   signature: string;
   datenschutzAkzeptiert: boolean;
+  datenschutzKategorien: string[];
 }
+
+export const DATENSCHUTZ_KATEGORIEN = [
+  "Vorname & Nachname, Geburtsdatum, Alter, Adresse & Kontaktdaten",
+  "Funktionen bei Funktionären",
+  "Fotos während Vereinsaktivitäten",
+  "Sonstige Daten (z. B. Spielerpass-Nr., ID-Nr., Lizenzen, Mannschaftsgruppe)",
+];
 
 export interface FormState {
   adressen: Address[];
@@ -53,6 +61,12 @@ export function emptyPerson(addressId = ""): Person {
     istPartner: false,
     signature: "",
     datenschutzAkzeptiert: false,
+    datenschutzKategorien: [
+      "Vorname & Nachname, Geburtsdatum, Alter, Adresse & Kontaktdaten",
+      "Funktionen bei Funktionären",
+      "Fotos während Vereinsaktivitäten",
+      "Sonstige Daten (z. B. Spielerpass-Nr., ID-Nr., Lizenzen, Mannschaftsgruppe)",
+    ],
   };
 }
 

@@ -70,13 +70,6 @@ export default function EhrenamtspauschaleePage() {
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("pdf") === "1") {
-        document.body.classList.add("pdf-capture");
-      }
-    }
-
     (async () => {
       try {
         const addr = loadSharedAddress();
@@ -210,136 +203,31 @@ export default function EhrenamtspauschaleePage() {
   }
 
   const handleDownload = async () => {
-    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-      import("html2canvas"),
-      import("jspdf"),
-    ]);
+    const React = (await import("react")).default;
+    const { Document } = await import("@react-pdf/renderer");
+    const { downloadMultiplePdfs } = await import("@/lib/pdf");
+    const { EhrenamtspauschaleDoc } = await import("@/lib/pdf-ehrenamt");
+    const { VerzichtDoc } = await import("@/lib/pdf-forms");
 
-    const iframeUrl = `${window.location.pathname}?pdf=1`;
-    const iframe = document.createElement("iframe");
-    iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:1050px;height:1px;border:0";
-    document.body.appendChild(iframe);
-    await new Promise<void>((resolve) => { iframe.onload = () => resolve(); iframe.src = iframeUrl; });
-    await new Promise(r => setTimeout(r, state.verzicht ? 2000 : 1500));
+    const dateValue = state.overrideDate !== null ? state.overrideDate : defaultDate;
+    const docs: { doc: React.ReactElement; filename: string }[] = [];
 
-    const iframeDoc = iframe.contentDocument!;
-    const iframeBody = iframeDoc.body;
-    iframeDoc.documentElement.classList.add("pdf-capture");
-
-    await Promise.all(Array.from(iframeDoc.images).map(img =>
-      img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
-    ));
-
-    // Force signature images to render at natural aspect ratio
-    Array.from(iframeDoc.images).forEach((img) => {
-      if (img.alt === "Unterschrift" && img.naturalWidth && img.naturalHeight) {
-        const h = img.getBoundingClientRect().height || 56;
-        const w = (img.naturalWidth / img.naturalHeight) * h;
-        img.style.width = `${w}px`;
-        img.style.height = `${h}px`;
-      }
+    docs.push({
+      doc: <Document><EhrenamtspauschaleDoc state={state} dateValue={dateValue} limit={limit} /></Document>,
+      filename: buildPdfFilename("ehrenamtspauschale", state.vorname, state.nachname),
     });
 
-    iframe.style.height = iframeBody.scrollHeight + "px";
-    await new Promise(r => setTimeout(r, 300));
-
-    const fullCanvas = await html2canvas(iframeBody, {
-      scale: 3, useCORS: true, logging: false, backgroundColor: "#ffffff",
-      width: 1050, height: iframeBody.scrollHeight,
-      windowWidth: 1050, windowHeight: iframeBody.scrollHeight,
-    });
-
-    const breakMarker = iframeBody.querySelector('[data-page-break="verzicht"]') as HTMLElement | null;
-    const breakMarkerPx = breakMarker ? breakMarker.offsetTop * 3 : 0;
-
-    const canvases: HTMLCanvasElement[] = [];
-    const filenames: string[] = [];
-    const mainFilename = buildPdfFilename("ehrenamtspauschale", state.vorname, state.nachname);
-
-    if (state.verzicht && breakMarkerPx > fullCanvas.height * 0.15 && breakMarkerPx < fullCanvas.height * 0.95) {
-      const canvas1 = document.createElement("canvas");
-      canvas1.width = fullCanvas.width;
-      canvas1.height = Math.floor(breakMarkerPx);
-      const ctx1 = canvas1.getContext("2d");
-      if (ctx1) {
-        ctx1.fillStyle = "#ffffff";
-        ctx1.fillRect(0, 0, canvas1.width, canvas1.height);
-        ctx1.drawImage(fullCanvas, 0, 0, fullCanvas.width, breakMarkerPx, 0, 0, fullCanvas.width, breakMarkerPx);
-      }
-      canvases.push(canvas1);
-      filenames.push(mainFilename);
-
-      const remainingHeight = fullCanvas.height - breakMarkerPx;
-      const canvas2 = document.createElement("canvas");
-      canvas2.width = fullCanvas.width;
-      canvas2.height = Math.floor(remainingHeight);
-      const ctx2 = canvas2.getContext("2d");
-      if (ctx2) {
-        ctx2.fillStyle = "#ffffff";
-        ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
-        ctx2.drawImage(fullCanvas, 0, breakMarkerPx, fullCanvas.width, remainingHeight, 0, 0, fullCanvas.width, remainingHeight);
-      }
-      canvases.push(canvas2);
-      filenames.push(buildPdfFilename("ehrenamtspauschale-verzicht", state.vorname, state.nachname));
-    } else {
-      canvases.push(fullCanvas);
-      filenames.push(mainFilename);
+    if (state.verzicht && spendeNum > 0) {
+      docs.push({
+        doc: <Document><VerzichtDoc state={{ nachname: state.nachname, vorname: state.vorname, strasse: state.strasse, plzOrt: state.plzOrt, jahr: state.jahr, betrag: state.verguetung, spendenbetrag: state.spendenbetrag || state.verguetung, signature: state.signature }} dateValue={dateValue} /></Document>,
+        filename: buildPdfFilename("ehrenamtspauschale-verzicht", state.vorname, state.nachname),
+      });
     }
 
-    document.body.removeChild(iframe);
+    const blobs = await downloadMultiplePdfs(docs);
 
-    for (let i = 0; i < canvases.length; i++) {
-      const canvas = canvases[i];
-      if (canvas.height < 100) continue;
-
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const usableW = pageW - margin * 2;
-      const usableH = pageH - margin * 2;
-      const imgH = (canvas.height * usableW) / canvas.width;
-
-      let currentY = 0;
-      let firstPage = true;
-
-      while (currentY < imgH) {
-        const sliceH = Math.min(imgH - currentY, usableH);
-        const sliceCanvas = document.createElement("canvas");
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = (sliceH * canvas.width) / usableW;
-        const srcY = (currentY * canvas.width) / usableW;
-        const sliceCtx = sliceCanvas.getContext("2d");
-        if (sliceCtx) {
-          sliceCtx.fillStyle = "#ffffff";
-          sliceCtx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-          sliceCtx.drawImage(canvas, 0, srcY, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
-        }
-        if (!firstPage) pdf.addPage();
-        pdf.addImage(sliceCanvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, usableW, sliceH);
-        currentY += sliceH;
-        firstPage = false;
-      }
-      pdf.save(filenames[i]);
-      if (i < canvases.length - 1) await new Promise(r => setTimeout(r, 500));
-    }
-    // Upload PDFs to S3 and save version
     try {
-      const pdfBlobs = canvases.map((canvas, i) => {
-        if (canvas.height < 100) return null;
-        const pdfDoc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-        const pageW = pdfDoc.internal.pageSize.getWidth();
-        const margin = 10;
-        const usableW = pageW - margin * 2;
-        const imgH = (canvas.height * usableW) / canvas.width;
-        pdfDoc.addImage(canvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, usableW, imgH);
-        return {
-          blob: pdfDoc.output("blob"),
-          title: "ehrenamtspauschale",
-          vorname: state.vorname,
-          nachname: state.nachname,
-        };
-      }).filter(Boolean) as { blob: Blob; title: string; vorname: string; nachname: string }[];
+      const pdfBlobs = blobs.map(b => ({ blob: b.blob, title: "ehrenamtspauschale", vorname: state.vorname, nachname: state.nachname }));
       await uploadPdfAndSaveVersion(STORAGE_KEY, state, pdfBlobs, `PDF Export – ${new Date().toLocaleDateString("de-DE")}`);
     } catch {}
   };
@@ -350,20 +238,6 @@ export default function EhrenamtspauschaleePage() {
 
   return (
     <div className="ehrenamtspauschale-form px-1" ref={contentRef}>
-      {/* PDF-only page header */}
-      <div className="pdf-only hidden items-center gap-3 mb-4 pb-3 border-b-2 border-gray-300">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/tgv-logo.png" alt="TGV Logo" width={44} height={44} />
-        <div className="flex-1">
-          <div className="font-bold text-base text-gray-900">TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.V.</div>
-          <div className="text-xs text-gray-500">Ehrenamtspauschale &middot; {state.abteilung || "\u2013"} &middot; {state.vorname} {state.nachname}</div>
-        </div>
-        {(() => {
-          const abt = ABTEILUNGEN.find(a => a.name === state.abteilung);
-          return abt ? <AbteilungIcon slug={abt.slug} print size={36} /> : null;
-        })()}
-      </div>
-
       {/* Page headline */}
       <div className="flex items-center justify-between mb-3 print:hidden">
         <h1 className="text-2xl font-bold text-[#b11217]">Ehrenamtspauschale</h1>
@@ -441,7 +315,7 @@ export default function EhrenamtspauschaleePage() {
                 />
                 {limitExceeded && (
                   <p className="text-[10px] text-[#b11217] mt-1 leading-tight">
-                    Freibetrag von {limit} &euro; ({state.jahr}) überschritten
+                    Freibetrag von {limit} € ({state.jahr}) überschritten
                   </p>
                 )}
               </div>
@@ -467,8 +341,8 @@ export default function EhrenamtspauschaleePage() {
         <div className="p-4 text-sm text-gray-700 space-y-4 leading-relaxed">
           <p className="text-sm text-gray-700">
             Erklärung für die nebenberufliche Vereinsbeschäftigung bei Berücksichtigung des Ehrenamtsfreibetrages nach
-            &sect; 3 Nr. 26a EStG. Der TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e. V., Albert-Einstein-Str. 20, 71717 Beilstein wird folgende
-            Erklärung zum Ehrenamtsfreibetrag nach &sect; 3 Nr. 26a EStG abgegeben:
+            § 3 Nr. 26a EStG. Der TGV &quot;Eintracht&quot; Beilstein 1823 e. V., Albert-Einstein-Str. 20, 71717 Beilstein wird folgende
+            Erklärung zum Ehrenamtsfreibetrag nach § 3 Nr. 26a EStG abgegeben:
           </p>
           <p>
             Der/Die nach den gesetzlichen Vorgaben gewählte Vereinsmitarbeiter/in ist ehrenamtlich in der Funktion als{" "}
@@ -481,7 +355,7 @@ export default function EhrenamtspauschaleePage() {
             pauschal zu Grunde.
           </p>
           <p>
-            Hiermit erkläre ich die Ehrenamtspauschale nach &sect; 3 Nr. 26a EStG im Kalenderjahr {state.jahr} noch nicht in Anspruch
+            Hiermit erkläre ich die Ehrenamtspauschale nach § 3 Nr. 26a EStG im Kalenderjahr {state.jahr} noch nicht in Anspruch
             genommen zu haben, <span className="font-bold underline">bzw. nicht anderweitig in Anspruch nehmen werde</span>.
             Mir ist bekannt, dass Nachteile des Vereins zu meinen Lasten gehen.
           </p>
@@ -514,7 +388,7 @@ export default function EhrenamtspauschaleePage() {
         <div className="p-4 text-sm space-y-2">
         {auszahlbetrag === 0 && state.verzicht && spendeWithinLimit ? (
           <p className="text-green-700 text-sm font-medium">
-            Vielen Dank f&uuml;r Ihre Spende in H&ouml;he von {spendeNum.toFixed(2)}&nbsp;&euro; an den Verein!
+            Vielen Dank für Ihre Spende in Höhe von {spendeNum.toFixed(2)} € an den Verein!
           </p>
         ) : (
           <>
@@ -529,7 +403,7 @@ export default function EhrenamtspauschaleePage() {
         <label className="flex items-center gap-2">
           <input type="radio" name="zahlung" checked={state.zahlungUeberweisung} onChange={() => { set("zahlungBar", false); set("zahlungUeberweisung", true); }} className="w-4 h-4 print:hidden" />
           <PrintCheckbox checked={state.zahlungUeberweisung} />
-          Auszahlbetrag bitte &uuml;berweisen auf nachfolgende Bankverbindung
+          Auszahlbetrag bitte überweisen auf nachfolgende Bankverbindung
         </label>
         {state.zahlungUeberweisung && (
           <div className="ml-6">
@@ -683,7 +557,7 @@ export default function EhrenamtspauschaleePage() {
         <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-400">
           <div className="space-y-1">
             <p className="font-bold text-gray-600 tracking-wider">KONTAKT</p>
-            <p>Albert-Einstein-Str. 20 &middot; 71717 Beilstein</p>
+            <p>Albert-Einstein-Str. 20 · 71717 Beilstein</p>
             <p>Tel. +49 (0) 7062 5753</p>
             <p>info@tgveintrachtbeilstein.de</p>
             <p>www.tgveintrachtbeilstein.de</p>
@@ -691,7 +565,7 @@ export default function EhrenamtspauschaleePage() {
           <div className="space-y-1">
             <p className="font-bold text-gray-600 tracking-wider">VEREINSDATEN</p>
             <p>Steuer-Nr. 65208/49689</p>
-            <p>Amtsgericht Stuttgart &middot; VR 101009</p>
+            <p>Amtsgericht Stuttgart · VR 101009</p>
             <p>Vorstand: Armin Maurer</p>
           </div>
           <div className="space-y-1">
@@ -730,7 +604,7 @@ export default function EhrenamtspauschaleePage() {
             <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-400">
               <div className="space-y-1">
                 <p className="font-bold text-gray-600 tracking-wider">KONTAKT</p>
-                <p>Albert-Einstein-Str. 20 &middot; 71717 Beilstein</p>
+                <p>Albert-Einstein-Str. 20 · 71717 Beilstein</p>
                 <p>Tel. +49 (0) 7062 5753</p>
                 <p>info@tgveintrachtbeilstein.de</p>
                 <p>www.tgveintrachtbeilstein.de</p>
@@ -738,7 +612,7 @@ export default function EhrenamtspauschaleePage() {
               <div className="space-y-1">
                 <p className="font-bold text-gray-600 tracking-wider">VEREINSDATEN</p>
                 <p>Steuer-Nr. 65208/49689</p>
-                <p>Amtsgericht Stuttgart &middot; VR 101009</p>
+                <p>Amtsgericht Stuttgart · VR 101009</p>
                 <p>Vorstand: Armin Maurer</p>
               </div>
               <div className="space-y-1">

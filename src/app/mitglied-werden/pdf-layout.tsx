@@ -5,7 +5,7 @@ export function PdfHeader() {
       <img src="/tgv-logo.png" alt="TGV Logo" width={44} height={44} />
       <div className="flex-1 text-center">
         <div className="font-bold text-sm text-gray-700 uppercase tracking-wider">
-          Turn- und Gesangverein „Eintracht" Beilstein 1823 e. V.
+          Turn- und Gesangverein "Eintracht" Beilstein 1823 e. V.
         </div>
       </div>
     </div>
@@ -17,7 +17,7 @@ export function PdfFooter() {
     <div className="mt-10 pt-4 border-t border-gray-300">
       <div className="grid grid-cols-3 gap-6 text-[8.5px] leading-relaxed text-gray-500">
         <div className="space-y-0.5">
-          <p className="font-semibold text-gray-700">TGV „Eintracht" Beilstein e. V.</p>
+          <p className="font-semibold text-gray-700">TGV "Eintracht" Beilstein e. V.</p>
           <p>Albert-Einstein-Str. 20</p>
           <p>D-71717 Beilstein</p>
         </div>

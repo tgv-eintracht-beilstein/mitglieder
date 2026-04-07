@@ -38,16 +38,6 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
 
   return (
     <div className="space-y-3">
-      {/* PDF-only page header */}
-      <div className="pdf-only hidden items-center gap-3 mb-4 pb-3 border-b-2 border-gray-300">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/tgv-logo.png" alt="TGV Logo" width={44} height={44} />
-        <div className="flex-1">
-          <div className="font-bold text-base text-gray-900">TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.V.</div>
-          <div className="text-xs text-gray-500">Ehrenamtspauschale Verzicht &ndash; {state.jahr} &middot; {state.vorname} {state.nachname}</div>
-        </div>
-      </div>
-
       <h1 className="text-2xl font-bold text-[#b11217] print:hidden">Verzicht auf Auszahlung der Ehrenamtspauschale</h1>
 
       {/* Angaben zum Verzicht */}

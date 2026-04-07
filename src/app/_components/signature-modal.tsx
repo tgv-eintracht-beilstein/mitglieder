@@ -187,12 +187,12 @@ export default function SignatureModal({ existing, sharedSignature, onSave, onDe
           <div className="flex gap-2">
             {tab === "draw" && (
               <button onClick={clear} disabled={!agreed} className="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-40">
-                Zur&uuml;cksetzen
+                Zurücksetzen
               </button>
             )}
             {existing && (
               <button onClick={() => { onDelete(); onClose(); }} className="px-4 py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
-                L&ouml;schen
+                Löschen
               </button>
             )}
           </div>

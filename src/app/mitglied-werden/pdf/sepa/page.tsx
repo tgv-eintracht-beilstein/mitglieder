@@ -34,11 +34,11 @@ export default function SepaPdf() {
 
       <div className="text-xs text-gray-600 space-y-2 mb-6">
         <p>
-          Ich ermächtige den TGV „Eintracht" Beilstein 1823 e. V. bis auf Widerruf, Zahlungen von meinem Konto mittels
-          Lastschrift einzuziehen. Zugleich weise ich mein Kreditinstitut an, die vom TGV „Eintracht" Beilstein 1823 e. V.
+          Ich ermächtige den TGV &quot;Eintracht&quot; Beilstein 1823 e. V. bis auf Widerruf, Zahlungen von meinem Konto mittels
+          Lastschrift einzuziehen. Zugleich weise ich mein Kreditinstitut an, die vom TGV &quot;Eintracht&quot; Beilstein 1823 e. V.
           auf mein Konto gezogenen Lastschriften einzulösen. Das untenstehende Kreditinstitut wird bei Nichteinlösung
           einer erhobenen Lastschrift, bei Widerspruch oder nach Kontoauflösung ermächtigt, dem TGV
-          „Eintracht" Beilstein 1823 e. V. auf Anforderung Name und Anschrift des/der Verfügungsberechtigen
+          &quot;Eintracht&quot; Beilstein 1823 e. V. auf Anforderung Name und Anschrift des/der Verfügungsberechtigen
           mitzuteilen, damit ein Anspruch erhoben werden kann. Entstehende Kosten für Rücklastschriften seitens der
           Bank gehen zu meinen Lasten.
         </p>
@@ -62,14 +62,6 @@ export default function SepaPdf() {
         <div>
           <div className={labelCls}>PLZ, Ort</div>
           <div className={fieldCls}>{addr?.plz} {addr?.ort}</div>
-        </div>
-        <div>
-          <div className={labelCls}>Bank</div>
-          <div className={fieldCls}></div>
-        </div>
-        <div>
-          <div className={labelCls}>BIC</div>
-          <div className={fieldCls}></div>
         </div>
         <div>
           <div className={labelCls}>IBAN</div>

@@ -97,7 +97,7 @@ export default function Home() {
           Willkommen im Mitgliederbereich
         </h1>
         <p className="text-gray-500 text-sm leading-relaxed">
-          Hier finden Sie alle wichtigen Formulare und Dokumente des TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.&thinsp;V.
+          Hier finden Sie alle wichtigen Formulare und Dokumente des TGV "Eintracht" Beilstein 1823 e. V.
           Wählen Sie einen Bereich aus, um fortzufahren.
         </p>
       </div>

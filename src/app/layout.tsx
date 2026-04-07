@@ -5,7 +5,6 @@ import Link from "next/link";
 import MobileNav, { LeftNav, RightNav } from "@/app/_components/sidebar";
 import AuthButton from "@/app/_components/auth-button";
 import { Suspense } from "react";
-import PdfModeDetector from "@/app/_components/pdf-mode-detector";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -28,13 +27,12 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon/favicon.ico" />
       </head>
       <body className={`${inter.className} bg-[#f6f7f9] text-gray-800`}>
-        <Suspense><PdfModeDetector /></Suspense>
         {/* Top header — matches WordPress TGV style */}
         <header className="site-header fixed top-0 left-0 right-0 z-30 border-b border-[#6b0a0e] text-white print:hidden">
           <div className="max-w-screen-xl mx-auto px-6">
             <div className="flex items-center justify-between h-16">
               {/* Left nav (desktop) */}
-              <div className="hidden [@media(min-width:1280px)]:flex items-center flex-1">
+              <div className="hidden lg:flex items-center flex-1">
                 <LeftNav />
               </div>
 
@@ -53,10 +51,10 @@ export default function RootLayout({
 
               {/* Right nav (desktop) + mobile toggle */}
               <div className="flex items-center flex-1 justify-end">
-                <div className="hidden [@media(min-width:1280px)]:flex">
+                <div className="hidden lg:flex">
                   <RightNav />
                 </div>
-                <div className="[@media(min-width:1280px)]:hidden print:hidden">
+                <div className="lg:hidden print:hidden">
                   <MobileNav />
                 </div>
               </div>
@@ -72,7 +70,7 @@ export default function RootLayout({
           <div className="max-w-screen-xl mx-auto px-6 py-8">
             <div className="flex flex-col items-center gap-6 text-center md:flex-row md:flex-wrap md:justify-around md:text-left md:items-start">
               <div>
-                <strong className="block mb-1">TGV &bdquo;Eintracht&ldquo; Beilstein e. V.</strong>
+                <strong className="block mb-1">TGV "Eintracht" Beilstein e. V.</strong>
                 Albert-Einstein-Str. 20 &middot; 71717 Beilstein
               </div>
               <div>

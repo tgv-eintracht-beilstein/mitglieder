@@ -943,14 +943,6 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Detect ?pdf=1 and activate pdf-capture mode
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('pdf') === '1') {
-        document.body.classList.add('pdf-capture');
-      }
-    }
-
     try {
       const addr = loadSharedAddress();
       (async () => {
@@ -1178,182 +1170,36 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const defaultDate = [city, today].filter(s => s !== "_______________" && s !== "").join(", ");
 
   const handleDownload = async () => {
-    try {
-      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-        import("html2canvas"),
-        import("jspdf"),
-      ]);
-      const iframeUrl = `${window.location.pathname}?pdf=1`;
-      const iframe = document.createElement("iframe");
-      iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:1050px;height:1px;border:0";
-      document.body.appendChild(iframe);
-      await new Promise<void>((resolve) => { iframe.onload = () => resolve(); iframe.src = iframeUrl; });
+    const React = (await import("react")).default;
+    const { Document } = await import("@react-pdf/renderer");
+    const { downloadPdf, downloadMultiplePdfs } = await import("@/lib/pdf");
+    const { AufwandsformularDoc, VerzichtDoc } = await import("@/lib/pdf-forms");
 
-      // Wait longer for content to stabilize, especially for multi-page forms
-      await new Promise(r => setTimeout(r, showVerzicht && spende > 0 ? 2000 : 1500));
+    const dateValue = state.overrideDate !== null ? state.overrideDate : defaultDate;
+    const docs: { doc: React.ReactElement; filename: string }[] = [];
 
-      const iframeDoc = iframe.contentDocument!;
-      const iframeBody = iframeDoc.body;
+    docs.push({
+      doc: <Document><AufwandsformularDoc state={state} config={{ title, showKm, showStunden, showSteuererklärung, showKategorie }} dateValue={dateValue} /></Document>,
+      filename: buildPdfFilename(title, state.vorname, state.nachname),
+    });
 
-      // Ensure pdf-capture class is applied
-      iframeDoc.documentElement.classList.add('pdf-capture');
-
-      // Wait for all images to load
-      await Promise.all(Array.from(iframeDoc.images).map(img =>
-        img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
-      ));
-
-      // Force signature images to render at natural aspect ratio
-      Array.from(iframeDoc.images).forEach((img) => {
-        if (img.alt === "Unterschrift" && img.naturalWidth && img.naturalHeight) {
-          const h = img.getBoundingClientRect().height || 56;
-          const w = (img.naturalWidth / img.naturalHeight) * h;
-          img.style.width = `${w}px`;
-          img.style.height = `${h}px`;
-        }
+    if (showVerzicht && spende > 0) {
+      docs.push({
+        doc: <Document><VerzichtDoc state={{ nachname: state.nachname, vorname: state.vorname, strasse: state.strasse, plzOrt: state.plzOrt, jahr: state.monatVon?.slice(0, 4) || String(new Date().getFullYear()), betrag: aufwand.toFixed(2), spendenbetrag: spende.toFixed(2), signature: state.signature }} dateValue={dateValue} /></Document>,
+        filename: buildPdfFilename("verzichtserklarung", state.vorname, state.nachname),
       });
-
-      // Force layout recalculation
-      iframe.style.height = iframeBody.scrollHeight + "px";
-      await new Promise(r => setTimeout(r, 300));
-
-      const fullCanvas = await html2canvas(iframeBody, {
-        scale: 3, useCORS: true, logging: false, backgroundColor: '#ffffff',
-        width: 1050, height: iframeBody.scrollHeight,
-        windowWidth: 1050, windowHeight: iframeBody.scrollHeight,
-      });
-
-      // Find break markers more reliably - try multiple selectors
-      let breakMarkers = Array.from(iframeBody.querySelectorAll('[data-page-break="verzicht"]'));
-      if (breakMarkers.length === 0) {
-        breakMarkers = Array.from(iframeBody.querySelectorAll(".print\\:break-before-page"));
-      }
-
-      const breakMarkersPx = breakMarkers
-        .map(el => {
-          const element = el as HTMLElement;
-          const offsetTop = element.offsetTop;
-          return offsetTop * 3; // *3 for html2canvas scale
-        })
-        .filter(y => y > 0); // Filter out invalid positions
-
-      const canvases: HTMLCanvasElement[] = [];
-      const filenames: string[] = [];
-
-      const mainFilename = buildPdfFilename(title, state.vorname, state.nachname);
-
-      if (showVerzicht && spende > 0 && breakMarkersPx.length > 0) {
-        const breakY = breakMarkersPx[0];
-
-        // More lenient break position validation
-        const minBreakPosition = fullCanvas.height * 0.15; // At least 15% down
-        const maxBreakPosition = fullCanvas.height * 0.95; // At most 95% down
-
-        if (breakY > minBreakPosition && breakY < maxBreakPosition) {
-          // Canvas for first PDF (Main form)
-          const canvas1 = document.createElement("canvas");
-          canvas1.width = fullCanvas.width;
-          canvas1.height = Math.floor(breakY);
-          const ctx1 = canvas1.getContext("2d");
-          if (ctx1) {
-            ctx1.fillStyle = "#ffffff";
-            ctx1.fillRect(0, 0, canvas1.width, canvas1.height);
-            ctx1.drawImage(fullCanvas, 0, 0, fullCanvas.width, breakY, 0, 0, fullCanvas.width, breakY);
-          }
-          canvases.push(canvas1);
-          filenames.push(mainFilename);
-
-          // Canvas for second PDF (Verzichtserklärung)
-          const remainingHeight = fullCanvas.height - breakY;
-          const canvas2 = document.createElement("canvas");
-          canvas2.width = fullCanvas.width;
-          canvas2.height = Math.floor(remainingHeight);
-          const ctx2 = canvas2.getContext("2d");
-          if (ctx2) {
-            ctx2.fillStyle = "#ffffff";
-            ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
-            ctx2.drawImage(fullCanvas, 0, breakY, fullCanvas.width, remainingHeight, 0, 0, fullCanvas.width, remainingHeight);
-          }
-          canvases.push(canvas2);
-          // Build proper verzicht filename
-          const verzichtFilename = buildPdfFilename("verzichtserklarung", state.vorname, state.nachname);
-          filenames.push(verzichtFilename);
-        } else {
-          canvases.push(fullCanvas);
-          filenames.push(mainFilename);
-        }
-      } else {
-        canvases.push(fullCanvas);
-        filenames.push(mainFilename);
-      }
-
-      document.body.removeChild(iframe);
-
-      const pdfBlobs: { blob: Blob; title: string; vorname: string; nachname: string }[] = [];
-      for (let i = 0; i < canvases.length; i++) {
-        const canvas = canvases[i];
-        const currentFilename = filenames[i];
-
-        if (canvas.height < 100) continue;
-
-        const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-        const pageW = pdf.internal.pageSize.getWidth();
-        const pageH = pdf.internal.pageSize.getHeight();
-        const margin = 10;
-        const usableW = pageW - margin * 2;
-        const usableH = pageH - margin * 2;
-        const imgH = (canvas.height * usableW) / canvas.width;
-
-        let currentY = 0;
-        let firstPage = true;
-
-        while (currentY < imgH) {
-          const sliceH = Math.min(imgH - currentY, usableH);
-          const sliceCanvas = document.createElement("canvas");
-          sliceCanvas.width = canvas.width;
-          sliceCanvas.height = (sliceH * canvas.width) / usableW;
-          const srcY = (currentY * canvas.width) / usableW;
-          const sliceCtx = sliceCanvas.getContext("2d");
-          if (sliceCtx) {
-            sliceCtx.fillStyle = "#ffffff";
-            sliceCtx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-            sliceCtx.drawImage(canvas, 0, srcY, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
-          }
-          if (!firstPage) pdf.addPage();
-          pdf.addImage(sliceCanvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, usableW, sliceH);
-          currentY += sliceH;
-          firstPage = false;
-        }
-        pdf.save(currentFilename);
-        pdfBlobs.push({ blob: pdf.output("blob"), title, vorname: state.vorname, nachname: state.nachname });
-        if (i < canvases.length - 1) await new Promise(r => setTimeout(r, 500));
-      }
-      // Upload PDFs to S3 and save version
-      try {
-        await uploadPdfAndSaveVersion(storageKey, state, pdfBlobs, `PDF Export – ${new Date().toLocaleDateString("de-DE")}`);
-      } catch {}
-    } catch (e) {
-      console.error(e);
-      throw e;
     }
+
+    const blobs = await downloadMultiplePdfs(docs);
+
+    try {
+      const pdfBlobs = blobs.map(b => ({ blob: b.blob, title, vorname: state.vorname, nachname: state.nachname }));
+      await uploadPdfAndSaveVersion(storageKey, state, pdfBlobs, `PDF Export – ${new Date().toLocaleDateString("de-DE")}`);
+    } catch {}
   };
 
   return (
     <div className="reisekosten-form px-1" ref={contentRef}>
-
-      {/* PDF-only page header (hidden on screen, shown in pdf-capture) */}
-      <div className="pdf-only hidden items-center gap-3 mb-4 pb-3 border-b-2 border-gray-300">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/tgv-logo.png" alt="TGV Logo" width={44} height={44} />
-        <div className="flex-1">
-          <div className="font-bold text-base text-gray-900">TGV &bdquo;Eintracht&ldquo; Beilstein 1823 e.V.</div>
-          <div className="text-xs text-gray-500">{title} &ndash; {formatMonthRange(state.monatVon, state.monatBis)}{state.abteilung ? ` · ${state.abteilung}` : ""} &middot; {state.vorname} {state.nachname}</div>
-        </div>
-        {(() => {
-          const abt = ABTEILUNGEN.find(a => a.name === state.abteilung);
-          return abt ? <AbteilungIcon slug={abt.slug} print size={36} /> : null;
-        })()}
-      </div>
 
       {/* Page headline */}
       <div className="flex items-center justify-between mb-3 print:hidden">
@@ -1528,8 +1374,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             </tbody>
             <tfoot>
               <tr className="border-t-2 border-gray-300 bg-gray-50">
-                <td colSpan={colsBefore} className="px-3 py-2 font-bold">Aufwandsentsch&auml;digung</td>
-                <td className={`px-2 py-2 text-right font-bold tabular-nums border-l border-gray-200 whitespace-nowrap ${aufwandExceeded ? "text-[#b11217]" : ""}`}>{aufwand.toFixed(2)} &euro;</td>
+                <td colSpan={colsBefore} className="px-3 py-2 font-bold">Aufwandsentschädigung</td>
+                <td className={`px-2 py-2 text-right font-bold tabular-nums border-l border-gray-200 whitespace-nowrap ${aufwandExceeded ? "text-[#b11217]" : ""}`}>{aufwand.toFixed(2)} €</td>
                 <td colSpan={2} className="print:hidden" />
               </tr>
               {aufwandExceeded && (
@@ -1542,7 +1388,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               )}
               <tr className="bg-gray-50">
                 <td colSpan={colsBefore} className="px-3 py-1 pb-3">
-                  <span className={`font-bold ${spende === 0 ? "text-[#b11217]" : "text-gray-800"}`}>abz&uuml;glich Aufwandsspende</span>
+                  <span className={`font-bold ${spende === 0 ? "text-[#b11217]" : "text-gray-800"}`}>abzüglich Aufwandsspende</span>
                   <span className="ml-1.5 text-[10px] text-gray-400 font-normal">Betrag, den Sie dem Verein spenden</span>
                 </td>
                 <td className="px-2 py-1 pb-3 border-l border-gray-200">
@@ -1575,7 +1421,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               )}
               <tr className="bg-gray-100 border-t border-gray-300">
                 <td colSpan={colsBefore} className="px-3 py-2 font-bold text-sm">Auszahlbetrag</td>
-                <td className={`px-2 py-2 text-right font-bold text-sm tabular-nums border-l border-gray-200 whitespace-nowrap ${auszahlbetrag > 0 ? "text-green-600" : ""}`}>{auszahlbetrag.toFixed(2)} &euro;</td>
+                <td className={`px-2 py-2 text-right font-bold text-sm tabular-nums border-l border-gray-200 whitespace-nowrap ${auszahlbetrag > 0 ? "text-green-600" : ""}`}>{auszahlbetrag.toFixed(2)} €</td>
                 <td colSpan={2} className="print:hidden" />
               </tr>
             </tfoot>
@@ -1650,15 +1496,15 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">Steuererklärung</div>
         <div className="p-4 text-sm">
         <p className="mb-3 text-sm text-gray-700 leading-relaxed">
-          Hiermit erkl&auml;re ich,{" "}
+          Hiermit erkläre ich,{" "}
           <span className="font-medium">{[state.vorname, state.nachname].filter(Boolean).join(" ") || "_______________"}</span>
           {" "}geb. am{" "}
           <span className="font-medium">{formatDateDE(state.geburtsdatum) || "_______________"}</span>
-          , dass ich die Steuerbefreiung nach &sect; 3 Nr. 26 EStG im laufenden Kalenderjahr
-          bei den Einnahmen aus einer anderen nebenberuflichen, beg&uuml;nstigten T&auml;tigkeit
-          (wie z.B. f&uuml;r: Bund, L&auml;nder, Gemeinden, Gemeindeverbände, Industrie- und
+          , dass ich die Steuerbefreiung nach § 3 Nr. 26 EStG im laufenden Kalenderjahr
+          bei den Einnahmen aus einer anderen nebenberuflichen, begünstigten Tätigkeit
+          (wie z.B. für: Bund, Länder, Gemeinden, Gemeindeverbände, Industrie- und
           Handelskammern, Rechtsanwaltskammern, Steuerberatungskammern,
-          Wirtschaftspr&uuml;ferkammern, &Auml;rztekammern, Universit&auml;ten oder der Tr&auml;ger der
+          Wirtschaftsprüferkammern, Ärztekammern, Universitäten oder der Träger der
           Sozialversicherung etc.) ...
         </p>
         <div className="space-y-2 mb-3 text-sm text-gray-700">
@@ -1668,7 +1514,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           <label className="flex items-center gap-2">
             <input type="radio" name="steuer" checked={state.steuerVollHoehe} onChange={() => { set("steuerVollHoehe", true); set("steuerBisZu", false); set("steuerNicht", false); }} className="w-4 h-4 print:hidden" />
             <PrintCheckbox checked={state.steuerVollHoehe} />
-            in voller H&ouml;he ({state.monatVon >= "2026" ? "3.300,00" : "3.000,00"} Euro)
+            in voller Höhe ({state.monatVon >= "2026" ? "3.300,00" : "3.000,00"} Euro)
           </label>
           <label className="flex items-center gap-2">
             <input type="radio" name="steuer" checked={state.steuerBisZu} onChange={() => { set("steuerVollHoehe", false); set("steuerBisZu", true); set("steuerNicht", false); }} className="w-4 h-4 print:hidden" />
@@ -1686,8 +1532,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           </label>
         </div>
         <p className="text-sm text-gray-700 mb-4">
-          Jegliche Ver&auml;nderungen in meiner Person oder meinen T&auml;tigkeiten, insbesondere
-          die Aufnahme weiterer T&auml;tigkeit werde ich unverz&uuml;glich mitteilen. Mir ist bekannt,
+          Jegliche Veränderungen in meiner Person oder meinen Tätigkeiten, insbesondere
+          die Aufnahme weiterer Tätigkeit werde ich unverzüglich mitteilen. Mir ist bekannt,
           dass Nachteile des Vereins zu meinen Lasten gehen.
         </p>
         </div>
@@ -1700,7 +1546,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         <div className="p-4 text-sm space-y-2">
         {auszahlbetrag === 0 && spende > 0 ? (
           <p className="text-green-700 text-sm font-medium">
-            Vielen Dank f&uuml;r Ihre Spende in H&ouml;he von {spende.toFixed(2)}&nbsp;&euro; an den Verein!
+            Vielen Dank für Ihre Spende in Höhe von {spende.toFixed(2)} € an den Verein!
           </p>
         ) : (
           <>
@@ -1715,7 +1561,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         <label className="flex items-center gap-2">
           <input type="radio" name="zahlung" checked={state.zahlungUeberweisung} onChange={() => { set("zahlungBar", false); set("zahlungUeberweisung", true); }} className="w-4 h-4 print:hidden" />
           <PrintCheckbox checked={state.zahlungUeberweisung} />
-          Auszahlbetrag bitte &uuml;berweisen auf nachfolgende Bankverbindung
+          Auszahlbetrag bitte überweisen auf nachfolgende Bankverbindung
         </label>
         {state.zahlungUeberweisung && (
           <div className="ml-6">
@@ -1801,7 +1647,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                 </button>
               )}
             </div>
-            <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Unterschrift Leistungsempf&auml;nger</div>
+            <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Unterschrift Leistungsempfänger</div>
           </div>
         </div>
 
