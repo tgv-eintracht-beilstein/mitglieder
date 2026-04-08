@@ -3,6 +3,12 @@ import { Document, Page, View, Text, s, PdfHeader, PdfFooter, Field, Sig, Bullet
 import type { FormState, Person, Address } from "./types";
 import { DATENSCHUTZ_KATEGORIEN } from "./types";
 
+function formatAbteilungen(abt: string[]): string {
+  const subs = abt.filter((a) => a.includes(": "));
+  const parentsWithSubs = new Set(subs.map((s) => s.split(": ")[0]));
+  return abt.filter((a) => !parentsWithSubs.has(a)).join(", ");
+}
+
 function formatDate(v: string) {
   if (!v) return "";
   const m = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -86,7 +92,7 @@ export function AntragDoc({ person, addr, city, today }: {
       <InfoGrid
         left={[
           { label: "Eintrittsdatum", value: today },
-          { label: "Abteilung(en)", value: person.abteilungen.join(", ") },
+          { label: "Abteilung(en)", value: formatAbteilungen(person.abteilungen) },
         ]}
         right={[
           { label: "Nachname", value: person.nachname },

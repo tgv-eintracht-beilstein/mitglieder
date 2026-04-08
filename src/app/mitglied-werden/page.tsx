@@ -6,11 +6,13 @@ import SignatureModal from "@/app/_components/signature-modal";
 import DownloadButton from "@/app/_components/download-button";
 import { validateIban } from "@/lib/iban";
 import { ABTEILUNGEN, AbteilungIcon, DateSelect } from "@/app/_components/aufwandsformular";
+import { UEBUNGSLEITER_CATEGORIES } from "@/lib/constants";
 import { loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import type { FormState, Person, Address } from "./types";
 import { defaultState, emptyPerson, emptyAddress } from "./types";
 import { DATENSCHUTZ_KATEGORIEN } from "./types";
 import { generateAllPdfs } from "./pdf-utils";
+import SubmitButton from "@/app/_components/submit-button";
 
 const STORAGE_KEY = "mitglied_werden_v1";
 type SignTarget = { personId: string } | "sepa";
@@ -33,23 +35,46 @@ function Field({ label, value, required, children }: { label: string; value: str
 
 function AbteilungenPicker({ selected, onChange }: { selected: string[]; onChange: (v: string[]) => void }) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {ABTEILUNGEN.map((a) => {
-        const active = selected.includes(a.name);
-        return (
-          <button key={a.name} type="button"
-            onClick={() => onChange(active ? selected.filter((s) => s !== a.name) : [...selected, a.name])}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-              active ? "bg-[#b11217] text-white border-[#b11217]" : "bg-white text-gray-600 border-gray-200 hover:border-[#b11217] hover:text-[#b11217]"
-            }`}
-          >
-            {active
-              ? <span className="brightness-0 invert"><AbteilungIcon slug={a.slug} size={16} /></span>
-              : <AbteilungIcon slug={a.slug} size={16} />}
-            {a.name}
-          </button>
-        );
-      })}
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
+        {ABTEILUNGEN.map((a) => {
+          const active = selected.includes(a.name);
+          return (
+            <button key={a.name} type="button"
+              onClick={() => onChange(active
+                ? selected.filter((s) => s !== a.name && !(UEBUNGSLEITER_CATEGORIES[a.name] || []).some((c) => `${a.name}: ${c.name}` === s))
+                : [...selected, a.name])}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                active ? "bg-[#b11217] text-white border-[#b11217]" : "bg-white text-gray-600 border-gray-200 hover:border-[#b11217] hover:text-[#b11217]"
+              }`}
+            >
+              {active
+                ? <span className="brightness-0 invert"><AbteilungIcon slug={a.slug} size={16} /></span>
+                : <AbteilungIcon slug={a.slug} size={16} />}
+              {a.name}
+            </button>
+          );
+        })}
+      </div>
+      {ABTEILUNGEN.filter((a) => selected.includes(a.name) && UEBUNGSLEITER_CATEGORIES[a.name]).map((a) => (
+        <div key={a.name} className="flex flex-wrap gap-1.5 ml-2 pl-3 border-l-2 border-[#b11217]/20">
+          <span className="text-[10px] text-gray-400 uppercase tracking-wide self-center mr-1">{a.name}:</span>
+          {UEBUNGSLEITER_CATEGORIES[a.name].map((c) => {
+            const tag = `${a.name}: ${c.name}`;
+            const active = selected.includes(tag);
+            return (
+              <button key={tag} type="button"
+                onClick={() => onChange(active ? selected.filter((s) => s !== tag) : [...selected, tag])}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+                  active ? "bg-[#b11217]/10 text-[#b11217] border-[#b11217]/30" : "bg-white text-gray-500 border-gray-200 hover:border-[#b11217]/30 hover:text-[#b11217]"
+                }`}
+              >
+                {c.name}
+              </button>
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }
@@ -85,7 +110,7 @@ const VEREIN_FAMILIE = 130;
 // Abteilungsbeitrag base rates (Erwachsene Aktive, Mitgliedsbeiträge 2026)
 const ABT_PRICES: Record<string, number> = {
   "Fußball": 72, "Gesang": 70, "Schwimmen": 20, "Handball": 50,
-  "Tischtennis": 50, "Tennis": 120, "Turnen": 50, "Leichtathletik": 50,
+  "Tischtennis": 50, "Tennis": 120, "Turnen/Leichtathletik": 50,
   "Gymnastik": 15, "Ski & Berg": 0,
 };
 
@@ -279,6 +304,7 @@ function MitgliedWerdenPage() {
         <h1 className="text-2xl font-bold text-[#b11217]">Mitglied werden</h1>
         <div className="hidden md:flex items-center gap-2">
           <DownloadButton filename="mitgliedsantrag.pdf" disabled={!isComplete} missingCount={missing.length} checks={checks} side="bottom" count={pdfCount} onDownload={() => generateAllPdfs(state)} />
+          <SubmitButton formType="mitglied-werden" getFormData={() => state} getPdfBlobs={async () => { const { buildAllDocs } = await import("./pdf-utils"); const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildAllDocs(state)); }} />
         </div>
       </div>
 
@@ -450,6 +476,7 @@ function MitgliedWerdenPage() {
           Formular zurücksetzen
         </button>
         <DownloadButton filename="mitgliedsantrag.pdf" disabled={!isComplete} missingCount={missing.length} checks={checks} side="top" count={pdfCount} onDownload={() => generateAllPdfs(state)} />
+        <SubmitButton formType="mitglied-werden" getFormData={() => state} getPdfBlobs={async () => { const { buildAllDocs } = await import("./pdf-utils"); const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildAllDocs(state)); }} />
       </div>
 
       {dsEditPersonId && (() => {
