@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import SignatureModal from "@/app/_components/signature-modal";
 import VerzichtPageContent from "./verzicht-page-content";
 import DownloadButtonBase from "./download-button";
+import SubmitButton from "./submit-button";
 import FormHeader, { formatDateDE } from "@/app/_components/form-header";
 import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
@@ -87,16 +88,15 @@ function BeschreibungInput({ value, onChange, className, large }: {
 }
 
 export const ABTEILUNGEN: { name: string; slug: string }[] = [
-  { name: "Fußball",       slug: "fussball" },
-  { name: "Leichtathletik",slug: "leichtathletik" },
-  { name: "Turnen",        slug: "turnen" },
-  { name: "Tischtennis",   slug: "tischtennis" },
-  { name: "Handball",      slug: "handball" },
-  { name: "Schwimmen",     slug: "schwimmen" },
-  { name: "Gymnastik",     slug: "gymnastik" },
-  { name: "Gesang",        slug: "gesang" },
-  { name: "Tennis",        slug: "tennis" },
-  { name: "Ski & Berg",    slug: "ski_und_berg" },
+  { name: "Fußball",                slug: "fussball" },
+  { name: "Turnen/Leichtathletik", slug: "turnen" },
+  { name: "Tischtennis",           slug: "tischtennis" },
+  { name: "Handball",              slug: "handball" },
+  { name: "Schwimmen",             slug: "schwimmen" },
+  { name: "Gymnastik",             slug: "gymnastik" },
+  { name: "Gesang",                slug: "gesang" },
+  { name: "Tennis",                slug: "tennis" },
+  { name: "Ski & Berg",            slug: "ski_und_berg" },
 ];
 
 export function AbteilungIcon({ slug, print = false, size = 20 }: { slug: string; print?: boolean; size?: number }) {
@@ -193,7 +193,7 @@ export function AbteilungSelect({ value, onChange }: { value: string; onChange: 
    );
  }
 
-function UEbungsleiterCategorySelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function UEbungsleiterCategorySelect({ value, onChange, abteilung }: { value: string; onChange: (v: string) => void; abteilung: string }) {
    const [open, setOpen] = useState(false);
    const ref = useRef<HTMLDivElement>(null);
 
@@ -205,11 +205,12 @@ function UEbungsleiterCategorySelect({ value, onChange }: { value: string; onCha
      return () => document.removeEventListener("mousedown", handleClick);
    }, []);
 
-   const selected = UEBUNGSLEITER_CATEGORIES.find((a) => a.name === value);
+   const categories = UEBUNGSLEITER_CATEGORIES[abteilung] || [];
+   const selected = categories.find((a) => a.name === value);
 
    const items = (
      <>
-       {UEBUNGSLEITER_CATEGORIES.map((a) => (
+       {categories.map((a) => (
          <button
            key={a.name}
            type="button"
@@ -778,7 +779,7 @@ function emptyRow(id: number): Row {
 function defaultState(): FormState {
   return {
     nachname: "", vorname: "", strasse: "", plzOrt: "",
-    geburtsdatum: "", telefon: "", email: "", abteilung: "", uebungsleiterKategorie: "Jugend",
+    geburtsdatum: "", telefon: "", email: "", abteilung: "", uebungsleiterKategorie: "",
     monatVon: "", monatBis: "", iban: "", aufwandsspende: "",
     zahlungBar: false, zahlungUeberweisung: false,
     steuerVollHoehe: false, steuerBisZu: false, steuerBisZuBetrag: "", steuerNicht: false,
@@ -1169,27 +1170,28 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const today = new Date().toLocaleDateString("de-DE");
   const defaultDate = [city, today].filter(s => s !== "_______________" && s !== "").join(", ");
 
-  const handleDownload = async () => {
+  const buildDocs = async () => {
     const React = (await import("react")).default;
     const { Document } = await import("@react-pdf/renderer");
-    const { downloadPdf, downloadMultiplePdfs } = await import("@/lib/pdf");
     const { AufwandsformularDoc, VerzichtDoc } = await import("@/lib/pdf-forms");
-
     const dateValue = state.overrideDate !== null ? state.overrideDate : defaultDate;
     const docs: { doc: React.ReactElement; filename: string }[] = [];
-
     docs.push({
       doc: <Document><AufwandsformularDoc state={state} config={{ title, showKm, showStunden, showSteuererklärung, showKategorie }} dateValue={dateValue} /></Document>,
       filename: buildPdfFilename(title, state.vorname, state.nachname),
     });
-
     if (showVerzicht && spende > 0) {
       docs.push({
         doc: <Document><VerzichtDoc state={{ nachname: state.nachname, vorname: state.vorname, strasse: state.strasse, plzOrt: state.plzOrt, jahr: state.monatVon?.slice(0, 4) || String(new Date().getFullYear()), betrag: aufwand.toFixed(2), spendenbetrag: spende.toFixed(2), signature: state.signature }} dateValue={dateValue} /></Document>,
         filename: buildPdfFilename("verzichtserklarung", state.vorname, state.nachname),
       });
     }
+    return docs;
+  };
 
+  const handleDownload = async () => {
+    const { downloadMultiplePdfs } = await import("@/lib/pdf");
+    const docs = await buildDocs();
     const blobs = await downloadMultiplePdfs(docs);
 
     try {
@@ -1206,6 +1208,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         <h1 className="text-2xl font-bold text-[#b11217]">{title}</h1>
         <div className="hidden md:flex items-center gap-2">
           <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="bottom" count={showVerzicht && spende > 0 ? 2 : 1} onDownload={handleDownload} />
+          <SubmitButton formType={title.toLowerCase().replace(/\s+/g, "-")} getFormData={() => state} getPdfBlobs={async () => { const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildDocs()); }} />
         </div>
       </div>
 
@@ -1219,16 +1222,16 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
              value: state.abteilung,
              required: true,
              content: (
-               <AbteilungSelect value={state.abteilung} onChange={v => set("abteilung", v)} />
+               <AbteilungSelect value={state.abteilung} onChange={v => { set("abteilung", v); set("uebungsleiterKategorie", ""); }} />
              ),
            },
-           ...(showKategorie && state.abteilung ? [{
+           ...(showKategorie && state.abteilung && UEBUNGSLEITER_CATEGORIES[state.abteilung] ? [{
              label: "Kategorie",
              printValue: state.uebungsleiterKategorie,
-             value: state.uebungsleiterKategorie || "Jugend",
+             value: state.uebungsleiterKategorie,
              required: true,
              content: (
-               <UEbungsleiterCategorySelect value={state.uebungsleiterKategorie || "Jugend"} onChange={v => set("uebungsleiterKategorie", v)} />
+               <UEbungsleiterCategorySelect value={state.uebungsleiterKategorie} onChange={v => set("uebungsleiterKategorie", v)} abteilung={state.abteilung} />
              ),
            }] : []),
           {
@@ -1752,6 +1755,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           </button>
         </div>
         <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="top" count={showVerzicht && spende > 0 ? 2 : 1} onDownload={handleDownload} />
+        <SubmitButton formType={title.toLowerCase().replace(/\s+/g, "-")} getFormData={() => state} getPdfBlobs={async () => { const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildDocs()); }} />
       </div>
 
       {/* Second page for EAP Verzicht if donation is present */}

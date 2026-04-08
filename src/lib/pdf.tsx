@@ -8,6 +8,9 @@ import {
   Font,
   StyleSheet,
   pdf,
+  Svg,
+  Rect,
+  Path as SvgPath,
 } from "@react-pdf/renderer";
 
 /* ── Fonts ── */
@@ -180,9 +183,16 @@ export function Bullet({ children }: { children: React.ReactNode }) {
 export function Checkbox({ checked, children }: { checked: boolean; children: React.ReactNode }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 3 }}>
-      <View style={{ width: 10, height: 10, borderWidth: 1, borderColor: checked ? RED : G[400], backgroundColor: checked ? RED : "#fff", marginRight: 6, marginTop: 1 }}>
-        {checked && <Text style={{ fontSize: 7, color: "#fff", textAlign: "center", lineHeight: 1.2 }}>✓</Text>}
-      </View>
+      {checked ? (
+        <Svg width={10} height={10} viewBox="0 0 10 10" style={{ marginRight: 6, marginTop: 1 }}>
+          <Rect x="0" y="0" width="10" height="10" rx="1" fill={RED} stroke={RED} strokeWidth="1" />
+          <SvgPath d="M2.5 5.5 L4.5 7.5 L7.5 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </Svg>
+      ) : (
+        <Svg width={10} height={10} viewBox="0 0 10 10" style={{ marginRight: 6, marginTop: 1 }}>
+          <Rect x="0.5" y="0.5" width="9" height="9" rx="1" fill="#fff" stroke={G[400]} strokeWidth="1" />
+        </Svg>
+      )}
       <Text style={[s.p, { flex: 1, marginBottom: 0 }]}>{children}</Text>
     </View>
   );
@@ -225,6 +235,14 @@ export async function downloadPdf(doc: React.ReactElement, filename: string) {
   a.click();
   URL.revokeObjectURL(url);
   return blob;
+}
+
+export async function renderPdfBlobs(docs: { doc: React.ReactElement; filename: string }[]) {
+  const blobs: { blob: Blob; filename: string }[] = [];
+  for (const { doc, filename } of docs) {
+    blobs.push({ blob: await pdf(doc).toBlob(), filename });
+  }
+  return blobs;
 }
 
 export async function downloadMultiplePdfs(docs: { doc: React.ReactElement; filename: string }[]) {
