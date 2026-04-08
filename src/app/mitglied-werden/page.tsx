@@ -46,13 +46,12 @@ function AbteilungenPicker({ selected, onChange }: { selected: string[]; onChang
               <button key={tag} type="button"
                 onClick={() => {
                   if (on) {
-                    const remaining = selected.filter((s) => s !== tag);
-                    // remove parent if no sub-categories left
-                    const hasOther = cats.some((o) => o.name !== c.name && remaining.includes(`${a.name}: ${o.name}`));
-                    onChange(hasOther ? remaining : remaining.filter((s) => s !== a.name));
+                    onChange(selected.filter((s) => s !== tag && s !== a.name));
                   } else {
-                    const next = selected.includes(a.name) ? [...selected, tag] : [...selected, a.name, tag];
-                    onChange(next);
+                    // remove sibling sub-categories, keep other abteilungen
+                    const siblings = cats.map((o) => `${a.name}: ${o.name}`);
+                    const cleaned = selected.filter((s) => !siblings.includes(s) && s !== a.name);
+                    onChange([...cleaned, a.name, tag]);
                   }
                 }}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
