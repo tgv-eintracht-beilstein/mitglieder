@@ -65,7 +65,7 @@ function AbteilungenPicker({ selected, onChange }: { selected: string[]; onChang
                 on ? "bg-[#b11217]/10 text-[#b11217] border-[#b11217]/30" : "bg-white text-gray-500 border-gray-200 hover:border-[#b11217]/30 hover:text-[#b11217]"
               }`}
             >
-              {c.name}
+              {a.name} – {c.name}
             </button>
           );
         })];
