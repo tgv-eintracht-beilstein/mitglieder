@@ -37,13 +37,40 @@ function AbteilungenPicker({ selected, onChange }: { selected: string[]; onChang
   return (
     <div className="flex flex-wrap gap-2">
       {ABTEILUNGEN.flatMap((a) => {
-        const active = selected.includes(a.name);
         const cats = UEBUNGSLEITER_CATEGORIES[a.name];
-        const pill = (
+        if (cats) {
+          return cats.map((c) => {
+            const tag = `${a.name}: ${c.name}`;
+            const on = selected.includes(tag);
+            return (
+              <button key={tag} type="button"
+                onClick={() => {
+                  if (on) {
+                    const remaining = selected.filter((s) => s !== tag);
+                    // remove parent if no sub-categories left
+                    const hasOther = cats.some((o) => o.name !== c.name && remaining.includes(`${a.name}: ${o.name}`));
+                    onChange(hasOther ? remaining : remaining.filter((s) => s !== a.name));
+                  } else {
+                    const next = selected.includes(a.name) ? [...selected, tag] : [...selected, a.name, tag];
+                    onChange(next);
+                  }
+                }}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  on ? "bg-[#b11217] text-white border-[#b11217]" : "bg-white text-gray-600 border-gray-200 hover:border-[#b11217] hover:text-[#b11217]"
+                }`}
+              >
+                {on
+                  ? <span className="brightness-0 invert"><AbteilungIcon slug={a.slug} size={16} /></span>
+                  : <AbteilungIcon slug={a.slug} size={16} />}
+                {a.name} – {c.name}
+              </button>
+            );
+          });
+        }
+        const active = selected.includes(a.name);
+        return [(
           <button key={a.name} type="button"
-            onClick={() => onChange(active
-              ? selected.filter((s) => s !== a.name && !(cats || []).some((c) => `${a.name}: ${c.name}` === s))
-              : [...selected, a.name])}
+            onClick={() => onChange(active ? selected.filter((s) => s !== a.name) : [...selected, a.name])}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
               active ? "bg-[#b11217] text-white border-[#b11217]" : "bg-white text-gray-600 border-gray-200 hover:border-[#b11217] hover:text-[#b11217]"
             }`}
@@ -53,22 +80,7 @@ function AbteilungenPicker({ selected, onChange }: { selected: string[]; onChang
               : <AbteilungIcon slug={a.slug} size={16} />}
             {a.name}
           </button>
-        );
-        if (!active || !cats) return [pill];
-        return [pill, ...cats.map((c) => {
-          const tag = `${a.name}: ${c.name}`;
-          const on = selected.includes(tag);
-          return (
-            <button key={tag} type="button"
-              onClick={() => onChange(on ? selected.filter((s) => s !== tag) : [...selected, tag])}
-              className={`px-2.5 py-1.5 rounded-full text-[11px] font-medium border transition-colors ${
-                on ? "bg-[#b11217]/10 text-[#b11217] border-[#b11217]/30" : "bg-white text-gray-500 border-gray-200 hover:border-[#b11217]/30 hover:text-[#b11217]"
-              }`}
-            >
-              {a.name} – {c.name}
-            </button>
-          );
-        })];
+        )];
       })}
     </div>
   );
