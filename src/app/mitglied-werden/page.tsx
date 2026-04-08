@@ -36,43 +36,39 @@ function Field({ label, value, required, children }: { label: string; value: str
 function AbteilungenPicker({ selected, onChange }: { selected: string[]; onChange: (v: string[]) => void }) {
   return (
     <div className="flex flex-wrap gap-2">
-      {ABTEILUNGEN.map((a) => {
+      {ABTEILUNGEN.flatMap((a) => {
         const active = selected.includes(a.name);
         const cats = UEBUNGSLEITER_CATEGORIES[a.name];
-        const hasCats = active && cats;
-        return (
-          <div key={a.name} className={`rounded-xl border transition-colors ${active ? "border-[#b11217] bg-[#b11217]/5" : "border-gray-200 bg-white"}`}>
-            <button type="button"
-              onClick={() => onChange(active
-                ? selected.filter((s) => s !== a.name && !(cats || []).some((c) => `${a.name}: ${c.name}` === s))
-                : [...selected, a.name])}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${
-                active ? "text-[#b11217]" : "text-gray-600 hover:text-[#b11217]"
+        const pill = (
+          <button key={a.name} type="button"
+            onClick={() => onChange(active
+              ? selected.filter((s) => s !== a.name && !(cats || []).some((c) => `${a.name}: ${c.name}` === s))
+              : [...selected, a.name])}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+              active ? "bg-[#b11217] text-white border-[#b11217]" : "bg-white text-gray-600 border-gray-200 hover:border-[#b11217] hover:text-[#b11217]"
+            }`}
+          >
+            {active
+              ? <span className="brightness-0 invert"><AbteilungIcon slug={a.slug} size={16} /></span>
+              : <AbteilungIcon slug={a.slug} size={16} />}
+            {a.name}
+          </button>
+        );
+        if (!active || !cats) return [pill];
+        return [pill, ...cats.map((c) => {
+          const tag = `${a.name}: ${c.name}`;
+          const on = selected.includes(tag);
+          return (
+            <button key={tag} type="button"
+              onClick={() => onChange(on ? selected.filter((s) => s !== tag) : [...selected, tag])}
+              className={`px-2.5 py-1.5 rounded-full text-[11px] font-medium border transition-colors ${
+                on ? "bg-[#b11217]/10 text-[#b11217] border-[#b11217]/30" : "bg-white text-gray-500 border-gray-200 hover:border-[#b11217]/30 hover:text-[#b11217]"
               }`}
             >
-              <AbteilungIcon slug={a.slug} size={16} />
-              {a.name}
+              {c.name}
             </button>
-            {hasCats && (
-              <div className="flex flex-wrap gap-1 px-2 pb-1.5">
-                {cats.map((c) => {
-                  const tag = `${a.name}: ${c.name}`;
-                  const on = selected.includes(tag);
-                  return (
-                    <button key={tag} type="button"
-                      onClick={() => onChange(on ? selected.filter((s) => s !== tag) : [...selected, tag])}
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-                        on ? "bg-[#b11217] text-white border-[#b11217]" : "bg-white text-gray-500 border-gray-300 hover:border-[#b11217] hover:text-[#b11217]"
-                      }`}
-                    >
-                      {c.name}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        );
+          );
+        })];
       })}
     </div>
   );
