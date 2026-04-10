@@ -245,12 +245,21 @@ export async function renderPdfBlobs(docs: { doc: React.ReactElement; filename: 
   return blobs;
 }
 
-export async function downloadMultiplePdfs(docs: { doc: React.ReactElement; filename: string }[]) {
+export async function downloadMultiplePdfs(docs: { doc: React.ReactElement; filename: string }[], mergedFilename?: string, combined = true) {
   const blobs: { blob: Blob; filename: string }[] = [];
   for (const { doc, filename } of docs) {
     blobs.push({ blob: await pdf(doc).toBlob(), filename });
   }
-  if (blobs.length > 1) {
+  if (!combined || blobs.length <= 1) {
+    for (const { blob, filename } of blobs) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  } else {
     const { PDFDocument } = await import("pdf-lib");
     const merged = await PDFDocument.create();
     for (const { blob } of blobs) {
@@ -263,14 +272,7 @@ export async function downloadMultiplePdfs(docs: { doc: React.ReactElement; file
     const url = URL.createObjectURL(mergedBlob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = blobs[0].filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  } else if (blobs.length === 1) {
-    const url = URL.createObjectURL(blobs[0].blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = blobs[0].filename;
+    a.download = mergedFilename || blobs[0].filename;
     a.click();
     URL.revokeObjectURL(url);
   }

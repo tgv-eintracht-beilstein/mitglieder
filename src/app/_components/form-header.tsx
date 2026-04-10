@@ -46,9 +46,14 @@ interface Props {
   title: string;
   contextFields: FormHeaderContextField[];
   personalFields: FormHeaderField[];
+  onAddressBook?: () => void;
+  addressBookCount?: number;
+  /** When non-empty, replaces personal fields with a selected-people list */
+  selectedAddresses?: { vorname: string; nachname: string; plzOrt: string }[];
 }
 
-export default function FormHeader({ title, contextFields, personalFields }: Props) {
+export default function FormHeader({ title, contextFields, personalFields, onAddressBook, addressBookCount, selectedAddresses }: Props) {
+  const showList = selectedAddresses && selectedAddresses.length > 0;
   return (
     <>
       {/* Screen: 2 boxes */}
@@ -70,22 +75,45 @@ export default function FormHeader({ title, contextFields, personalFields }: Pro
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide rounded-t-xl">PERSÖNLICHE ANGABEN</div>
+          <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide rounded-t-xl flex items-center justify-between">
+            <span>PERSÖNLICHE ANGABEN</span>
+            {onAddressBook && (
+              <button type="button" onClick={onAddressBook}
+                className="flex items-center gap-1 bg-white/20 hover:bg-white/30 rounded px-1.5 py-0.5 transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+                </svg>
+                {(addressBookCount ?? 0) > 0 && <span className="bg-white text-[#b11217] text-[9px] font-bold px-1 rounded-full">{addressBookCount}</span>}
+              </button>
+            )}
+          </div>
           <div className="px-4 py-3 space-y-2">
-            {personalFields.map((f) => (
-              <div key={f.key}>
-                <div className="text-[10px] mb-0.5 flex items-center gap-0.5">
-                  <span className={f.required && !f.value ? "text-[#b11217]" : "text-gray-400"}>{f.label}</span>
-                  {f.required && !f.value && <span className="text-[#b11217] leading-none">*</span>}
+            {showList ? (
+              <div className="space-y-1.5">
+                <div className="text-sm text-gray-900">
+                  {selectedAddresses.map(a => a.vorname || a.nachname).join(", ")}
                 </div>
-                <PI value={f.type === "date" ? formatDateDE(f.value) : f.value}>
-                  {f.type === "date"
-                    ? <DateSelect value={f.value} onChange={f.onChange} className={`text-sm ${f.required && !f.value ? "[&_button]:border-[#b11217] [&_input]:border-[#b11217]" : ""}`} />
-                    : <input type={f.type ?? "text"} value={f.value} onChange={e => f.onChange(e.target.value)} className={`${fieldCls} ${fieldBorder(f.value, f.required, f.invalid)}`} />
-                  }
-                </PI>
+                <button type="button" onClick={onAddressBook}
+                  className="text-[10px] text-[#b11217] hover:underline font-medium">
+                  Auswahl bearbeiten…
+                </button>
               </div>
-            ))}
+            ) : (
+              personalFields.map((f) => (
+                <div key={f.key}>
+                  <div className="text-[10px] mb-0.5 flex items-center gap-0.5">
+                    <span className={f.required && !f.value ? "text-[#b11217]" : "text-gray-400"}>{f.label}</span>
+                    {f.required && !f.value && <span className="text-[#b11217] leading-none">*</span>}
+                  </div>
+                  <PI value={f.type === "date" ? formatDateDE(f.value) : f.value}>
+                    {f.type === "date"
+                      ? <DateSelect value={f.value} onChange={f.onChange} className={`text-sm ${f.required && !f.value ? "[&_button]:border-[#b11217] [&_input]:border-[#b11217]" : ""}`} />
+                      : <input type={f.type ?? "text"} value={f.value} onChange={e => f.onChange(e.target.value)} className={`${fieldCls} ${fieldBorder(f.value, f.required, f.invalid)}`} />
+                    }
+                  </PI>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

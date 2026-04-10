@@ -4,12 +4,15 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import SignatureModal from "@/app/_components/signature-modal";
 import FormHeader from "@/app/_components/form-header";
 import DownloadButton from "@/app/_components/download-button";
+import SubmitButton from "@/app/_components/submit-button";
 import VerzichtPageContent from "@/app/_components/verzicht-page-content";
 import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
 import { syncSave, syncLoad, subscribe, uploadPdfAndSaveVersion } from "@/lib/sync";
 import { validateIban } from "@/lib/iban";
 import { AbteilungSelect, ABTEILUNGEN, AbteilungIcon } from "@/app/_components/aufwandsformular";
+import AddressBookModal, { useAddressSelection } from "@/app/_components/address-book-picker";
+import { type SavedAddress, getSelectedAddresses } from "@/lib/addressBook";
 
 const STORAGE_KEY = "ehrenamtspauschale_v2";
 
@@ -67,6 +70,9 @@ export default function EhrenamtspauschaleePage() {
   const [hydrated, setHydrated] = useState(false);
   const [showSignModal, setShowSignModal] = useState(false);
   const [sharedSignature, setSharedSignature] = useState("");
+  const [combined, setCombined] = useState(true);
+  const [showAddressBook, setShowAddressBook] = useState(false);
+  const [selectedIds, , refreshSelection] = useAddressSelection();
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -169,24 +175,30 @@ export default function EhrenamtspauschaleePage() {
   const auszahlbetrag = Math.max(0, verguetungNum - spendeNum);
   const spendeWithinLimit = state.verzicht && spendeNum > 0 && spendeNum <= limit;
 
+  const multiSelected = selectedIds.length > 1;
   const allChecks: { label: string; valid: boolean }[] = [
-    { label: "Nachname", valid: !!state.nachname },
-    { label: "Vorname", valid: !!state.vorname },
-    { label: "Strasse", valid: !!state.strasse },
-    { label: "PLZ / Ort", valid: !!state.plzOrt },
-    { label: "Geburtsdatum", valid: !!state.geburtsdatum },
-    { label: "Telefon", valid: !!state.telefon },
-    { label: "E-Mail", valid: !!state.email },
+    ...(multiSelected ? [
+      { label: "Adressbuch", valid: selectedIds.length > 0 },
+    ] : [
+      { label: "Nachname", valid: !!state.nachname },
+      { label: "Vorname", valid: !!state.vorname },
+      { label: "Strasse", valid: !!state.strasse },
+      { label: "PLZ / Ort", valid: !!state.plzOrt },
+      { label: "Geburtsdatum", valid: !!state.geburtsdatum },
+      { label: "Telefon", valid: !!state.telefon },
+      { label: "E-Mail", valid: !!state.email },
+    ]),
     { label: "Abteilung", valid: !!state.abteilung },
     { label: "Funktion", valid: !!state.funktion },
-    { label: "Vergütung", valid: verguetungNum > 0 },
-    { label: `Vergütung \u2264 ${limit} \u20ac`, valid: !limitExceeded },
+    ...(verguetungNum > 0 ? [
+      { label: `Vergütung \u2264 ${limit} \u20ac`, valid: !limitExceeded },
+    ] : []),
     ...(state.verzicht ? [
       { label: "Spendenbetrag", valid: spendeNum > 0 },
     ] : []),
     ...(auszahlbetrag === 0 && state.verzicht && spendeWithinLimit ? [] : [
-      { label: "Zahlungsart", valid: state.zahlungBar || state.zahlungUeberweisung },
-      ...(state.zahlungUeberweisung ? [{ label: "IBAN", valid: validateIban(state.iban) }] : []),
+      { label: "Zahlungsart", valid: multiSelected || state.zahlungBar || state.zahlungUeberweisung },
+      ...(state.zahlungUeberweisung && !multiSelected ? [{ label: "IBAN", valid: validateIban(state.iban) }] : []),
     ]),
   ];
   const missing = allChecks.filter(c => !c.valid);
@@ -202,29 +214,43 @@ export default function EhrenamtspauschaleePage() {
     return "border-gray-300 focus:border-[#b11217]";
   }
 
-  const handleDownload = async () => {
+  const buildDocsForState = async (s: FormState) => {
     const React = (await import("react")).default;
     const { Document } = await import("@react-pdf/renderer");
-    const { downloadMultiplePdfs } = await import("@/lib/pdf");
     const { EhrenamtspauschaleDoc } = await import("@/lib/pdf-ehrenamt");
     const { VerzichtDoc } = await import("@/lib/pdf-forms");
-
-    const dateValue = state.overrideDate !== null ? state.overrideDate : defaultDate;
+    const dateValue = s.overrideDate !== null ? s.overrideDate : defaultDate;
     const docs: { doc: React.ReactElement; filename: string }[] = [];
-
     docs.push({
-      doc: <Document><EhrenamtspauschaleDoc state={state} dateValue={dateValue} limit={limit} /></Document>,
-      filename: buildPdfFilename("ehrenamtspauschale", state.vorname, state.nachname),
+      doc: <Document><EhrenamtspauschaleDoc state={s} dateValue={dateValue} limit={limit} /></Document>,
+      filename: buildPdfFilename("ehrenamtspauschale", s.vorname, s.nachname),
     });
-
-    if (state.verzicht && spendeNum > 0) {
+    if (s.verzicht && (parseFloat(s.spendenbetrag) || 0) > 0) {
       docs.push({
-        doc: <Document><VerzichtDoc state={{ nachname: state.nachname, vorname: state.vorname, strasse: state.strasse, plzOrt: state.plzOrt, jahr: state.jahr, betrag: state.verguetung, spendenbetrag: state.spendenbetrag || state.verguetung, signature: state.signature }} dateValue={dateValue} /></Document>,
-        filename: buildPdfFilename("ehrenamtspauschale-verzicht", state.vorname, state.nachname),
+        doc: <Document><VerzichtDoc state={{ nachname: s.nachname, vorname: s.vorname, strasse: s.strasse, plzOrt: s.plzOrt, jahr: s.jahr, betrag: s.verguetung, spendenbetrag: s.spendenbetrag || s.verguetung, signature: s.signature }} dateValue={dateValue} /></Document>,
+        filename: buildPdfFilename("ehrenamtspauschale-verzicht", s.vorname, s.nachname),
       });
     }
+    return docs;
+  };
 
-    const blobs = await downloadMultiplePdfs(docs);
+  const buildDocs = () => buildDocsForState(state);
+
+  const buildAllDocs = async () => {
+    const selected = getSelectedAddresses();
+    if (selected.length === 0) return buildDocs();
+    const docs: Awaited<ReturnType<typeof buildDocs>> = [];
+    for (const addr of selected) {
+      const s2: FormState = { ...state, nachname: addr.nachname, vorname: addr.vorname, strasse: addr.strasse, plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon, email: addr.email };
+      docs.push(...await buildDocsForState(s2));
+    }
+    return docs;
+  };
+
+  const handleDownload = async () => {
+    const { downloadMultiplePdfs } = await import("@/lib/pdf");
+    const docs = await buildAllDocs();
+    const blobs = await downloadMultiplePdfs(docs, buildPdfFilename("ehrenamtspauschale", state.vorname, state.nachname), combined);
 
     try {
       const pdfBlobs = blobs.map(b => ({ blob: b.blob, title: "ehrenamtspauschale", vorname: state.vorname, nachname: state.nachname }));
@@ -248,15 +274,18 @@ export default function EhrenamtspauschaleePage() {
             missingCount={missing.length}
             checks={allChecks}
             side="bottom"
-            count={state.verzicht ? 2 : 1}
             onDownload={handleDownload}
           />
+          <SubmitButton formType="ehrenamtspauschale" getFormData={() => state} getPdfBlobs={async () => { const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildDocs()); }} />
         </div>
       </div>
 
       {/* Header: context + personal data */}
       <FormHeader
         title="Ehrenamtspauschale"
+        onAddressBook={() => setShowAddressBook(true)}
+        addressBookCount={selectedIds.length}
+        selectedAddresses={selectedIds.length > 1 ? getSelectedAddresses().map(a => ({ vorname: a.vorname, nachname: a.nachname, plzOrt: a.plzOrt })) : undefined}
         contextFields={[
           {
             label: "Jahr",
@@ -383,6 +412,7 @@ export default function EhrenamtspauschaleePage() {
       </div>
 
       {/* Auszahlbetrag & Zahlung */}
+      {!state.verzicht && (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
         <div className="bg-[#b11217] text-white px-4 py-2 text-sm font-bold tracking-wide uppercase rounded-t-xl">Auszahlbetrag &amp; Zahlung</div>
         <div className="p-4 text-sm space-y-2">
@@ -427,6 +457,7 @@ export default function EhrenamtspauschaleePage() {
         )}
         </div>
       </div>
+      )}
 
       {/* Signature section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
@@ -524,6 +555,21 @@ export default function EhrenamtspauschaleePage() {
         />
       )}
 
+      <AddressBookModal
+        open={showAddressBook}
+        onCancel={() => setShowAddressBook(false)}
+        onClose={() => {
+          setShowAddressBook(false);
+          refreshSelection();
+          const sel = getSelectedAddresses();
+          if (sel.length === 1) {
+            const a = sel[0];
+            setState(s => ({ ...s, nachname: a.nachname, vorname: a.vorname, strasse: a.strasse, plzOrt: a.plzOrt, geburtsdatum: a.geburtsdatum, telefon: a.telefon, email: a.email }));
+          }
+        }}
+        current={{ nachname: state.nachname, vorname: state.vorname, strasse: state.strasse, plzOrt: state.plzOrt, geburtsdatum: state.geburtsdatum, telefon: state.telefon, email: state.email }}
+      />
+
       {/* Footer actions */}
       <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-2 print:hidden mt-2 mb-6">
         <div className="flex flex-wrap items-center gap-2">
@@ -541,15 +587,34 @@ export default function EhrenamtspauschaleePage() {
             Drucken
           </button>
         </div>
-        <DownloadButton
-          filename={buildPdfFilename("ehrenamtspauschale", state.vorname, state.nachname)}
-          disabled={!isComplete}
-          missingCount={missing.length}
-          checks={allChecks}
-          side="top"
-          count={state.verzicht ? 2 : 1}
-          onDownload={handleDownload}
-        />
+        {(() => {
+          const docsPerPerson = state.verzicht && spendeNum > 0 ? 2 : 1;
+          const people = selectedIds.length > 0 ? selectedIds.length : 1;
+          const totalDocs = people * docsPerPerson;
+          return (
+            <div className="flex items-center gap-2">
+              {totalDocs > 1 && (
+                <label className="inline-flex items-center gap-1.5 text-[10px] text-gray-500 cursor-pointer select-none">
+                  <span className={`relative inline-block w-7 h-4 rounded-full transition-colors ${combined ? "bg-[#b11217]" : "bg-gray-300"}`}>
+                    <span className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${combined ? "translate-x-3" : ""}`} />
+                  </span>
+                  <input type="checkbox" checked={combined} onChange={e => setCombined(e.target.checked)} className="sr-only" />
+                  PDF Dateien zusammenfassen
+                </label>
+              )}
+              <DownloadButton
+                filename={buildPdfFilename("ehrenamtspauschale", state.vorname, state.nachname)}
+                disabled={!isComplete}
+                missingCount={missing.length}
+                checks={allChecks}
+                side="top"
+                count={!combined && totalDocs > 1 ? totalDocs : undefined}
+                onDownload={handleDownload}
+              />
+            </div>
+          );
+        })()}
+        <SubmitButton formType="ehrenamtspauschale" getFormData={() => state} getPdfBlobs={async () => { const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildDocs()); }} />
       </div>
 
       {/* PDF footer (single, at the very bottom of main form) */}

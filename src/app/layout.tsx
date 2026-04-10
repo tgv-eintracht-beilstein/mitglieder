@@ -10,6 +10,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://mitglieder.tgveintrachtbeilstein.de"),
   title: `TGV \u201eEintracht\u201c Beilstein e. V.`,
   description: `TGV \u201eEintracht\u201c Beilstein e. V. \u2013 Mitgliederbereich`,
 };

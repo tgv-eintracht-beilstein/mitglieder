@@ -215,6 +215,7 @@ function MitgliedWerdenPage() {
   const [signTarget, setSignTarget] = useState<SignTarget | null>(null);
   const [dsEditPersonId, setDsEditPersonId] = useState<string | null>(null);
   const [sharedSig, setSharedSig] = useState("");
+  const [combined, setCombined] = useState(true);
 
   useEffect(() => {
     try {
@@ -302,14 +303,13 @@ function MitgliedWerdenPage() {
   }
   const missing = checks.filter((c) => !c.valid);
   const isComplete = missing.length === 0;
-  const pdfCount = state.personen.length * 2 + 1;
 
   return (
     <div className="mitglied-werden-form px-1">
       <div className="flex items-center justify-between mb-3 print:hidden">
         <h1 className="text-2xl font-bold text-[#b11217]">Mitglied werden</h1>
         <div className="hidden md:flex items-center gap-2">
-          <DownloadButton filename="mitgliedsantrag.pdf" disabled={!isComplete} missingCount={missing.length} checks={checks} side="bottom" count={pdfCount} onDownload={() => generateAllPdfs(state)} />
+          <DownloadButton filename="mitgliedsantrag.pdf" disabled={!isComplete} missingCount={missing.length} checks={checks} side="bottom" onDownload={() => generateAllPdfs(state)} />
           <SubmitButton formType="mitglied-werden" getFormData={() => state} getPdfBlobs={async () => { const { buildAllDocs } = await import("./pdf-utils"); const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildAllDocs(state)); }} />
         </div>
       </div>
@@ -371,7 +371,7 @@ function MitgliedWerdenPage() {
               </label>
               {p.datenschutzAkzeptiert && (
                 <div className="ml-6 flex items-center gap-2 text-[10px] text-gray-400">
-                  <span>Alle {(p.datenschutzKategorien ?? []).length} Kategorien ausgewählt</span>
+                  <span>Alle {DATENSCHUTZ_KATEGORIEN.length} Kategorien ausgewählt</span>
                   <button type="button" onClick={(e) => { e.preventDefault(); setDsEditPersonId(p.id); }}
                     className="text-[#b11217] hover:underline">Bearbeiten</button>
                 </div>
@@ -481,7 +481,16 @@ function MitgliedWerdenPage() {
           className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-lg text-xs hover:bg-red-100 transition-colors">
           Formular zurücksetzen
         </button>
-        <DownloadButton filename="mitgliedsantrag.pdf" disabled={!isComplete} missingCount={missing.length} checks={checks} side="top" count={pdfCount} onDownload={() => generateAllPdfs(state)} />
+        <div className="flex items-center gap-2">
+          <label className="inline-flex items-center gap-1.5 text-[10px] text-gray-500 cursor-pointer select-none">
+            <span className={`relative inline-block w-7 h-4 rounded-full transition-colors ${combined ? "bg-[#b11217]" : "bg-gray-300"}`}>
+              <span className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${combined ? "translate-x-3" : ""}`} />
+            </span>
+            <input type="checkbox" checked={combined} onChange={e => setCombined(e.target.checked)} className="sr-only" />
+            PDF Dateien zusammenfassen
+          </label>
+          <DownloadButton filename="mitgliedsantrag.pdf" disabled={!isComplete} missingCount={missing.length} checks={checks} side="top" count={!combined ? state.personen.length * 2 + 1 : undefined} onDownload={() => generateAllPdfs(state, combined)} />
+        </div>
         <SubmitButton formType="mitglied-werden" getFormData={() => state} getPdfBlobs={async () => { const { buildAllDocs } = await import("./pdf-utils"); const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildAllDocs(state)); }} />
       </div>
 

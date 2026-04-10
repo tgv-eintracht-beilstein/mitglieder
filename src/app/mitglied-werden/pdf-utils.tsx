@@ -2,9 +2,8 @@ import React from "react";
 import type { FormState } from "./types";
 import { buildPdfFilename } from "@/lib/pdfFilename";
 
-export async function generateAllPdfs(state: FormState): Promise<void> {
+export async function buildAllDocs(state: FormState) {
   const { Document } = await import("@react-pdf/renderer");
-  const { downloadMultiplePdfs } = await import("@/lib/pdf");
   const { DatenschutzDoc, AntragDoc, SepaDoc } = await import("./pdf-docs");
 
   const today = new Date().toLocaleDateString("de-DE");
@@ -30,5 +29,10 @@ export async function generateAllPdfs(state: FormState): Promise<void> {
     filename: buildPdfFilename("sepa-mandat", state.personen[0]?.vorname || "", state.personen[0]?.nachname || ""),
   });
 
-  await downloadMultiplePdfs(docs);
+  return docs;
+}
+
+export async function generateAllPdfs(state: FormState, combined = true): Promise<void> {
+  const { downloadMultiplePdfs } = await import("@/lib/pdf");
+  await downloadMultiplePdfs(await buildAllDocs(state), buildPdfFilename("mitgliedsantrag", state.personen[0]?.vorname || "", state.personen[0]?.nachname || ""), combined);
 }

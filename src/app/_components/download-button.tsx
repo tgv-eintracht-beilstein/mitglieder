@@ -21,52 +21,39 @@ export default function DownloadButton({ filename, disabled: disabledProp, missi
   function handleMouseEnter() {
     if (btnRef.current) {
       const r = btnRef.current.getBoundingClientRect();
-      const tooltipW = 288; // w-72
+      const tooltipW = 288;
       const distFromRight = window.innerWidth - r.right;
-      
       let finalRight = distFromRight;
-      if (window.innerWidth - finalRight - tooltipW < 8) {
-        finalRight = window.innerWidth - tooltipW - 8;
-      }
-      if (finalRight < 8) {
-        finalRight = 8;
-      }
-      
-      if (side === "top") {
-        setPos({ top: 0, bottom: window.innerHeight - r.top + 6, right: finalRight });
-      } else {
-        setPos({ top: r.bottom + 6, bottom: 0, right: finalRight });
-      }
+      if (window.innerWidth - finalRight - tooltipW < 8) finalRight = window.innerWidth - tooltipW - 8;
+      if (finalRight < 8) finalRight = 8;
+      if (side === "top") setPos({ top: 0, bottom: window.innerHeight - r.top + 6, right: finalRight });
+      else setPos({ top: r.bottom + 6, bottom: 0, right: finalRight });
     }
     setHovered(true);
   }
 
   async function handleDownload() {
-    if (onDownload) {
-      setLoading(true);
-      try {
-        await onDownload();
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-    
-    console.warn("onDownload not provided to DownloadButton");
+    if (!onDownload) { console.warn("onDownload not provided"); return; }
+    setLoading(true);
+    try { await onDownload(); } catch (e) { console.error(e); } finally { setLoading(false); }
   }
 
   const sorted = checks ? [...checks].sort((a, b) => (a.valid === b.valid ? 0 : a.valid ? 1 : -1)) : [];
+
+  const label = disabledProp && missingCount
+    ? null
+    : count && count > 1
+      ? `${count} PDFs herunterladen`
+      : "PDF herunterladen";
 
   return (
     <div className="relative inline-flex" onMouseEnter={handleMouseEnter} onMouseLeave={() => setHovered(false)}>
       {hovered && disabledProp && sorted.length > 0 && (
         <div className="fixed z-[300] w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-3 print:hidden"
-          style={{ 
-            top: side === "bottom" ? pos.top : "auto", 
-            bottom: side === "top" ? pos.bottom : "auto", 
-            right: pos.right 
+          style={{
+            top: side === "bottom" ? pos.top : "auto",
+            bottom: side === "top" ? pos.bottom : "auto",
+            right: pos.right
           }}>
           <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Pflichtfelder</div>
           <ul className="space-y-1">
@@ -99,10 +86,9 @@ export default function DownloadButton({ filename, disabled: disabledProp, missi
               <path d="M7 1v8M4 6l3 3 3-3"/>
               <path d="M1 10v1a2 2 0 002 2h8a2 2 0 002-2v-1"/>
             </svg>
-            {disabledProp && missingCount
-              ? <><span>{missingCount} {missingCount === 1 ? "Pflichtfeld fehlt" : "Pflichtfelder fehlen"}</span><span className="ml-1 bg-white/20 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{missingCount}</span></>
-              : (count && count > 1 ? `${count} PDFs herunterladen` : "PDF herunterladen")
-            }
+            {label ?? (
+              <><span>{missingCount} {missingCount === 1 ? "Pflichtfeld fehlt" : "Pflichtfelder fehlen"}</span><span className="ml-1 bg-white/20 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{missingCount}</span></>
+            )}
           </>
         )}
       </button>

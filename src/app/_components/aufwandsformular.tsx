@@ -10,10 +10,12 @@ import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSig
 import { buildPdfFilename } from "@/lib/pdfFilename";
 import { UEBUNGSLEITER_CATEGORIES } from "@/lib/constants";
 import { syncSave, syncLoad, subscribe, uploadPdfAndSaveVersion } from "@/lib/sync";
+import AddressBookModal, { useAddressSelection } from "./address-book-picker";
+import { getSelectedAddresses } from "@/lib/addressBook";
 const KM_RATE = 0.3;
 const BESCHREIBUNGEN_KEY = "tgv_beschreibungen_v1";
 
-function loadBeschreibungen(): string[] {
+export function loadBeschreibungen(): string[] {
   try { return JSON.parse(localStorage.getItem(BESCHREIBUNGEN_KEY) ?? "[]"); } catch { return []; }
 }
 function saveBeschreibung(val: string) {
@@ -494,7 +496,7 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
         value={value}
         min={`${yearFrom}-01-01`}
         onChange={e => onChange(e.target.value)}
-        className="sm:hidden w-full bg-transparent border-b border-gray-300 py-0.5 text-[length:inherit] focus:outline-none focus:border-[#b11217] print:hidden"
+        className="sm:hidden w-full bg-transparent border-b border-gray-300 py-0.5 text-left text-[length:inherit] focus:outline-none focus:border-[#b11217] print:hidden"
       />
       {/* Desktop: custom button + panel */}
       <button ref={btnRef} type="button" onClick={openPanel}
@@ -941,6 +943,9 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const [pendingShare, setPendingShare] = useState<SharePayload | null>(null);
+  const [combined, setCombined] = useState(true);
+  const [showAddressBook, setShowAddressBook] = useState(false);
+  const [selectedIds, , refreshSelection] = useAddressSelection();
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -1143,20 +1148,25 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const inputCls = "w-full bg-transparent border-b border-gray-300 px-1 py-1 text-xs focus:outline-none focus:border-blue-400";
 
   const colsBefore = 1 + (showStunden ? 4 : 0) + (showKm ? 1 : 0);
+  const multiSelected = selectedIds.length > 1;
   const allChecks: { label: string; valid: boolean }[] = [
-    { label: "Nachname", valid: !!state.nachname },
-    { label: "Vorname", valid: !!state.vorname },
-    { label: "Straße", valid: !!state.strasse },
-    { label: "PLZ / Ort", valid: !!state.plzOrt },
-    { label: "Geburtsdatum", valid: !!state.geburtsdatum },
-    { label: "Telefon", valid: !!state.telefon },
-    { label: "E-Mail", valid: !!state.email },
+    ...(multiSelected ? [
+      { label: "Adressbuch", valid: selectedIds.length > 0 },
+    ] : [
+      { label: "Nachname", valid: !!state.nachname },
+      { label: "Vorname", valid: !!state.vorname },
+      { label: "Straße", valid: !!state.strasse },
+      { label: "PLZ / Ort", valid: !!state.plzOrt },
+      { label: "Geburtsdatum", valid: !!state.geburtsdatum },
+      { label: "Telefon", valid: !!state.telefon },
+      { label: "E-Mail", valid: !!state.email },
+    ]),
     { label: "Abteilung", valid: !!state.abteilung },
     { label: "Auszahlbetrag oder Spende > 0", valid: auszahlbetrag > 0 || spende > 0 },
     ...(enforceMaxAufwand ? [{ label: `Aufwandsentschädigung ≤ ${maxAufwand.toLocaleString("de-DE")} €`, valid: !aufwandExceeded }] : []),
     ...(auszahlbetrag > 0 ? [
-      { label: "Zahlungsart", valid: state.zahlungBar || state.zahlungUeberweisung },
-      ...(state.zahlungUeberweisung ? [{ label: "IBAN", valid: validateIban(state.iban) }] : []),
+      { label: "Zahlungsart", valid: multiSelected || state.zahlungBar || state.zahlungUeberweisung },
+      ...(state.zahlungUeberweisung && !multiSelected ? [{ label: "IBAN", valid: validateIban(state.iban) }] : []),
     ] : []),
     ...(showSteuererklärung ? [{ label: "Steuererklärung", valid: state.steuerVollHoehe || state.steuerBisZu || state.steuerNicht }] : []),
     { label: "Tätigkeitsnachweis (mind. 1 vollständige Zeile)", valid: state.rows.some(r => r.datum && r.beschreibung.trim() && calcRow(r) > 0) },
@@ -1170,29 +1180,49 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const today = new Date().toLocaleDateString("de-DE");
   const defaultDate = [city, today].filter(s => s !== "_______________" && s !== "").join(", ");
 
-  const buildDocs = async () => {
+  const buildDocsForState = async (s: FormState) => {
     const React = (await import("react")).default;
     const { Document } = await import("@react-pdf/renderer");
     const { AufwandsformularDoc, VerzichtDoc } = await import("@/lib/pdf-forms");
-    const dateValue = state.overrideDate !== null ? state.overrideDate : defaultDate;
+    const c = s.plzOrt.replace(/^[\d\s]+/, "").replace(/[^a-zA-ZäöüÄÖÜß\s-]/g, "").trim() || "_______________";
+    const dateValue = s.overrideDate !== null ? s.overrideDate : [c, today].filter(x => x !== "_______________" && x !== "").join(", ");
     const docs: { doc: React.ReactElement; filename: string }[] = [];
+    const sAufwand = s.rows.reduce((sum, r) => sum + calcRow(r), 0);
+    const sSpende = Math.min(parseFloat(s.aufwandsspende) || 0, sAufwand);
     docs.push({
-      doc: <Document><AufwandsformularDoc state={state} config={{ title, showKm, showStunden, showSteuererklärung, showKategorie }} dateValue={dateValue} /></Document>,
-      filename: buildPdfFilename(title, state.vorname, state.nachname),
+      doc: <Document><AufwandsformularDoc state={s} config={{ title, showKm, showStunden, showSteuererklärung, showKategorie }} dateValue={dateValue} /></Document>,
+      filename: buildPdfFilename(title, s.vorname, s.nachname),
     });
-    if (showVerzicht && spende > 0) {
+    if (showVerzicht && sSpende > 0) {
       docs.push({
-        doc: <Document><VerzichtDoc state={{ nachname: state.nachname, vorname: state.vorname, strasse: state.strasse, plzOrt: state.plzOrt, jahr: state.monatVon?.slice(0, 4) || String(new Date().getFullYear()), betrag: aufwand.toFixed(2), spendenbetrag: spende.toFixed(2), signature: state.signature }} dateValue={dateValue} /></Document>,
-        filename: buildPdfFilename("verzichtserklarung", state.vorname, state.nachname),
+        doc: <Document><VerzichtDoc state={{ nachname: s.nachname, vorname: s.vorname, strasse: s.strasse, plzOrt: s.plzOrt, jahr: s.monatVon?.slice(0, 4) || String(new Date().getFullYear()), betrag: sAufwand.toFixed(2), spendenbetrag: sSpende.toFixed(2), signature: s.signature }} dateValue={dateValue} /></Document>,
+        filename: buildPdfFilename("verzichtserklarung", s.vorname, s.nachname),
       });
+    }
+    return docs;
+  };
+
+  const buildDocs = () => buildDocsForState(state);
+
+  const buildAllDocs = async () => {
+    const selected = getSelectedAddresses();
+    if (selected.length === 0) return buildDocs();
+    const docs: Awaited<ReturnType<typeof buildDocs>> = [];
+    for (const addr of selected) {
+      const overrides = addr.rateOverrides ?? {};
+      const rows = Object.keys(overrides).length > 0
+        ? state.rows.map(r => { const rate = overrides[r.beschreibung]; return rate !== undefined ? { ...r, satz: rate } : r; })
+        : state.rows;
+      const s2: FormState = { ...state, rows, nachname: addr.nachname, vorname: addr.vorname, strasse: addr.strasse, plzOrt: addr.plzOrt, geburtsdatum: addr.geburtsdatum, telefon: addr.telefon, email: addr.email };
+      docs.push(...await buildDocsForState(s2));
     }
     return docs;
   };
 
   const handleDownload = async () => {
     const { downloadMultiplePdfs } = await import("@/lib/pdf");
-    const docs = await buildDocs();
-    const blobs = await downloadMultiplePdfs(docs);
+    const docs = await buildAllDocs();
+    const blobs = await downloadMultiplePdfs(docs, buildPdfFilename(title, state.vorname, state.nachname), combined);
 
     try {
       const pdfBlobs = blobs.map(b => ({ blob: b.blob, title, vorname: state.vorname, nachname: state.nachname }));
@@ -1207,7 +1237,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       <div className="flex items-center justify-between mb-3 print:hidden">
         <h1 className="text-2xl font-bold text-[#b11217]">{title}</h1>
         <div className="hidden md:flex items-center gap-2">
-          <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="bottom" count={showVerzicht && spende > 0 ? 2 : 1} onDownload={handleDownload} />
+          <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="bottom" onDownload={handleDownload} />
           <SubmitButton formType={title.toLowerCase().replace(/\s+/g, "-")} getFormData={() => state} getPdfBlobs={async () => { const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildDocs()); }} />
         </div>
       </div>
@@ -1215,6 +1245,9 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       {/* ── Header ── */}
       <FormHeader
         title={title}
+        onAddressBook={() => setShowAddressBook(true)}
+        addressBookCount={selectedIds.length}
+        selectedAddresses={selectedIds.length > 1 ? getSelectedAddresses().map(a => ({ vorname: a.vorname, nachname: a.nachname, plzOrt: a.plzOrt })) : undefined}
         contextFields={[
            {
              label: "Abteilung",
@@ -1678,6 +1711,21 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         />
       )}
 
+      <AddressBookModal
+        open={showAddressBook}
+        onCancel={() => setShowAddressBook(false)}
+        onClose={() => {
+          setShowAddressBook(false);
+          refreshSelection();
+          const sel = getSelectedAddresses();
+          if (sel.length === 1) {
+            const a = sel[0];
+            setState(s => ({ ...s, nachname: a.nachname, vorname: a.vorname, strasse: a.strasse, plzOrt: a.plzOrt, geburtsdatum: a.geburtsdatum, telefon: a.telefon, email: a.email }));
+          }
+        }}
+        current={{ nachname: state.nachname, vorname: state.vorname, strasse: state.strasse, plzOrt: state.plzOrt, geburtsdatum: state.geburtsdatum, telefon: state.telefon, email: state.email }}
+      />
+
       {showShareModal && shareUrl && (
         <ShareModal url={shareUrl} onClose={() => setShowShareModal(false)} />
       )}
@@ -1754,7 +1802,25 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             Drucken
           </button>
         </div>
-        <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="top" count={showVerzicht && spende > 0 ? 2 : 1} onDownload={handleDownload} />
+        {(() => {
+          const docsPerPerson = showVerzicht && spende > 0 ? 2 : 1;
+          const people = selectedIds.length > 0 ? selectedIds.length : 1;
+          const totalDocs = people * docsPerPerson;
+          return (
+            <div className="flex items-center gap-2">
+              {totalDocs > 1 && (
+                <label className="inline-flex items-center gap-1.5 text-[10px] text-gray-500 cursor-pointer select-none">
+                  <span className={`relative inline-block w-7 h-4 rounded-full transition-colors ${combined ? "bg-[#b11217]" : "bg-gray-300"}`}>
+                    <span className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${combined ? "translate-x-3" : ""}`} />
+                  </span>
+                  <input type="checkbox" checked={combined} onChange={e => setCombined(e.target.checked)} className="sr-only" />
+                  PDF Dateien zusammenfassen
+                </label>
+              )}
+              <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="top" count={!combined && totalDocs > 1 ? totalDocs : undefined} onDownload={handleDownload} />
+            </div>
+          );
+        })()}
         <SubmitButton formType={title.toLowerCase().replace(/\s+/g, "-")} getFormData={() => state} getPdfBlobs={async () => { const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildDocs()); }} />
       </div>
 
