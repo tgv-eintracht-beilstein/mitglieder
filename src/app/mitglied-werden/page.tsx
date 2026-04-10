@@ -6,7 +6,7 @@ import SignatureModal from "@/app/_components/signature-modal";
 import DownloadButton from "@/app/_components/download-button";
 import { validateIban } from "@/lib/iban";
 import { ABTEILUNGEN, AbteilungIcon, DateSelect } from "@/app/_components/aufwandsformular";
-import { UEBUNGSLEITER_CATEGORIES } from "@/lib/constants";
+import { UEBUNGSLEITER_CATEGORIES, MULTI_SELECT_ABTEILUNGEN } from "@/lib/constants";
 import { loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import type { FormState, Person, Address } from "./types";
 import { defaultState, emptyPerson, emptyAddress } from "./types";
@@ -47,8 +47,10 @@ function AbteilungenPicker({ selected, onChange }: { selected: string[]; onChang
                 onClick={() => {
                   if (on) {
                     onChange(selected.filter((s) => s !== tag && s !== a.name));
+                  } else if (MULTI_SELECT_ABTEILUNGEN.has(a.name)) {
+                    onChange(selected.includes(a.name) ? [...selected, tag] : [...selected, a.name, tag]);
                   } else {
-                    // remove sibling sub-categories, keep other abteilungen
+                    // single select: remove sibling sub-categories
                     const siblings = cats.map((o) => `${a.name}: ${o.name}`);
                     const cleaned = selected.filter((s) => !siblings.includes(s) && s !== a.name);
                     onChange([...cleaned, a.name, tag]);

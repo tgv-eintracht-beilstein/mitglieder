@@ -16,3 +16,6 @@ export const UEBUNGSLEITER_CATEGORIES: Record<string, { name: string; slug: stri
     { name: "Jedermänner", slug: "jedermaenner" },
   ],
 };
+
+/** Abteilungen where multiple sub-categories can be selected */
+export const MULTI_SELECT_ABTEILUNGEN = new Set(["Turnen/Leichtathletik"]);
