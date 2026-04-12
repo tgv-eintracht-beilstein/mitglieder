@@ -68,17 +68,16 @@ export default function ProfilePage() {
     <main>
       <Container>
         <div className="max-w-4xl mx-auto py-10">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-bold">Profil</h1>
-            <button 
-              onClick={() => logout()}
-              className="px-6 py-2 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors flex items-center gap-2"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-              </svg>
-              Abmelden
-            </button>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Profil</h1>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => logout()}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+              >
+                Abmelden
+              </button>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
