@@ -36,10 +36,11 @@ export default function AuthButton({ className, simple }: { className?: string; 
     );
   }
 
-  const isGst = groups.includes("geschäftsstelle") || groups.includes("tgv-geschaeftsstelle");
-  const isVorstand = groups.includes("vorstand") || groups.includes("tgv-vorstand") || groups.includes("hauptausschuss") || groups.includes("tgv-hauptausschuss") || groups.includes("erweiterter-vorstand") || groups.includes("tgv-erweiterter-vorstand");
-  const isAbteilungsleiter = groups.includes("abteilungsleiter") || groups.includes("tgv-abteilungsleiter") || groups.some(g => g.startsWith("abt-") || g.startsWith("tgv-abt-"));
-  const hasInboxAccess = groups.includes("tgv-inbox-access") || isGst || isVorstand || isAbteilungsleiter;
+  const g = groups ?? [];
+  const isGst = g.includes("geschäftsstelle") || g.includes("tgv-geschaeftsstelle");
+  const isVorstand = g.includes("vorstand") || g.includes("tgv-vorstand") || g.includes("hauptausschuss") || g.includes("tgv-hauptausschuss") || g.includes("erweiterter-vorstand") || g.includes("tgv-erweiterter-vorstand");
+  const isAbteilungsleiter = g.includes("abteilungsleiter") || g.includes("tgv-abteilungsleiter") || g.some(s => s.startsWith("abt-") || s.startsWith("tgv-abt-"));
+  const hasInboxAccess = g.includes("tgv-inbox-access") || isGst || isVorstand || isAbteilungsleiter;
 
   const iconCls = (active: boolean) => `p-2 rounded-full transition-colors ${active ? "bg-white text-[#8f0f13]" : "text-white hover:bg-white/10"}`;
 
