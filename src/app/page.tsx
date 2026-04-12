@@ -77,9 +77,6 @@ export default function Home() {
             Wählen Sie einen Bereich aus, um fortzufahren.
           </p>
         </div>
-        <div className="shrink-0 pt-1">
-          <AuthButton className="px-4 py-2 bg-[#b11217] text-white rounded-full text-sm font-medium hover:bg-[#8f0f13] transition-colors" />
-        </div>
       </div>
 
       <div className="grid gap-3">
