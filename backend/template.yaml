@@ -21,8 +21,8 @@ Parameters:
     Default: ""
   CloudFrontPrivateKeySecretArn:
     Type: String
-    Description: "ARN of the Secrets Manager secret that holds the CloudFront private key PEM (for signing)."
-    Default: ""
+    Description: "ARN of the Secrets Manager secret that holds the CloudFront private key PEM (for signing). Provide real ARN when deploying."
+    Default: "arn:aws:secretsmanager:eu-central-1:000000000000:secret:placeholder"
 
 Globals:
   Function:
