@@ -76,8 +76,22 @@ export default function NachrichtenPage() {
         <div className="max-w-6xl mx-auto py-10 grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-2xl font-bold">Nachrichten</h1>
-              <div className="text-sm text-gray-500">{loading ? "Laden…" : `${messages.length}`}</div>
+              <h1 className="text-2xl font-bold text-gray-900">Nachrichten</h1>
+              <div className="flex items-center gap-3">
+                <div className="text-sm text-gray-500">{loading ? "Laden…" : `${messages.length}`}</div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => selected && openReply(selected)}
+                    disabled={!selected}
+                    className="px-3 py-1 text-sm rounded-md bg-[#b11217] text-white hover:bg-[#8f0f13] disabled:opacity-50"
+                  >Antworten</button>
+                  <button
+                    onClick={() => selected && openForward(selected)}
+                    disabled={!selected}
+                    className="px-3 py-1 text-sm rounded-md bg-gray-50 hover:bg-gray-100 disabled:opacity-50"
+                  >Weiterleiten</button>
+                </div>
+              </div>
             </div>
 
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-auto max-h-[70vh]">
@@ -88,14 +102,18 @@ export default function NachrichtenPage() {
                       <div className="text-sm font-medium text-gray-900 truncate">{m.subject}</div>
                       <div className="text-xs text-gray-400 truncate">{m.from} · {new Date(m.sentAt).toLocaleString("de-DE")}</div>
 
-                      <div className="mt-2 md:hidden flex gap-2">
-                        <button onClick={(e) => { e.stopPropagation(); archiveMessage(m); }} className="flex-1 px-2 py-1 text-xs rounded border">Archiv</button>
-                      </div>
                     </div>
 
-                    {/* Desktop actions on the right (only archive) */}
-                    <div className="hidden md:flex flex-col gap-2 shrink-0">
-                      <button onClick={(e) => { e.stopPropagation(); archiveMessage(m); }} title="Archivieren" className="text-xs text-gray-400 hover:text-red-600">Archiv</button>
+                    {/* Archive icon on the right */}
+                    <div className="shrink-0 ml-3">
+                      <button onClick={(e) => { e.stopPropagation(); archiveMessage(m); }} title="Archivieren" className="p-2 rounded hover:bg-gray-100 text-gray-500">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                          <path d="M10 11v6" />
+                          <path d="M14 11v6" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -110,16 +128,9 @@ export default function NachrichtenPage() {
               </div>
             ) : (
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{selected.subject}</h2>
-                    <div className="text-xs text-gray-400">Von: {selected.from} · {new Date(selected.sentAt).toLocaleString("de-DE")}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => archiveMessage(selected)} className="px-3 py-1 text-sm rounded-md bg-gray-50 hover:bg-gray-100">Archivieren</button>
-                    <button onClick={() => openReply(selected)} className="px-3 py-1 text-sm rounded-md bg-[#b11217] text-white hover:bg-[#8f0f13]">Antworten</button>
-                    <button onClick={() => openForward(selected)} className="px-3 py-1 text-sm rounded-md bg-gray-50 hover:bg-gray-100">Weiterleiten</button>
-                  </div>
+                <div className="mb-2">
+                  <h2 className="text-2xl font-bold text-gray-900">{selected.subject}</h2>
+                  <div className="text-xs text-gray-400">Von: {selected.from} · {new Date(selected.sentAt).toLocaleString("de-DE")}</div>
                 </div>
 
                 <div className="mt-4 text-sm text-gray-800 whitespace-pre-wrap">{selected.body}</div>
