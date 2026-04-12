@@ -227,7 +227,8 @@ export function InfoGrid({ left, right }: {
 /* ── Download helpers ── */
 
 export async function downloadPdf(doc: React.ReactElement, filename: string) {
-  const blob = await pdf(doc).toBlob();
+  // react-pdf types changed between versions; cast to any to avoid strict typing issues
+  const blob = await pdf(doc as any).toBlob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -240,7 +241,7 @@ export async function downloadPdf(doc: React.ReactElement, filename: string) {
 export async function renderPdfBlobs(docs: { doc: React.ReactElement; filename: string }[]) {
   const blobs: { blob: Blob; filename: string }[] = [];
   for (const { doc, filename } of docs) {
-    blobs.push({ blob: await pdf(doc).toBlob(), filename });
+    blobs.push({ blob: await pdf(doc as any).toBlob(), filename });
   }
   return blobs;
 }
@@ -248,7 +249,7 @@ export async function renderPdfBlobs(docs: { doc: React.ReactElement; filename: 
 export async function downloadMultiplePdfs(docs: { doc: React.ReactElement; filename: string }[], mergedFilename?: string, combined = true) {
   const blobs: { blob: Blob; filename: string }[] = [];
   for (const { doc, filename } of docs) {
-    blobs.push({ blob: await pdf(doc).toBlob(), filename });
+    blobs.push({ blob: await pdf(doc as any).toBlob(), filename });
   }
   if (!combined || blobs.length <= 1) {
     for (const { blob, filename } of blobs) {
