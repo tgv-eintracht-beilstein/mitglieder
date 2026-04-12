@@ -27,6 +27,11 @@ export default function NachrichtenPage() {
     }
   }, []);
 
+  // Auto-select first message when messages load
+  useEffect(() => {
+    if (messages.length > 0 && !selected) setSelected(messages[0]);
+  }, [messages, selected]);
+
   async function archiveMessage(m: any) {
     if (!confirm(`Nachricht "${m.subject}" archivieren?`)) return;
     try {
@@ -83,18 +88,13 @@ export default function NachrichtenPage() {
                       <div className="text-sm font-medium text-gray-900 truncate">{m.subject}</div>
                       <div className="text-xs text-gray-400 truncate">{m.from} · {new Date(m.sentAt).toLocaleString("de-DE")}</div>
 
-                      {/* Mobile actions: full width under the text */}
                       <div className="mt-2 md:hidden flex gap-2">
-                        <button onClick={(e) => { e.stopPropagation(); openReply(m); }} className="flex-1 px-2 py-1 text-xs rounded bg-[#b11217] text-white">Antwort</button>
-                        <button onClick={(e) => { e.stopPropagation(); openForward(m); }} className="flex-1 px-2 py-1 text-xs rounded bg-gray-50">Weiter</button>
                         <button onClick={(e) => { e.stopPropagation(); archiveMessage(m); }} className="flex-1 px-2 py-1 text-xs rounded border">Archiv</button>
                       </div>
                     </div>
 
-                    {/* Desktop actions on the right */}
+                    {/* Desktop actions on the right (only archive) */}
                     <div className="hidden md:flex flex-col gap-2 shrink-0">
-                      <button onClick={(e) => { e.stopPropagation(); openReply(m); }} title="Antworten" className="text-xs text-white bg-[#b11217] px-3 py-1 rounded">Antwort</button>
-                      <button onClick={(e) => { e.stopPropagation(); openForward(m); }} title="Weiterleiten" className="text-xs px-3 py-1 rounded bg-gray-50">Weiter</button>
                       <button onClick={(e) => { e.stopPropagation(); archiveMessage(m); }} title="Archivieren" className="text-xs text-gray-400 hover:text-red-600">Archiv</button>
                     </div>
                   </div>
@@ -110,9 +110,9 @@ export default function NachrichtenPage() {
               </div>
             ) : (
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between mb-2">
                   <div>
-                    <h2 className="text-xl font-semibold">{selected.subject}</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">{selected.subject}</h2>
                     <div className="text-xs text-gray-400">Von: {selected.from} · {new Date(selected.sentAt).toLocaleString("de-DE")}</div>
                   </div>
                   <div className="flex items-center gap-2">
