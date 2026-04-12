@@ -81,10 +81,23 @@ export default function NachrichtenPage() {
         try {
           const data = await callApi(`/file?key=${encodeURIComponent(key)}`);
           if (data?.url) {
-            setAttachmentUrls((s) => ({ ...s, [key]: data.url }));
+            // Verify the signed URL is valid (HEAD request)
+            try {
+              const head = await fetch(data.url, { method: "HEAD" });
+              if (head.ok) {
+                setAttachmentUrls((s) => ({ ...s, [key]: data.url }));
+              } else {
+                console.warn("Signed URL returned non-OK for", key, head.status);
+                setAttachmentUrls((s) => ({ ...s, [key]: "NOT_FOUND" }));
+              }
+            } catch (e) {
+              console.error("HEAD check failed for signed url", key, e);
+              setAttachmentUrls((s) => ({ ...s, [key]: "NOT_FOUND" }));
+            }
           }
         } catch (e) {
           console.error("Failed to fetch signed url for", key, e);
+          setAttachmentUrls((s) => ({ ...s, [key]: "NOT_FOUND" }));
         }
       }
     }
