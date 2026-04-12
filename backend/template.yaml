@@ -553,37 +553,11 @@ Resources:
             Auth:
               Authorizer: NONE
 
-  CloudFrontOAC:
-    Type: AWS::CloudFront::OriginAccessControl
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
-      OriginAccessControlConfig:
-        Name: forms-bucket-oac
-        Description: OAC for FormsBucket
-        SigningProtocol: sigv4
-        SigningBehavior: always
-        OriginType: s3
-
-  CloudFrontResponseHeadersPolicy:
-    Type: AWS::CloudFront::ResponseHeadersPolicy
-    Properties:
-      ResponseHeadersPolicyConfig:
-        Name: FormsCORS
-        CorsConfig:
-          AccessControlAllowOrigins:
-            Items:
-              - !Ref ProdDomain
-              - !Sub "http://localhost:${LocalPort}"
-            Quantity: 2
-          AccessControlAllowHeaders:
-            Items: ["*"]
-            Quantity: 1
-          AccessControlAllowMethods:
-            Items: ["GET","HEAD","OPTIONS"]
-            Quantity: 3
-          AccessControlExposeHeaders:
-            Items: ["ETag"]
-            Quantity: 1
-          OriginOverride: true
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: Access identity for FormsBucket
 
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
@@ -594,15 +568,22 @@ Resources:
         Origins:
           - Id: FormsBucketOrigin
             DomainName: !GetAtt FormsBucket.DomainName
-            S3OriginConfig: {}
-            OriginAccessControlId: !Ref CloudFrontOAC
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}'
         DefaultCacheBehavior:
           TargetOriginId: FormsBucketOrigin
           ViewerProtocolPolicy: redirect-to-https
-          AllowedMethods: [GET,HEAD,OPTIONS]
-          CachedMethods: [GET,HEAD]
-          ResponseHeadersPolicyId: !Ref CloudFrontResponseHeadersPolicy
-          ForwardedValues: {}
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
         ViewerCertificate:
           CloudFrontDefaultCertificate: true
 
@@ -613,15 +594,12 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-          - Sid: AllowCloudFrontServicePrincipalReadOnly
+          - Sid: AllowCloudFrontReadOnly
             Effect: Allow
             Principal:
-              Service: cloudfront.amazonaws.com
+              CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
             Action: s3:GetObject
             Resource: !Sub '${FormsBucket.Arn}/*'
-            Condition:
-              StringEquals:
-                AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
 
 Outputs:
   ApiUrl:
