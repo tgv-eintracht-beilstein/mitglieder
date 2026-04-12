@@ -106,12 +106,9 @@ export default function NachrichtenPage() {
 
                     {/* Archive icon on the right */}
                     <div className="shrink-0 ml-3">
-                      <button onClick={(e) => { e.stopPropagation(); archiveMessage(m); }} title="Archivieren" className="p-2 rounded hover:bg-gray-100 text-gray-500">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                          <path d="M10 11v6" />
-                          <path d="M14 11v6" />
+                      <button onClick={(e) => { e.stopPropagation(); archiveMessage(m); }} title="Archivieren" aria-label="Archivieren" className="p-2 rounded hover:bg-gray-100 text-green-600">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
+                          <path d="M20 6L9 17l-5-5" />
                         </svg>
                       </button>
                     </div>
