@@ -49,9 +49,10 @@ export default function ProfilePage() {
   const displayGroups = tokens.groups
     .filter((g: string) => g !== "tgv-inbox-access")
     .map((groupId: string) => {
+      // Prefer the group description for display; fall back to name or id
       if (groupId === "tgv-geschaeftsstelle" || groupId === "geschäftsstelle") return "Geschäftsstelle";
       const groupInfo = directory.groups.find(g => g.id === groupId);
-      return groupInfo?.name || groupId;
+      return groupInfo?.description || groupInfo?.name || groupId;
     });
 
   const labelMap: Record<string, string> = {
