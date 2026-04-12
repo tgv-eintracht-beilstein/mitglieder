@@ -424,6 +424,22 @@ Resources:
             Path: /messages
             Method: GET
 
+  ArchiveMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: archive-message.handler
+      CodeUri: src/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FormsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /messages/archive
+            Method: POST
+
   ProcessMessageFunction:
     Type: AWS::Serverless::Function
     Properties:
