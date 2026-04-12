@@ -120,8 +120,8 @@ export default function NachrichtenPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">            <div>
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-auto max-h-[70vh]">
-                {messages.map((m) => (
-                  <div key={m.id} className={`group px-4 py-3 hover:bg-gray-50 cursor-pointer ${selected?.id === m.id ? "bg-gray-50" : ""}`} onClick={() => setSelected(m)}>
+                {messages.map((m, idx) => (
+                  <div key={m.id ?? idx} className={`group px-4 py-3 hover:bg-gray-50 cursor-pointer ${selected?.id === m.id ? "bg-gray-50" : ""}`} onClick={() => setSelected(m)}>
                     <div className="flex items-stretch gap-3">
                       {/* Left accent for selected (full height) */}
                       <div className="shrink-0">
