@@ -15,6 +15,14 @@ Parameters:
   LocalPort:
     Type: String
     Default: "3003"
+  CloudFrontKeyPairId:
+    Type: String
+    Description: "CloudFront public key id (used for signing URLs). Create in CloudFront console or leave empty to manage manually."
+    Default: ""
+  CloudFrontPrivateKeySecretArn:
+    Type: String
+    Description: "ARN of the Secrets Manager secret that holds the CloudFront private key PEM (for signing)."
+    Default: ""
 
 Globals:
   Function:
@@ -306,6 +314,11 @@ Resources:
     Properties:
       Handler: get-file.handler
       CodeUri: src/
+      Environment:
+        Variables:
+          CLOUDFRONT_DOMAIN: !GetAtt CloudFrontDistribution.DomainName
+          CLOUDFRONT_KEY_PAIR_ID: !Ref CloudFrontKeyPairId
+          CLOUDFRONT_PRIVATE_KEY_SECRET_ARN: !Ref CloudFrontPrivateKeySecretArn
       Policies:
         - Statement:
             - Effect: Allow
@@ -317,6 +330,11 @@ Resources:
             - Effect: Allow
               Action: 's3:ListBucket'
               Resource: !GetAtt FormsBucket.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'secretsmanager:GetSecretValue'
+              Resource: !Ref CloudFrontPrivateKeySecretArn
       Events:
         Api:
           Type: HttpApi
