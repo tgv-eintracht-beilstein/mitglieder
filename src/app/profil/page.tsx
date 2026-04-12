@@ -67,13 +67,13 @@ export default function ProfilePage() {
   return (
     <main>
       <Container>
-        <div className="max-w-4xl mx-auto py-10">
+        <div className="max-w-4xl mx-auto mt-6">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Profil</h1>
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => logout()}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 rounded-lg bg-[#b11217] text-white text-sm font-medium hover:bg-[#8f0f13] transition-colors"
               >
                 Abmelden
               </button>
