@@ -269,7 +269,7 @@ export async function downloadMultiplePdfs(docs: { doc: React.ReactElement; file
       pages.forEach((p) => merged.addPage(p));
     }
     const mergedBytes = await merged.save();
-    const mergedBlob = new Blob([mergedBytes], { type: "application/pdf" });
+    const mergedBlob = new Blob([mergedBytes as any], { type: "application/pdf" });
     const url = URL.createObjectURL(mergedBlob);
     const a = document.createElement("a");
     a.href = url;
