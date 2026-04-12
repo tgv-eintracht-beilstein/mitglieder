@@ -72,9 +72,8 @@ export default function NachrichtenPage() {
 
   return (
     <main>
-      <Container>
-        <div className="max-w-6xl mx-auto py-10">
-          <div className="flex items-center justify-between mb-4">
+      <div className="max-w-4xl mx-auto mt-6">
+          <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Nachrichten</h1>
             <div className="flex items-center gap-3">
               <div className="text-sm text-gray-500">{loading ? "Laden…" : `${messages.length}`}</div>
@@ -82,19 +81,18 @@ export default function NachrichtenPage() {
                 <button
                   onClick={() => selected && openReply(selected)}
                   disabled={!selected}
-                  className="px-3 py-1 text-sm rounded-md bg-[#b11217] text-white hover:bg-[#8f0f13] disabled:opacity-50"
+                  className="px-4 py-2 bg-[#b11217] text-white rounded-lg text-sm font-medium hover:bg-[#8f0f13] disabled:opacity-50"
                 >Antworten</button>
                 <button
                   onClick={() => selected && openForward(selected)}
                   disabled={!selected}
-                  className="px-3 py-1 text-sm rounded-md bg-gray-50 hover:bg-gray-100 disabled:opacity-50"
+                  className="px-4 py-2 bg-gray-50 rounded-lg text-sm font-medium hover:bg-gray-100 disabled:opacity-50"
                 >Weiterleiten</button>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
-            <div>
+          <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">            <div>
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-auto max-h-[70vh]">
                 {messages.map((m) => (
                   <div key={m.id} className={`group px-4 py-3 hover:bg-gray-50 cursor-pointer ${selected?.id === m.id ? "bg-gray-50" : ""}`} onClick={() => setSelected(m)}>
