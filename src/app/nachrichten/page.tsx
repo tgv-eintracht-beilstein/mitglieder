@@ -88,7 +88,8 @@ export default function NachrichtenPage() {
                 setAttachmentUrls((s) => ({ ...s, [key]: data.url }));
               } else {
                 console.warn("Signed URL returned non-OK for", key, head.status);
-                setAttachmentUrls((s) => ({ ...s, [key]: "NOT_FOUND" }));
+                // keep the URL so user can try opening it directly
+                setAttachmentUrls((s) => ({ ...s, [key]: `INVALID|${data.url}` }));
               }
             } catch (e) {
               console.error("HEAD check failed for signed url", key, e);
@@ -180,11 +181,21 @@ export default function NachrichtenPage() {
                       <h3 className="font-semibold">Anhänge</h3>
                       {selected.pdfKeys.map((key: string) => (
                         <div key={key} className="mt-2">
-                          {attachmentUrls[key] ? (
-                            <PdfViewer url={attachmentUrls[key]} filename={key.split("/").pop()} />
-                          ) : (
-                            <div className="text-sm text-gray-500">Lade Anhang…</div>
-                          )}
+                          {(() => {
+                            const au = attachmentUrls[key];
+                            if (!au) return <div className="text-sm text-gray-500">Lade Anhang…</div>;
+                            if (au === "NOT_FOUND") return <div className="text-sm text-red-500">Anhang nicht gefunden.</div>;
+                            if (au.startsWith("INVALID|")) {
+                              const url = au.split("|")[1];
+                              return (
+                                <div className="text-sm text-gray-600">
+                                  Anhang konnte nicht geladen werden. <a className="text-blue-600 underline" href={url} target="_blank" rel="noreferrer">Direkt öffnen</a>
+                                </div>
+                              );
+                            }
+                            // otherwise assume a valid URL
+                            return <PdfViewer url={au} filename={key.split("/").pop()} />;
+                          })()}
                         </div>
                       ))}
                     </div>
