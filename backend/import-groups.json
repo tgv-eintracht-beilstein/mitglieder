@@ -1,0 +1,17 @@
+[
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "VorstandGroup", "ResourceIdentifier": { "GroupName": "vorstand", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "ErweiterterVorstandGroup", "ResourceIdentifier": { "GroupName": "erweiterter-vorstand", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "JugendvorstandGroup", "ResourceIdentifier": { "GroupName": "jugendvorstand", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "HauptausschussGroup", "ResourceIdentifier": { "GroupName": "hauptausschuss", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "AbteilungsleiterGroup", "ResourceIdentifier": { "GroupName": "abteilungsleiter", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "KassenpruferGroup", "ResourceIdentifier": { "GroupName": "kassenprufer", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "AbtFussballGroup", "ResourceIdentifier": { "GroupName": "abt-fussball", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "AbtHandballGroup", "ResourceIdentifier": { "GroupName": "abt-handball", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "AbtTurnenGroup", "ResourceIdentifier": { "GroupName": "abt-turnen", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "AbtTennisGroup", "ResourceIdentifier": { "GroupName": "abt-tennis", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "AbtSchwimmenGroup", "ResourceIdentifier": { "GroupName": "abt-schwimmen", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "AbtSkiUndBergGroup", "ResourceIdentifier": { "GroupName": "abt-ski-und-berg", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "AbtGymnastikGroup", "ResourceIdentifier": { "GroupName": "abt-gymnastik", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "AbtTischtennisGroup", "ResourceIdentifier": { "GroupName": "abt-tischtennis", "UserPoolId": "eu-central-1_vJEWudU5g" } },
+  { "ResourceType": "AWS::Cognito::UserPoolGroup", "LogicalResourceId": "AbtGesangGroup", "ResourceIdentifier": { "GroupName": "abt-gesang", "UserPoolId": "eu-central-1_vJEWudU5g" } }
+]

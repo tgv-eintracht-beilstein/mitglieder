@@ -1,3 +1,5 @@
+import { syncSave, syncLoad, subscribe } from "./sync";
+
 export interface SavedAddress {
   id: string;
   nachname: string;
@@ -7,7 +9,6 @@ export interface SavedAddress {
   geburtsdatum: string;
   telefon: string;
   email: string;
-  /** beschreibung → hourly rate override */
   rateOverrides?: Record<string, string>;
 }
 
@@ -20,6 +21,12 @@ function load(): SavedAddress[] {
 
 export function save(list: SavedAddress[]) {
   localStorage.setItem(KEY, JSON.stringify(list));
+  syncSave(KEY, list);
+}
+
+function saveSelection(ids: string[]) {
+  localStorage.setItem(SEL_KEY, JSON.stringify(ids));
+  syncSave(SEL_KEY, ids);
 }
 
 export function getAddresses(): SavedAddress[] { return load(); }
@@ -41,8 +48,7 @@ export function updateAddress(addr: SavedAddress) {
 
 export function removeAddress(id: string) {
   save(load().filter(a => a.id !== id));
-  // also remove from selection
-  saveSelectedIds(getSelectedIds().filter(x => x !== id));
+  saveSelection(getSelectedIds().filter(x => x !== id));
 }
 
 export function addressLabel(a: SavedAddress): string {
@@ -53,18 +59,55 @@ export function emptyAddress(): Omit<SavedAddress, "id"> {
   return { nachname: "", vorname: "", strasse: "", plzOrt: "", geburtsdatum: "", telefon: "", email: "", rateOverrides: {} };
 }
 
-// ── Global selection (synced across forms via localStorage events) ──
-
 export function getSelectedIds(): string[] {
   try { return JSON.parse(localStorage.getItem(SEL_KEY) ?? "[]"); } catch { return []; }
 }
 
 export function saveSelectedIds(ids: string[]) {
-  localStorage.setItem(SEL_KEY, JSON.stringify(ids));
+  saveSelection(ids);
 }
 
 export function getSelectedAddresses(): SavedAddress[] {
   const ids = getSelectedIds();
   const all = load();
   return ids.map(id => all.find(a => a.id === id)).filter(Boolean) as SavedAddress[];
+}
+
+// ── Remote sync: load from DB on startup, subscribe to changes ──
+
+let initialized = false;
+const listeners = new Set<() => void>();
+
+export function onAddressBookChange(cb: () => void): () => void {
+  listeners.add(cb);
+  return () => { listeners.delete(cb); };
+}
+
+function notify() { listeners.forEach(cb => cb()); }
+
+export async function initAddressBookSync() {
+  if (initialized) return;
+  initialized = true;
+
+  const remote = await syncLoad<SavedAddress[]>(KEY);
+  if (remote) {
+    localStorage.setItem(KEY, JSON.stringify(remote));
+    notify();
+  }
+
+  const remoteSel = await syncLoad<string[]>(SEL_KEY);
+  if (remoteSel) {
+    localStorage.setItem(SEL_KEY, JSON.stringify(remoteSel));
+    notify();
+  }
+
+  subscribe(KEY, (_k, data) => {
+    localStorage.setItem(KEY, JSON.stringify(data));
+    notify();
+  });
+
+  subscribe(SEL_KEY, (_k, data) => {
+    localStorage.setItem(SEL_KEY, JSON.stringify(data));
+    notify();
+  });
 }

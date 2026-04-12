@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import PrintButton from "@/app/_components/print-button";
 import DownloadPageButton from "@/app/_components/download-page-button";
 
 const ABTEILUNGEN = [
@@ -235,14 +234,20 @@ export default function MitgliedsbeitraegePage() {
       </Section>
 
       <div className="flex justify-start print:hidden mt-2 mb-6 gap-2">
-        {/* Mobile: PDF download */}
         <div className="md:hidden">
           <DownloadPageButton filename="mitgliedsbeitraege-2026.pdf" />
         </div>
-        {/* Desktop: print */}
-        <div className="hidden md:block">
-          <PrintButton />
-        </div>
+        <a
+          href="https://raw.githubusercontent.com/tgv-eintracht-beilstein/dokumentation/gh-pages/beitragsordnung.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M7 1v8M4 6l3 3 3-3"/><path d="M1 10v1a2 2 0 002 2h8a2 2 0 002-2v-1"/>
+          </svg>
+          Beitragsordnung (PDF)
+        </a>
       </div>
 
       {/* Print footer */}      <div className="hidden print:grid grid-cols-3 gap-4 mt-6 pt-3 border-t border-gray-300 text-[10px] text-gray-500 leading-snug">

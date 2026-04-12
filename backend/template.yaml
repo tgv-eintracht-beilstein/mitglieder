@@ -2,6 +2,20 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: TGV Mitglieder Backend
 
+Parameters:
+  UserPoolId:
+    Type: String
+    Default: eu-central-1_vJEWudU5g
+  CognitoDomain:
+    Type: String
+    Default: benutzer.tgveintrachtbeilstein.de
+  ProdDomain:
+    Type: String
+    Default: https://mitglied.tgveintrachtbeilstein.de
+  LocalPort:
+    Type: String
+    Default: "3003"
+
 Globals:
   Function:
     Runtime: nodejs20.x
@@ -24,24 +38,11 @@ Resources:
       CorsConfiguration:
         CorsRules:
           - AllowedHeaders: ['*']
-            AllowedMethods: [PUT]
-            AllowedOrigins: ['*']
+            AllowedMethods: [GET, PUT]
+            AllowedOrigins:
+              - !Ref ProdDomain
+              - !Sub "http://localhost:${LocalPort}"
             MaxAge: 3600
-
-  FormsBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref FormsBucket
-      PolicyDocument:
-        Statement:
-          - Sid: DenyAllExceptPresigned
-            Effect: Deny
-            Principal: '*'
-            Action: 's3:GetObject'
-            Resource: !Sub '${FormsBucket.Arn}/*'
-            Condition:
-              StringNotEquals:
-                aws:PrincipalArn: !GetAtt GetUploadUrlFunctionRole.Arn
 
   FormsTable:
     Type: AWS::DynamoDB::Table
@@ -58,13 +59,208 @@ Resources:
         - AttributeName: SK
           KeyType: RANGE
 
-  Api:
+  # Cognito App Clients
+  LocalhostClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPoolId
+      ClientName: tgv-localhost
+      GenerateSecret: false
+      AllowedOAuthFlows: [code]
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes: [openid, email, profile]
+      SupportedIdentityProviders: [COGNITO]
+      CallbackURLs:
+        - !Sub "http://localhost:${LocalPort}/callback"
+      LogoutURLs:
+        - !Sub "http://localhost:${LocalPort}"
+      ExplicitAuthFlows:
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+  ProductionClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPoolId
+      ClientName: tgv-production
+      GenerateSecret: false
+      AllowedOAuthFlows: [code]
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes: [openid, email, profile]
+      SupportedIdentityProviders: [COGNITO]
+      CallbackURLs:
+        - !Sub "${ProdDomain}/callback"
+      LogoutURLs:
+        - !Ref ProdDomain
+      ExplicitAuthFlows:
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+  # Managed Login Branding (v2) — TGV style
+  LocalhostBranding:
+    Type: AWS::Cognito::ManagedLoginBranding
+    Properties:
+      UserPoolId: !Ref UserPoolId
+      ClientId: !Ref LocalhostClient
+      UseCognitoProvidedValues: true
+
+  ProductionBranding:
+    Type: AWS::Cognito::ManagedLoginBranding
+    Properties:
+      UserPoolId: !Ref UserPoolId
+      ClientId: !Ref ProductionClient
+      UseCognitoProvidedValues: true
+
+  # Cognito Groups (SAM Managed)
+  TgvInboxAccessGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-inbox-access
+      Description: "Zentraler Zugriff auf das Nachrichtensystem"
+      UserPoolId: !Ref UserPoolId
+
+  GeschaeftsstelleGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-geschaeftsstelle
+      Description: "Geschäftsstelle mit Zugriff auf alle Einreichungen"
+      UserPoolId: !Ref UserPoolId
+
+  VorstandGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-vorstand
+      Description: "Vollzugriff"
+      UserPoolId: !Ref UserPoolId
+
+  ErweiterterVorstandGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-erweiterter-vorstand
+      Description: "Erw. Vorstand"
+      UserPoolId: !Ref UserPoolId
+
+  JugendvorstandGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-jugendvorstand
+      Description: "Jugendvorstand"
+      UserPoolId: !Ref UserPoolId
+
+  HauptausschussGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-hauptausschuss
+      Description: "Hauptausschuss"
+      UserPoolId: !Ref UserPoolId
+
+  AbteilungsleiterGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-abteilungsleiter
+      Description: "Abteilungsleiter"
+      UserPoolId: !Ref UserPoolId
+
+  KassenpruferGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-kassenprufer
+      Description: "Kassenprüfer"
+      UserPoolId: !Ref UserPoolId
+
+  AbtFussballGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-abt-fussball
+      Description: "Fußball"
+      UserPoolId: !Ref UserPoolId
+
+  AbtHandballGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-abt-handball
+      Description: "Handball"
+      UserPoolId: !Ref UserPoolId
+
+  AbtTurnenGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-abt-turnen
+      Description: "Turnen"
+      UserPoolId: !Ref UserPoolId
+
+  AbtTennisGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-abt-tennis
+      Description: "Tennis"
+      UserPoolId: !Ref UserPoolId
+
+  AbtSchwimmenGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-abt-schwimmen
+      Description: "Schwimmen"
+      UserPoolId: !Ref UserPoolId
+
+  AbtSkiUndBergGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-abt-ski-und-berg
+      Description: "Ski und Berg"
+      UserPoolId: !Ref UserPoolId
+
+  AbtGymnastikGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-abt-gymnastik
+      Description: "Gymnastik"
+      UserPoolId: !Ref UserPoolId
+
+  AbtTischtennisGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-abt-tischtennis
+      Description: "Tischtennis"
+      UserPoolId: !Ref UserPoolId
+
+  AbtGesangGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: tgv-abt-gesang
+      Description: "Gesang"
+      UserPoolId: !Ref UserPoolId
+
+  HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
+      StageName: $default
       CorsConfiguration:
-        AllowOrigins: ['*']
-        AllowHeaders: ['*']
-        AllowMethods: ['GET', 'POST', 'OPTIONS']
+        AllowOrigins:
+          - !Ref ProdDomain
+          - !Sub "http://localhost:${LocalPort}"
+        AllowHeaders:
+          - Authorization
+          - Content-Type
+        AllowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS']
+        AllowCredentials: true
+      Auth:
+        DefaultAuthorizer: CognitoJwt
+        Authorizers:
+          CognitoJwt:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPoolId}"
+              audience:
+                - !Ref LocalhostClient
+                - !Ref ProductionClient
+
+  # Map to custom domain api.tgveintrachtbeilstein.de
+  ApiMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      DomainName: api.tgveintrachtbeilstein.de
+      ApiId: !Ref HttpApi
+      Stage: $default
+      ApiMappingKey: mitglieder
 
   GetUploadUrlFunction:
     Type: AWS::Serverless::Function
@@ -75,14 +271,77 @@ Resources:
         - Statement:
             - Effect: Allow
               Action: 's3:PutObject'
-              Resource: !Sub '${FormsBucket.Arn}/*'
+              Resource: !Sub '${FormsBucket.Arn}/users/*'
       Events:
         Api:
           Type: HttpApi
           Properties:
-            ApiId: !Ref Api
+            ApiId: !Ref HttpApi
             Path: /upload-url
             Method: GET
+
+  ListFilesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: list-files.handler
+      CodeUri: src/
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: 's3:ListBucket'
+              Resource: !GetAtt FormsBucket.Arn
+              Condition:
+                StringLike:
+                  s3:prefix: 'users/*'
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /files
+            Method: GET
+
+  GetFileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: get-file.handler
+      CodeUri: src/
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 's3:GetObject'
+                - 's3:GetBucketLocation'
+              Resource:
+                - !Sub '${FormsBucket.Arn}/*'
+            - Effect: Allow
+              Action: 's3:ListBucket'
+              Resource: !GetAtt FormsBucket.Arn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /file
+            Method: GET
+
+  DeleteFileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: delete-file.handler
+      CodeUri: src/
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: 's3:DeleteObject'
+              Resource: !Sub '${FormsBucket.Arn}/users/*'
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /file
+            Method: DELETE
 
   SubmitFormFunction:
     Type: AWS::Serverless::Function
@@ -92,18 +351,182 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref FormsTable
+        - Statement:
+            - Effect: Allow
+              Action: 'events:PutEvents'
+              Resource: !Sub 'arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/default'
+            - Effect: Allow
+              Action: 's3:PutObject'
+              Resource: !Sub '${FormsBucket.Arn}/users/*/.data/*'
       Events:
         Api:
           Type: HttpApi
           Properties:
-            ApiId: !Ref Api
+            ApiId: !Ref HttpApi
             Path: /submit
             Method: POST
 
+  ListSubmissionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: list-submissions.handler
+      CodeUri: src/
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref FormsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /submissions
+            Method: GET
+
+  SendMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: send-message.handler
+      CodeUri: src/
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref UserPoolId
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FormsTable
+        - Statement:
+            - Effect: Allow
+              Action: 'events:PutEvents'
+              Resource: !Sub 'arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/default'
+            - Effect: Allow
+              Action: 'cognito-idp:ListUsersInGroup'
+              Resource: !Sub 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPoolId}'
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /messages
+            Method: POST
+
+  ListMessagesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: list-messages.handler
+      CodeUri: src/
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref FormsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /messages
+            Method: GET
+
+  ProcessMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: process-message.handler
+      CodeUri: src/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FormsTable
+      Events:
+        MessageSent:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              Source:
+                - tgv.mitglieder
+              detail-type:
+                - message.sent
+
+  ListDirectoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: list-directory.handler
+      CodeUri: src/
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref UserPoolId
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 'cognito-idp:ListUsers'
+                - 'cognito-idp:ListGroups'
+              Resource: !Sub 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPoolId}'
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /directory
+            Method: GET
+
+  SyncSaveFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: sync-save.handler
+      CodeUri: src/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FormsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /sync
+            Method: POST
+
+  SyncLoadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: sync-load.handler
+      CodeUri: src/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FormsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /sync
+            Method: GET
+
+  ConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: config.handler
+      CodeUri: src/
+      Environment:
+        Variables:
+          COGNITO_DOMAIN: !Sub "https://${CognitoDomain}"
+          LOCALHOST_CLIENT_ID: !Ref LocalhostClient
+          PRODUCTION_CLIENT_ID: !Ref ProductionClient
+          PROD_DOMAIN: !Ref ProdDomain
+          LOCAL_PORT: !Ref LocalPort
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /config
+            Method: GET
+            Auth:
+              Authorizer: NONE
+
 Outputs:
   ApiUrl:
-    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com"
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
   BucketName:
     Value: !Ref FormsBucket
   TableName:
     Value: !Ref FormsTable
+  LocalhostClientId:
+    Value: !Ref LocalhostClient
+  ProductionClientId:
+    Value: !Ref ProductionClient

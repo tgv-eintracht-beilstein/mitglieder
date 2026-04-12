@@ -1,0 +1,14 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "mitglieder-app"
+resolve_s3 = true
+s3_prefix = "mitglieder-app"
+region = "eu-central-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "UserPoolId=\"eu-central-1_vJEWudU5g\" CognitoDomain=\"benutzer.tgveintrachtbeilstein.de\" ProdDomain=\"https://mitglied.tgveintrachtbeilstein.de\" LocalPort=\"3003\""
+image_repositories = []
+
+[default.global.parameters]
+region = "eu-central-1"

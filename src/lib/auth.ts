@@ -1,10 +1,23 @@
-const COGNITO_DOMAIN = "https://tgv-eintracht-beilstein.auth.eu-central-1.amazoncognito.com";
-const CLIENT_ID = "5eg4a17tb2op22nasc2s1t6omq";
-const REDIRECT_URI =
-  typeof window !== "undefined" && window.location.hostname !== "localhost"
-    ? "https://mitglieder.tgveintrachtbeilstein.de/callback"
-    : "http://localhost:3003/callback";
-const API_URL = "https://9f0uyejcqi.execute-api.eu-central-1.amazonaws.com";
+const API_URL = typeof window !== "undefined" && window.location.hostname !== "localhost"
+  ? "https://api.tgveintrachtbeilstein.de/mitglieder"
+  : "https://api.tgveintrachtbeilstein.de/mitglieder";
+
+interface AuthConfig {
+  cognitoDomain: string;
+  clientId: string;
+  redirectUri: string;
+  logoutUri: string;
+}
+
+let _config: AuthConfig | null = null;
+
+async function getConfig(): Promise<AuthConfig> {
+  if (_config) return _config;
+  const res = await fetch(`${API_URL}/config`);
+  if (!res.ok) throw new Error(`Config fetch failed: ${res.status}`);
+  _config = await res.json();
+  return _config!;
+}
 
 function base64url(buf: ArrayBuffer) {
   return btoa(String.fromCharCode(...new Uint8Array(buf)))
@@ -26,30 +39,34 @@ export function getTokens() {
   const raw = sessionStorage.getItem("auth_tokens");
   if (!raw) return null;
   const tokens = JSON.parse(raw);
-  // check expiry
   if (tokens.expires_at && Date.now() > tokens.expires_at) {
     sessionStorage.removeItem("auth_tokens");
     return null;
   }
-  return tokens as { access_token: string; id_token: string; username: string };
+  return tokens as { access_token: string; id_token: string; username: string; groups: string[] };
 }
 
 export function getUsername() {
   return getTokens()?.username ?? null;
 }
 
+export function getGroups() {
+  return getTokens()?.groups ?? [];
+}
+
 export async function login() {
-  const { verifier, challenge } = await generatePKCE();
+  const [cfg, { verifier, challenge }] = await Promise.all([getConfig(), generatePKCE()]);
   sessionStorage.setItem("pkce_verifier", verifier);
   const params = new URLSearchParams({
     response_type: "code",
-    client_id: CLIENT_ID,
-    redirect_uri: REDIRECT_URI,
+    client_id: cfg.clientId,
+    redirect_uri: cfg.redirectUri,
     scope: "openid email profile",
     code_challenge_method: "S256",
     code_challenge: challenge,
+    lang: "de",
   });
-  window.location.href = `${COGNITO_DOMAIN}/oauth2/authorize?${params}`;
+  window.location.href = `${cfg.cognitoDomain}/oauth2/authorize?${params}`;
 }
 
 export async function handleCallback(): Promise<boolean> {
@@ -58,13 +75,14 @@ export async function handleCallback(): Promise<boolean> {
   const verifier = sessionStorage.getItem("pkce_verifier");
   if (!code || !verifier) return false;
 
-  const res = await fetch(`${COGNITO_DOMAIN}/oauth2/token`, {
+  const cfg = await getConfig();
+  const res = await fetch(`${cfg.cognitoDomain}/oauth2/token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type: "authorization_code",
-      client_id: CLIENT_ID,
-      redirect_uri: REDIRECT_URI,
+      client_id: cfg.clientId,
+      redirect_uri: cfg.redirectUri,
       code,
       code_verifier: verifier,
     }),
@@ -74,7 +92,6 @@ export async function handleCallback(): Promise<boolean> {
   const data = await res.json();
   sessionStorage.removeItem("pkce_verifier");
 
-  // decode id_token to get email
   const payload = JSON.parse(atob(data.id_token.split(".")[1]));
   sessionStorage.setItem(
     "auth_tokens",
@@ -82,22 +99,21 @@ export async function handleCallback(): Promise<boolean> {
       access_token: data.access_token,
       id_token: data.id_token,
       username: payload.email || payload.sub,
+      groups: payload["cognito:groups"] || [],
       expires_at: Date.now() + data.expires_in * 1000,
     })
   );
   return true;
 }
 
-export function logout() {
+export async function logout() {
   sessionStorage.removeItem("auth_tokens");
+  const cfg = await getConfig();
   const params = new URLSearchParams({
-    client_id: CLIENT_ID,
-    logout_uri:
-      typeof window !== "undefined" && window.location.hostname !== "localhost"
-        ? "https://mitglieder.tgveintrachtbeilstein.de"
-        : "http://localhost:3003",
+    client_id: cfg.clientId,
+    logout_uri: cfg.logoutUri,
   });
-  window.location.href = `${COGNITO_DOMAIN}/logout?${params}`;
+  window.location.href = `${cfg.cognitoDomain}/logout?${params}`;
 }
 
 export async function callApi(path: string, options?: RequestInit) {

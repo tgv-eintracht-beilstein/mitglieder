@@ -1,20 +1,17 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { getTokens, callApi } from "@/lib/auth";
+import AuthButton from "./_components/auth-button";
 
 const pages = [
-  // {
-  //   href: "/mitglied-werden",
-  //   label: "Mitglied werden",
-  //   desc: "Familien-Wizard mit Aufnahmeantrag, Datenschutz und SEPA-Mandat",
-  //   icon: (
-  //     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-  //       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M16 3h5v5"/><path d="m21 3-7 7"/>
-  //     </svg>
-  //   ),
-  // },
+  {
+    href: "/profil",
+    label: "Profil & Nachrichten",
+    desc: "Ihre Mitgliedsgruppen und Nachrichtenzentrale",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+    ),
+  },
   {
     href: "/docs",
     label: "Dokumente",
@@ -65,53 +62,25 @@ const pages = [
       </svg>
     ),
   },
-  // {
-  //   href: "/api-zugang",
-  //   label: "API-Zugang",
-  //   desc: "API-Schlüssel erstellen und Dokumentation für Integrationen",
-  //   icon: (
-  //     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-  //       <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-  //     </svg>
-  //   ),
-  // },
 ];
 
 export default function Home() {
-  const [apiResult, setApiResult] = useState<string | null>(null);
-  const [apiError, setApiError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const tokens = getTokens();
-    if (tokens) {
-      callApi("/api")
-        .then((data) => setApiResult(JSON.stringify(data)))
-        .catch((e) => setApiError(e.message));
-    }
-  }, []);
-
   return (
     <div className="max-w-2xl mx-auto mt-10">
-      <div className="mb-10">
-        <h1 className="text-3xl font-bold text-gray-900 mb-3">
-          Willkommen im Mitgliederbereich
-        </h1>
-        <p className="text-gray-500 text-sm leading-relaxed">
-          Hier finden Sie alle wichtigen Formulare und Dokumente des TGV "Eintracht" Beilstein 1823 e. V.
-          Wählen Sie einen Bereich aus, um fortzufahren.
-        </p>
+      <div className="flex justify-between items-start mb-10">
+        <div className="flex-1 pr-4">
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">
+            Willkommen im Mitgliederbereich
+          </h1>
+          <p className="text-gray-500 text-sm leading-relaxed">
+            Hier finden Sie alle wichtigen Formulare und Dokumente des TGV &quot;Eintracht&quot; Beilstein 1823 e. V.
+            Wählen Sie einen Bereich aus, um fortzufahren.
+          </p>
+        </div>
+        <div className="shrink-0 pt-1">
+          <AuthButton className="px-4 py-2 bg-[#b11217] text-white rounded-full text-sm font-medium hover:bg-[#8f0f13] transition-colors" />
+        </div>
       </div>
-
-      {apiResult && (
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-xl px-5 py-4 text-sm text-green-800">
-          <span className="font-semibold">API-Antwort:</span> {apiResult}
-        </div>
-      )}
-      {apiError && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-xl px-5 py-4 text-sm text-red-800">
-          <span className="font-semibold">API-Fehler:</span> {apiError}
-        </div>
-      )}
 
       <div className="grid gap-3">
         {pages.map(({ href, label, desc, icon }) => (

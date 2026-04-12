@@ -8,6 +8,7 @@ import { validateIban } from "@/lib/iban";
 import { ABTEILUNGEN, AbteilungIcon, DateSelect } from "@/app/_components/aufwandsformular";
 import { UEBUNGSLEITER_CATEGORIES, MULTI_SELECT_ABTEILUNGEN } from "@/lib/constants";
 import { loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
+import { syncSave, syncLoad, subscribe } from "@/lib/sync";
 import type { FormState, Person, Address } from "./types";
 import { defaultState, emptyPerson, emptyAddress } from "./types";
 import { DATENSCHUTZ_KATEGORIEN } from "./types";
@@ -220,32 +221,42 @@ function MitgliedWerdenPage() {
   const [combined, setCombined] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const s: FormState = JSON.parse(raw);
-        // Migrate: ensure each person has their own address
-        const seen = new Set<string>();
-        for (const p of s.personen) {
-          if (seen.has(p.addressId)) {
-            const src = s.adressen.find((a) => a.id === p.addressId);
-            const copy = { ...emptyAddress(), strasse: src?.strasse || "", plz: src?.plz || "", ort: src?.ort || "" };
-            s.adressen.push(copy);
-            p.addressId = copy.id;
+    (async () => {
+      try {
+        const saved = await syncLoad<FormState>(STORAGE_KEY);
+        const raw = saved ?? (localStorage.getItem(STORAGE_KEY) ? JSON.parse(localStorage.getItem(STORAGE_KEY)!) : null);
+        if (raw) {
+          const s: FormState = raw;
+          const seen = new Set<string>();
+          for (const p of s.personen) {
+            if (seen.has(p.addressId)) {
+              const src = s.adressen.find((a) => a.id === p.addressId);
+              const copy = { ...emptyAddress(), strasse: src?.strasse || "", plz: src?.plz || "", ort: src?.ort || "" };
+              s.adressen.push(copy);
+              p.addressId = copy.id;
+            }
+            seen.add(p.addressId);
           }
-          seen.add(p.addressId);
+          setState(s);
         }
-        setState(s);
-      }
-    } catch {}
-    setSharedSig(loadSharedSignature());
-    setHydrated(true);
+      } catch {}
+      setSharedSig(loadSharedSignature());
+      setHydrated(true);
+    })();
   }, []);
 
   useEffect(() => {
     if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    syncSave(STORAGE_KEY, state);
   }, [state, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    return subscribe(STORAGE_KEY, (_key, data) => {
+      setState(data as FormState);
+    });
+  }, [hydrated]);
 
   const set = useCallback(<K extends keyof FormState>(key: K, val: FormState[K]) => {
     setState((s) => ({ ...s, [key]: val }));
@@ -311,8 +322,7 @@ function MitgliedWerdenPage() {
       <div className="flex items-center justify-between mb-3 print:hidden">
         <h1 className="text-2xl font-bold text-[#b11217]">Mitglied werden</h1>
         <div className="hidden md:flex items-center gap-2">
-          <DownloadButton filename="mitgliedsantrag.pdf" disabled={!isComplete} missingCount={missing.length} checks={checks} side="bottom" onDownload={() => generateAllPdfs(state)} />
-          <SubmitButton formType="mitglied-werden" getFormData={() => state} getPdfBlobs={async () => { const { buildAllDocs } = await import("./pdf-utils"); const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildAllDocs(state)); }} />
+          <SubmitButton formType="mitglied-werden" disabled={!isComplete} missingCount={missing.length} checks={checks} side="bottom" onDownload={() => generateAllPdfs(state)} getFormData={() => state} getPdfBlobs={async () => { const { buildAllDocs } = await import("./pdf-utils"); const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildAllDocs(state)); }} />
         </div>
       </div>
 
@@ -483,17 +493,7 @@ function MitgliedWerdenPage() {
           className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-lg text-xs hover:bg-red-100 transition-colors">
           Formular zurücksetzen
         </button>
-        <div className="flex items-center gap-2">
-          <label className="inline-flex items-center gap-1.5 text-[10px] text-gray-500 cursor-pointer select-none">
-            <span className={`relative inline-block w-7 h-4 rounded-full transition-colors ${combined ? "bg-[#b11217]" : "bg-gray-300"}`}>
-              <span className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${combined ? "translate-x-3" : ""}`} />
-            </span>
-            <input type="checkbox" checked={combined} onChange={e => setCombined(e.target.checked)} className="sr-only" />
-            PDF Dateien zusammenfassen
-          </label>
-          <DownloadButton filename="mitgliedsantrag.pdf" disabled={!isComplete} missingCount={missing.length} checks={checks} side="top" count={!combined ? state.personen.length * 2 + 1 : undefined} onDownload={() => generateAllPdfs(state, combined)} />
-        </div>
-        <SubmitButton formType="mitglied-werden" getFormData={() => state} getPdfBlobs={async () => { const { buildAllDocs } = await import("./pdf-utils"); const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildAllDocs(state)); }} />
+        <SubmitButton formType="mitglied-werden" disabled={!isComplete} missingCount={missing.length} checks={checks} side="top" onDownload={() => generateAllPdfs(state)} getFormData={() => state} getPdfBlobs={async () => { const { buildAllDocs } = await import("./pdf-utils"); const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildAllDocs(state)); }} />
       </div>
 
       {dsEditPersonId && (() => {

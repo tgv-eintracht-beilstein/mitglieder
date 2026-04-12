@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import AuthButton from "./auth-button";
+import { getTokens } from "@/lib/auth";
 
 const leftItems = [
   { href: "/docs", label: "Dokumente" },
@@ -70,6 +72,7 @@ export function LeftNav() {
 export function RightNav() {
   return (
     <nav className="flex items-center gap-2">
+      <AuthButton />
       <a href="https://tgveintrachtbeilstein.de"
         className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/30 text-sm font-semibold text-white hover:bg-white hover:text-[#8f0f13] transition-all duration-200 !no-underline">
         Webseite
@@ -113,10 +116,21 @@ export default function MobileNav() {
                 {label}
               </Link>
             ))}
+            {getTokens() && (
+              <Link href="/meine-dateien" onClick={() => setOpen(false)}
+                className={`block px-4 py-3 rounded-full text-lg font-semibold transition-colors !no-underline ${
+                  pathname === "/meine-dateien" ? "text-white bg-white/10" : "text-white hover:bg-white/10"
+                }`}>
+                Meine Dateien
+              </Link>
+            )}
             <a href="https://tgveintrachtbeilstein.de"
               className="block px-4 py-3 rounded-full text-lg font-semibold text-white hover:bg-white/10 transition-colors !no-underline">
               Webseite
             </a>
+            <div className="px-4 py-3">
+              <AuthButton className="block w-full px-4 py-3 text-lg font-semibold" simple />
+            </div>
           </nav>
         </div>
       )}

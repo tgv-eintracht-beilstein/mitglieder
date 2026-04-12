@@ -3,13 +3,12 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import SignatureModal from "@/app/_components/signature-modal";
 import VerzichtPageContent from "./verzicht-page-content";
-import DownloadButtonBase from "./download-button";
 import SubmitButton from "./submit-button";
 import FormHeader, { formatDateDE } from "@/app/_components/form-header";
 import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
 import { UEBUNGSLEITER_CATEGORIES } from "@/lib/constants";
-import { syncSave, syncLoad, subscribe, uploadPdfAndSaveVersion } from "@/lib/sync";
+import { syncSave, syncLoad, subscribe } from "@/lib/sync";
 import AddressBookModal, { useAddressSelection } from "./address-book-picker";
 import { getSelectedAddresses } from "@/lib/addressBook";
 const KM_RATE = 0.3;
@@ -76,10 +75,19 @@ function BeschreibungInput({ value, onChange, className, large }: {
       {open && filtered.length > 0 && (
         <ul className="absolute z-50 top-full left-0 w-full min-w-[200px] bg-white border border-gray-200 rounded shadow-md mt-0.5 max-h-48 overflow-y-auto print:hidden">
           {filtered.map(s => (
-            <li key={s}>
+            <li key={s} className="flex items-center">
               <button type="button" onMouseDown={() => pick(s)}
-                className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 truncate">
+                className="flex-1 text-left px-3 py-2 text-xs hover:bg-gray-50 truncate">
                 {s}
+              </button>
+              <button type="button" onMouseDown={e => {
+                e.stopPropagation();
+                const list = loadBeschreibungen().filter(b => b !== s);
+                localStorage.setItem(BESCHREIBUNGEN_KEY, JSON.stringify(list));
+                setSuggestions(list);
+                setFiltered(f => f.filter(x => x !== s));
+              }} className="shrink-0 p-1.5 text-gray-300 hover:text-[#b11217] transition-colors" title="Entfernen">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </li>
           ))}
@@ -1222,12 +1230,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
   const handleDownload = async () => {
     const { downloadMultiplePdfs } = await import("@/lib/pdf");
     const docs = await buildAllDocs();
-    const blobs = await downloadMultiplePdfs(docs, buildPdfFilename(title, state.vorname, state.nachname), combined);
-
-    try {
-      const pdfBlobs = blobs.map(b => ({ blob: b.blob, title, vorname: state.vorname, nachname: state.nachname }));
-      await uploadPdfAndSaveVersion(storageKey, state, pdfBlobs, `PDF Export – ${new Date().toLocaleDateString("de-DE")}`);
-    } catch {}
+    await downloadMultiplePdfs(docs, buildPdfFilename(title, state.vorname, state.nachname), combined);
   };
 
   return (
@@ -1237,8 +1240,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       <div className="flex items-center justify-between mb-3 print:hidden">
         <h1 className="text-2xl font-bold text-[#b11217]">{title}</h1>
         <div className="hidden md:flex items-center gap-2">
-          <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="bottom" onDownload={handleDownload} />
-          <SubmitButton formType={title.toLowerCase().replace(/\s+/g, "-")} getFormData={() => state} getPdfBlobs={async () => { const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildDocs()); }} />
+          <SubmitButton formType={title.toLowerCase().replace(/\s+/g, "-")} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="bottom" onDownload={handleDownload} getFormData={() => state} getPdfBlobs={async () => { const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildAllDocs()); }} />
         </div>
       </div>
 
@@ -1794,34 +1796,15 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             </svg>
             Formular teilen
           </button>
-          <button onClick={() => window.print()}
-            className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 5V1h8v4"/><rect x="1" y="5" width="12" height="6" rx="1"/><path d="M3 11v2h8v-2"/><circle cx="10.5" cy="8" r="0.5" fill="currentColor"/>
-            </svg>
-            Drucken
-          </button>
         </div>
         {(() => {
           const docsPerPerson = showVerzicht && spende > 0 ? 2 : 1;
           const people = selectedIds.length > 0 ? selectedIds.length : 1;
           const totalDocs = people * docsPerPerson;
           return (
-            <div className="flex items-center gap-2">
-              {totalDocs > 1 && (
-                <label className="inline-flex items-center gap-1.5 text-[10px] text-gray-500 cursor-pointer select-none">
-                  <span className={`relative inline-block w-7 h-4 rounded-full transition-colors ${combined ? "bg-[#b11217]" : "bg-gray-300"}`}>
-                    <span className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${combined ? "translate-x-3" : ""}`} />
-                  </span>
-                  <input type="checkbox" checked={combined} onChange={e => setCombined(e.target.checked)} className="sr-only" />
-                  PDF Dateien zusammenfassen
-                </label>
-              )}
-              <DownloadButtonBase filename={buildPdfFilename(title, state.vorname, state.nachname)} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="top" count={!combined && totalDocs > 1 ? totalDocs : undefined} onDownload={handleDownload} />
-            </div>
+            <SubmitButton formType={title.toLowerCase().replace(/\s+/g, "-")} disabled={!isComplete} missingCount={missing.length} checks={allChecks} side="top" onDownload={handleDownload} getFormData={() => state} getPdfBlobs={async () => { const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildAllDocs()); }} />
           );
         })()}
-        <SubmitButton formType={title.toLowerCase().replace(/\s+/g, "-")} getFormData={() => state} getPdfBlobs={async () => { const { renderPdfBlobs } = await import("@/lib/pdf"); return renderPdfBlobs(await buildDocs()); }} />
       </div>
 
       {/* Second page for EAP Verzicht if donation is present */}

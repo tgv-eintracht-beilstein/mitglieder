@@ -22,11 +22,11 @@ export default async function Post({ params }: Params) {
   const content = await markdownToHtml(post.content || "");
 
   return (
-    <main>
-      <Alert preview={post.preview} />
-      <Container>
-        <Header />
-        <article className="mb-32">
+  <main>
+    <Alert preview={post.preview} />
+    <Container>
+      <article className="mb-32">
+
           <PostHeader
             title={post.title}
             coverImage={post.coverImage}

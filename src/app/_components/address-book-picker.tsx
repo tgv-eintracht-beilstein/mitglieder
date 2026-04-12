@@ -8,7 +8,10 @@ import {
   saveSelectedIds,
   emptyAddress,
   save as saveAll,
+  initAddressBookSync,
+  onAddressBookChange,
 } from "@/lib/addressBook";
+import { initSharedSync } from "@/lib/sharedAddress";
 import { loadBeschreibungen, DateSelect } from "./aufwandsformular";
 
 interface Props {
@@ -24,12 +27,15 @@ export function useAddressSelection() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
+    initAddressBookSync();
+    initSharedSync();
     setSelectedIds(getSelectedIds());
     function onStorage(e: StorageEvent) {
       if (e.key === SEL_KEY) setSelectedIds(getSelectedIds());
     }
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    const unsub = onAddressBookChange(() => setSelectedIds(getSelectedIds()));
+    return () => { window.removeEventListener("storage", onStorage); unsub(); };
   }, []);
 
   function setSelected(ids: string[]) { saveSelectedIds(ids); setSelectedIds(ids); }
