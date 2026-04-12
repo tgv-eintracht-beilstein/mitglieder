@@ -19,18 +19,18 @@ async function getConfig(): Promise<AuthConfig> {
   return _config!;
 }
 
-function base64url(buf: ArrayBuffer) {
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+function base64url(buf: ArrayBuffer | Uint8Array) {
+  const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+  let str = "";
+  for (let i = 0; i < bytes.length; i++) str += String.fromCharCode(bytes[i]);
+  return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 async function generatePKCE() {
-  const verifier = base64url(crypto.getRandomValues(new Uint8Array(32)));
-  const challenge = base64url(
-    await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier))
-  );
+  const rand = crypto.getRandomValues(new Uint8Array(32));
+  const verifier = base64url(rand);
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier));
+  const challenge = base64url(new Uint8Array(digest));
   return { verifier, challenge };
 }
 
