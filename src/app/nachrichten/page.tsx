@@ -98,10 +98,10 @@ export default function NachrichtenPage() {
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-auto max-h-[70vh]">
                 {messages.map((m) => (
                   <div key={m.id} className={`group px-4 py-3 hover:bg-gray-50 cursor-pointer ${selected?.id === m.id ? "bg-gray-50" : ""}`} onClick={() => setSelected(m)}>
-                    <div className="flex items-start gap-3">
-                      {/* Left accent for selected */}
+                    <div className="flex items-stretch gap-3">
+                      {/* Left accent for selected (full height) */}
                       <div className="shrink-0">
-                        <div className={`w-1 h-10 rounded-r ${selected?.id === m.id ? 'bg-[#b11217]' : 'bg-transparent group-hover:bg-gray-200'}`} />
+                        <div className={`w-1 rounded-r h-full ${selected?.id === m.id ? 'bg-[#b11217]' : 'bg-transparent group-hover:bg-gray-200'}`} />
                       </div>
 
                       <div className="flex-1 min-w-0">
