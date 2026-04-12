@@ -56,6 +56,8 @@ export default function NachrichtenPage() {
     setBody(`\n\n---- Weitergeleitete Nachricht von ${m.from} am ${new Date(m.sentAt).toLocaleString("de-DE")} ----\n${m.body}`);
   }
 
+  const [attachmentUrls, setAttachmentUrls] = useState<Record<string,string>>({});
+
   async function sendMessage() {
     if (!to) { alert("Empfänger erforderlich"); return; }
     setSending(true);
@@ -67,6 +69,28 @@ export default function NachrichtenPage() {
     } catch (e) { alert("Senden fehlgeschlagen"); console.error(e); }
     setSending(false);
   }
+
+  // Fetch signed URLs for attachments when a message is selected
+  useEffect(() => {
+    let cancelled = false;
+    async function loadAttachments() {
+      if (!selected?.pdfKeys || selected.pdfKeys.length === 0) return;
+      for (const key of selected.pdfKeys) {
+        if (cancelled) return;
+        if (attachmentUrls[key]) continue;
+        try {
+          const data = await callApi(`/file?key=${encodeURIComponent(key)}`);
+          if (data?.url) {
+            setAttachmentUrls((s) => ({ ...s, [key]: data.url }));
+          }
+        } catch (e) {
+          console.error("Failed to fetch signed url for", key, e);
+        }
+      }
+    }
+    loadAttachments();
+    return () => { cancelled = true; };
+  }, [selected]);
 
   if (tokens === undefined) return <p className="text-center text-gray-500 mt-20">Laden…</p>;
   if (!tokens) return <p className="text-center text-gray-500 mt-20">Bitte zuerst anmelden.</p>;
@@ -143,7 +167,11 @@ export default function NachrichtenPage() {
                       <h3 className="font-semibold">Anhänge</h3>
                       {selected.pdfKeys.map((key: string) => (
                         <div key={key} className="mt-2">
-                          <PdfViewer url={`/file?key=${encodeURIComponent(key)}`} filename={key.split("/").pop()} />
+                          {attachmentUrls[key] ? (
+                            <PdfViewer url={attachmentUrls[key]} filename={key.split("/").pop()} />
+                          ) : (
+                            <div className="text-sm text-gray-500">Lade Anhang…</div>
+                          )}
                         </div>
                       ))}
                     </div>
