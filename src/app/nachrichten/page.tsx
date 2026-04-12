@@ -97,17 +97,21 @@ export default function NachrichtenPage() {
             <div>
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-auto max-h-[70vh]">
                 {messages.map((m) => (
-                  <div key={m.id} className={`px-4 py-3 hover:bg-gray-50 cursor-pointer ${selected?.id === m.id ? "bg-gray-50" : ""}`} onClick={() => setSelected(m)}>
+                  <div key={m.id} className={`group px-4 py-3 hover:bg-gray-50 cursor-pointer ${selected?.id === m.id ? "bg-gray-50" : ""}`} onClick={() => setSelected(m)}>
                     <div className="flex items-start gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 truncate">{m.subject}</div>
-                        <div className="text-xs text-gray-400 truncate">{m.from} · {new Date(m.sentAt).toLocaleString("de-DE")}</div>
-
+                      {/* Left accent for selected */}
+                      <div className="shrink-0">
+                        <div className={`w-1 h-10 rounded-r ${selected?.id === m.id ? 'bg-[#b11217]' : 'bg-transparent group-hover:bg-gray-200'}`} />
                       </div>
 
-                      {/* Archive icon on the right */}
+                      <div className="flex-1 min-w-0">
+                        <div className={`text-sm font-medium truncate ${selected?.id === m.id ? 'text-[#b11217]' : 'text-gray-900'}`}>{m.subject}</div>
+                        <div className="text-xs text-gray-400 truncate">{m.from} · {new Date(m.sentAt).toLocaleString("de-DE")}</div>
+                      </div>
+
+                      {/* Archive icon on the right: show only on hover or when selected */}
                       <div className="shrink-0 ml-3">
-                        <button onClick={(e) => { e.stopPropagation(); archiveMessage(m); }} title="Archivieren" aria-label="Archivieren" className="p-2 rounded hover:bg-gray-100 text-green-600">
+                        <button onClick={(e) => { e.stopPropagation(); archiveMessage(m); }} title="Archivieren" aria-label="Archivieren" className={`p-2 rounded hover:bg-gray-100 text-green-600 transition-opacity duration-150 ${selected?.id === m.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'}`}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
                             <path d="M20 6L9 17l-5-5" />
                           </svg>
