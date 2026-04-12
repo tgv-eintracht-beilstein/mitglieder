@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isInbox = pathname === "/inbox" || pathname === "/nachrichten";
+  const isInbox = pathname === "/inbox";
 
   return (
     <body className={`${inter.className} bg-[#f6f7f9] text-gray-800`}>
