@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Container from "@/app/_components/container";
 import { getTokens, callApi } from "@/lib/auth";
+import PdfViewer from "@/app/_components/pdf-viewer";
 
 export default function NachrichtenPage() {
   const [tokens, setTokens] = useState<any | null | undefined>(undefined);
@@ -135,6 +136,18 @@ export default function NachrichtenPage() {
                   </div>
 
                   <div className="mt-4 text-sm text-gray-800 whitespace-pre-wrap">{selected.body}</div>
+
+                  {/* Render attached PDFs if present */}
+                  {selected.pdfKeys && selected.pdfKeys.length > 0 && (
+                    <div className="mt-4 space-y-4">
+                      <h3 className="font-semibold">Anhänge</h3>
+                      {selected.pdfKeys.map((key: string) => (
+                        <div key={key} className="mt-2">
+                          <PdfViewer url={`/file?key=${encodeURIComponent(key)}`} filename={key.split("/").pop()} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {selected.type === "SUBMISSION" && selected.formData && (
                     <div className="mt-4">
