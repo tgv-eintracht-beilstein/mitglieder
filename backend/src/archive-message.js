@@ -1,38 +1,56 @@
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { QueryCommand, PutCommand, DeleteCommand, DynamoDBDocumentClient } = require("@aws-sdk/lib-dynamodb");
+const { PutCommand, DeleteCommand, GetCommand, DynamoDBDocumentClient } = require("@aws-sdk/lib-dynamodb");
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient());
 
 exports.handler = async (event) => {
   const claims = event.requestContext?.authorizer?.jwt?.claims || {};
   const email = claims.email || claims.sub;
+  const groups = claims["cognito:groups"] || [];
   if (!email) return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
 
   let body = {};
-  try { body = JSON.parse(event.body || "{}"); } catch (e) { /* ignore */ }
-  const { id } = body;
+  try { body = JSON.parse(event.body || "{}"); } catch { /* ignore */ }
+  const { id, formType } = body;
   if (!id) return { statusCode: 400, body: JSON.stringify({ error: "id required" }) };
 
-  const pk = `MAIL#${email}`;
+  const isGst = groups.includes("geschäftsstelle") || groups.includes("tgv-geschaeftsstelle");
 
   try {
-    const q = await ddb.send(new QueryCommand({
+    let item = null;
+    let oldPK, oldSK;
+
+    if (formType) {
+      // Form submissions — only Geschäftsstelle can archive these
+      if (!isGst) return { statusCode: 403, body: JSON.stringify({ error: "Forbidden" }) };
+
+      const res = await ddb.send(new GetCommand({
+        TableName: process.env.TABLE_NAME,
+        Key: { PK: `FORM#${formType}`, SK: id }
+      }));
+      item = res.Item || null;
+    } else {
+      // Regular messages — exact key lookup scoped to user's mailbox
+      const res = await ddb.send(new GetCommand({
+        TableName: process.env.TABLE_NAME,
+        Key: { PK: `MAIL#${email}`, SK: `INBOX#${id}` }
+      }));
+      item = res.Item || null;
+    }
+
+    if (!item) return { statusCode: 404, body: JSON.stringify({ error: "Not found" }) };
+
+    oldPK = item.PK;
+    oldSK = item.SK;
+
+    await ddb.send(new PutCommand({
       TableName: process.env.TABLE_NAME,
-      KeyConditionExpression: "PK = :pk",
-      FilterExpression: "contains(SK, :id)",
-      ExpressionAttributeValues: { ":pk": pk, ":id": id }
+      Item: { ...item, PK: `MAIL#${email}`, SK: `ARCHIVE#${id}`, archivedAt: new Date().toISOString() }
     }));
-
-    const items = q.Items || [];
-    if (items.length === 0) return { statusCode: 404, body: JSON.stringify({ error: "Not found" }) };
-
-    const item = items[0];
-    const oldSK = item.SK;
-    const newSK = `ARCHIVE#${id}`;
-    const newItem = { ...item, SK: newSK, archivedAt: new Date().toISOString() };
-
-    await ddb.send(new PutCommand({ TableName: process.env.TABLE_NAME, Item: newItem }));
-    await ddb.send(new DeleteCommand({ TableName: process.env.TABLE_NAME, Key: { PK: pk, SK: oldSK } }));
+    await ddb.send(new DeleteCommand({
+      TableName: process.env.TABLE_NAME,
+      Key: { PK: oldPK, SK: oldSK }
+    }));
 
     return { statusCode: 200, body: JSON.stringify({ ok: true }) };
   } catch (err) {
