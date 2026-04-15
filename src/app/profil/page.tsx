@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Container from "@/app/_components/container";
-import { getTokens, callApi, logout } from "@/lib/auth";
+import { getTokens, logout } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const [tokens, setTokens] = useState<any>(null);
   const [attributes, setAttributes] = useState<Record<string, string>>({});
-  const [directory, setDirectory] = useState<{users: any[], groups: any[]}>({users: [], groups: []});
   const router = useRouter();
 
   useEffect(() => {
@@ -33,8 +32,6 @@ export default function ProfilePage() {
     } catch (e) {
       console.error("Failed to parse ID token", e);
     }
-
-    callApi("/directory").then(setDirectory).catch(console.error);
   }, [router]);
 
   if (!tokens) return null;
@@ -45,15 +42,35 @@ export default function ProfilePage() {
   
   const hasInboxAccess = tokens.groups.includes("tgv-inbox-access") || isGst || isVorstand || isAbteilungsleiter;
 
-  // Map technical group IDs to readable descriptions, filtering out access groups
+  // Map technical group IDs to readable display names
+  const GROUP_LABELS: Record<string, string> = {
+    "tgv-geschaeftsstelle": "Geschäftsstelle",
+    "geschäftsstelle": "Geschäftsstelle",
+    "tgv-vorstand": "Vorstand",
+    "vorstand": "Vorstand",
+    "tgv-hauptausschuss": "Hauptausschuss",
+    "hauptausschuss": "Hauptausschuss",
+    "tgv-erweiterter-vorstand": "Erweiterter Vorstand",
+    "erweiterter-vorstand": "Erweiterter Vorstand",
+    "tgv-abteilungsleiter": "Abteilungsleiter",
+    "abteilungsleiter": "Abteilungsleiter",
+    "tgv-abt-handball": "Abteilung Handball",
+    "tgv-abt-fussball": "Abteilung Fußball",
+    "tgv-abt-turnen": "Abteilung Turnen",
+    "tgv-abt-leichtathletik": "Abteilung Leichtathletik",
+    "tgv-abt-tischtennis": "Abteilung Tischtennis",
+    "tgv-abt-tennis": "Abteilung Tennis",
+    "tgv-abt-schwimmen": "Abteilung Schwimmen",
+    "tgv-abt-gesang": "Abteilung Gesang",
+    "tgv-abt-gymnastik": "Abteilung Gymnastik",
+    "tgv-abt-tang-soo-do": "Abteilung Tang Soo Do",
+    "tgv-abt-ski-berg": "Abteilung Ski & Berg",
+    "tgv-abt-jedermann": "Abteilung Jedermann",
+  };
+
   const displayGroups = tokens.groups
     .filter((g: string) => g !== "tgv-inbox-access")
-    .map((groupId: string) => {
-      // Prefer the group description for display; fall back to name or id
-      if (groupId === "tgv-geschaeftsstelle" || groupId === "geschäftsstelle") return "Geschäftsstelle";
-      const groupInfo = directory.groups.find(g => g.id === groupId);
-      return groupInfo?.description || groupInfo?.name || groupId;
-    });
+    .map((g: string) => GROUP_LABELS[g] || g);
 
   const labelMap: Record<string, string> = {
     given_name: "Vorname",
