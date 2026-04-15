@@ -30,11 +30,19 @@ function formatValue(v: unknown): string {
   return String(v);
 }
 
+const HIDDEN_KEYS = new Set(["signature", "overrideDate", "rows", "nextId", "id", "addressId"]);
+const MASKED_KEYS = new Set(["iban"]);
+
+function maskValue(k: string, v: unknown): string {
+  if (MASKED_KEYS.has(k) && typeof v === "string" && v.length > 4) return "••••" + v.slice(-4);
+  return formatValue(v);
+}
+
 function FormDataTable({ data }: { data: Record<string, unknown> }) {
   const { personen, adressen, ...rest } = data as any;
 
   const simpleEntries = Object.entries(rest).filter(
-    ([k, v]) => !["signature", "overrideDate", "rows", "nextId", "id", "addressId"].includes(k) && typeof v !== "object"
+    ([k, v]) => !HIDDEN_KEYS.has(k) && typeof v !== "object"
   );
 
   return (
@@ -45,7 +53,7 @@ function FormDataTable({ data }: { data: Record<string, unknown> }) {
             {simpleEntries.map(([k, v]) => (
               <tr key={k} className="border-b border-gray-100">
                 <td className="py-1 pr-4 text-gray-500 whitespace-nowrap">{LABELS[k] || k}</td>
-                <td className="py-1 text-gray-800">{formatValue(v)}</td>
+                <td className="py-1 text-gray-800">{maskValue(k, v)}</td>
               </tr>
             ))}
           </tbody>
@@ -73,7 +81,7 @@ function FormDataTable({ data }: { data: Record<string, unknown> }) {
             <tbody>
               {["vorname", "nachname", "geburtsdatum", "telefon", "email", "abteilungen", "datenschutzAkzeptiert"].map(k => {
                 const v = p[k];
-                if (v == null || v === "" || k === "signature") return null;
+                if (v == null || v === "") return null;
                 return (
                   <tr key={k} className="border-b border-gray-100">
                     <td className="py-1 pr-4 text-gray-500 whitespace-nowrap">{LABELS[k] || k}</td>
