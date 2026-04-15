@@ -44,9 +44,11 @@ exports.handler = async (event) => {
   if (!key) return { statusCode: 400, body: JSON.stringify({ error: "Key required" }) };
 
   const isGeschaeftstelle = groups.includes("geschäftsstelle") || groups.includes("tgv-geschaeftsstelle");
+  const isVorstand = groups.includes("vorstand") || groups.includes("tgv-vorstand") || groups.includes("hauptausschuss") || groups.includes("tgv-hauptausschuss") || groups.includes("erweiterter-vorstand") || groups.includes("tgv-erweiterter-vorstand");
+  const isAbteilungsleiter = groups.includes("abteilungsleiter") || groups.includes("tgv-abteilungsleiter") || groups.some(g => g.startsWith("abt-") || g.startsWith("tgv-abt-"));
   const isOwner = key.startsWith(`users/${sub}/`);
 
-  if (!isGeschaeftstelle && !isOwner) {
+  if (!isGeschaeftstelle && !isVorstand && !isAbteilungsleiter && !isOwner) {
     return { statusCode: 403, body: JSON.stringify({ error: "Forbidden" }) };
   }
 

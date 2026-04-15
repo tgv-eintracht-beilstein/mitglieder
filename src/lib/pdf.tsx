@@ -171,6 +171,21 @@ export function Sig({ label, signature, dateLabel, dateValue }: {
   );
 }
 
+export function ApprovalSig() {
+  return (
+    <View style={{ marginTop: 20 }}>
+      <View style={{ flexDirection: "row", gap: 24, height: 48, alignItems: "flex-end" }}>
+        <View style={{ flex: 1 }} />
+        <View style={{ flex: 1 }} />
+      </View>
+      <View style={{ flexDirection: "row", gap: 24 }}>
+        <View style={{ flex: 1 }}><Text style={s.sigLine}>Datum</Text></View>
+        <View style={{ flex: 1 }}><Text style={s.sigLine}>Unterschrift Vorsitzender / Abteilungsleiter</Text></View>
+      </View>
+    </View>
+  );
+}
+
 export function Bullet({ children }: { children: React.ReactNode }) {
   return (
     <View style={s.listItem}>

@@ -12,32 +12,32 @@ exports.handler = async (event) => {
 
   if (!email) return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
 
-  const { folder = "INBOX" } = event.queryStringParameters || {};
+  const { folder } = event.queryStringParameters || {};
   const isGst = groups.includes("geschäftsstelle") || groups.includes("tgv-geschaeftsstelle");
 
   let items = [];
 
-  // Fetch regular messages — id is derived from SK (format: INBOX#<id>)
+  const folders = folder ? [folder] : ["INBOX", "SENT"];
+
+  // Fetch regular messages — id is derived from SK (format: FOLDER#<id>)
   try {
-    const msgData = await ddb.send(new QueryCommand({
+    const results = await Promise.all(folders.map(f => ddb.send(new QueryCommand({
       TableName: process.env.TABLE_NAME,
       KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
-      ExpressionAttributeValues: {
-        ":pk": `MAIL#${email}`,
-        ":sk": `${folder}#`
-      },
+      ExpressionAttributeValues: { ":pk": `MAIL#${email}`, ":sk": `${f}#` },
       ScanIndexForward: false
-    }));
-    items = (msgData.Items || []).map(item => ({
+    }))));
+    items = results.flatMap((r, i) => (r.Items || []).map(item => ({
       ...item,
       id: item.SK.split("#").slice(1).join("#"),
-    }));
+      folder: folders[i],
+    })));
   } catch (err) {
     console.error("Error fetching regular messages:", err);
   }
 
   // If in Geschäftsstelle and viewing INBOX, query each form type partition
-  if (isGst && folder === "INBOX") {
+  if (isGst && folders.includes("INBOX")) {
     try {
       const results = await Promise.all(
         FORM_TYPES.map(ft => ddb.send(new QueryCommand({
@@ -52,8 +52,8 @@ exports.handler = async (event) => {
           id: f.SK,
           from: f.submittedBy,
           to: "Geschäftsstelle",
-          subject: `Einreichung: ${f.formType}`,
-          body: `Neue Formular-Einreichung vom Typ ${f.formType}.`,
+          subject: `Einreichung: ${f.formType.charAt(0).toUpperCase() + f.formType.slice(1)}`,
+          body: `Neue Formular-Einreichung vom Typ ${f.formType.charAt(0).toUpperCase() + f.formType.slice(1)}.`,
           sentAt: f.createdAt,
           type: "SUBMISSION",
           formType: f.formType,

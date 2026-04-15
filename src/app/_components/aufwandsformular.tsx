@@ -851,7 +851,7 @@ function RowEditModal({ row, onSave, onDelete, onClose, showKm = true, showStund
         {showStunden && (
           <div>
             <label className="text-xs text-gray-400">bis</label>
-            <TimeSelect value={draft.bis} onChange={v => f("bis", v)} className="w-full text-base" />
+            <TimeSelect value={draft.bis} onChange={v => f("bis", v < draft.von ? draft.von : v)} className="w-full text-base" />
           </div>
         )}
         {showStunden && (
@@ -1361,7 +1361,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                   )}
                   {showStunden && (
                     <td className="border-r border-gray-100 px-1 py-1.5 text-center">
-                      <PI value={row.bis}><TimeSelect value={row.bis} onChange={v => updateRow(row.id, "bis", v)} /></PI>
+                      <PI value={row.bis}><TimeSelect value={row.bis} onChange={v => updateRow(row.id, "bis", v < row.von ? row.von : v)} /></PI>
                     </td>
                   )}
                   {showStunden && (

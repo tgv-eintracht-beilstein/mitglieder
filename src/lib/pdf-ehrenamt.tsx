@@ -1,5 +1,5 @@
 import React from "react";
-import { Page, View, Text, s, PdfHeader, PdfFooter, Field, Sig, InfoGrid, Checkbox } from "@/lib/pdf";
+import { Page, View, Text, s, PdfHeader, PdfFooter, Field, Sig, ApprovalSig, InfoGrid, Checkbox } from "@/lib/pdf";
 
 function formatDateDE(v: string) {
   if (!v) return "";
@@ -78,6 +78,7 @@ export function EhrenamtspauschaleDoc({ state, dateValue, limit }: {
 
       <Sig label="Unterschrift" signature={state.signature || undefined}
         dateLabel="Ort, Datum" dateValue={dateValue} />
+      <ApprovalSig />
       <PdfFooter />
     </Page>
   );

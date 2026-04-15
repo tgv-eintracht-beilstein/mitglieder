@@ -36,3 +36,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .playwright-mcp/
+.aws-sambackend/node_modules/

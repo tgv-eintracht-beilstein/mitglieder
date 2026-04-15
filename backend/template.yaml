@@ -476,6 +476,28 @@ Resources:
               detail-type:
                 - message.sent
 
+  SignPdfFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: sign-pdf.handler
+      CodeUri: src/
+      Timeout: 30
+      MemorySize: 512
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - 's3:GetObject'
+                - 's3:PutObject'
+              Resource: !Sub '${FormsBucket.Arn}/*'
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /sign-pdf
+            Method: POST
+
   ListDirectoryFunction:
     Type: AWS::Serverless::Function
     Properties:

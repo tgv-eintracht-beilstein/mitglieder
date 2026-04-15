@@ -15,7 +15,7 @@ exports.handler = async (event) => {
   
   if (!senderSub) return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
 
-  const { recipientEmail, subject, body } = JSON.parse(event.body || "{}");
+  const { recipientEmail, subject, body, pdfKeys } = JSON.parse(event.body || "{}");
   
   if (!recipientEmail || !subject || !body) {
     return { statusCode: 400, body: JSON.stringify({ error: "recipientEmail, subject, and body required" }) };
@@ -51,7 +51,8 @@ exports.handler = async (event) => {
     body,
     sentAt: now,
     type: "MESSAGE",
-    to: isGroup ? `Gruppe: ${recipientEmail}` : recipientEmail
+    to: isGroup ? `Gruppe: ${recipientEmail}` : recipientEmail,
+    ...(pdfKeys && pdfKeys.length > 0 ? { pdfKeys } : {})
   };
 
   const actions = [

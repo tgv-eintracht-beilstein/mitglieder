@@ -1,5 +1,5 @@
 import React from "react";
-import { Document, Page, View, Text, s, PdfHeader, PdfFooter, Field, Sig, InfoGrid, Checkbox } from "@/lib/pdf";
+import { Document, Page, View, Text, s, PdfHeader, PdfFooter, Field, Sig, ApprovalSig, InfoGrid, Checkbox } from "@/lib/pdf";
 import { StyleSheet } from "@react-pdf/renderer";
 
 const KM_RATE = 0.3;
@@ -176,6 +176,7 @@ export function AufwandsformularDoc({ state, config, dateValue }: {
 
       <Sig label="Unterschrift Leistungsempfänger" signature={state.signature || undefined}
         dateLabel="Ort, Datum" dateValue={dateValue} />
+      <ApprovalSig />
       <PdfFooter />
     </Page>
   );
@@ -225,6 +226,7 @@ export function VerzichtDoc({ state, dateValue }: {
 
       <Sig label="Unterschrift des ehrenamtlich Tätigen" signature={state.signature || undefined}
         dateLabel="Ort, Datum" dateValue={dateValue} />
+      <ApprovalSig />
       <PdfFooter />
     </Page>
   );

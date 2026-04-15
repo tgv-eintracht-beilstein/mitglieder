@@ -69,10 +69,10 @@ export function LeftNav() {
   );
 }
 
-export function RightNav() {
+export function RightNav({ debug }: { debug?: boolean }) {
   return (
     <nav className="flex items-center gap-2">
-      <AuthButton />
+      {debug && <AuthButton />}
       <a href="https://tgveintrachtbeilstein.de"
         className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/30 text-sm font-semibold text-white hover:bg-white hover:text-[#8f0f13] transition-all duration-200 !no-underline">
         Webseite
@@ -81,7 +81,7 @@ export function RightNav() {
   );
 }
 
-export default function MobileNav() {
+export default function MobileNav({ debug }: { debug?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -129,7 +129,7 @@ export default function MobileNav() {
               Webseite
             </a>
             <div className="px-4 py-3">
-              <AuthButton className="block w-full px-4 py-3 text-lg font-semibold" simple />
+              {debug && <AuthButton className="block w-full px-4 py-3 text-lg font-semibold" simple />}
             </div>
           </nav>
         </div>

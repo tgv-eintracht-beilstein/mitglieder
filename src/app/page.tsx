@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import AuthButton from "./_components/auth-button";
+import { useDebug } from "@/lib/use-debug";
 
 const pages = [
   {
@@ -65,6 +67,9 @@ const pages = [
 ];
 
 export default function Home() {
+  const [debug] = useDebug();
+  const visiblePages = debug ? pages : pages.filter(p => p.href !== "/profil");
+
   return (
     <div className="max-w-2xl mx-auto mt-10">
       <div className="flex justify-between items-start mb-10">
@@ -80,7 +85,7 @@ export default function Home() {
       </div>
 
       <div className="grid gap-3">
-        {pages.map(({ href, label, desc, icon }) => (
+        {visiblePages.map(({ href, label, desc, icon }) => (
           <Link
             key={href}
             href={href}

@@ -78,7 +78,6 @@ const PdfViewer = forwardRef<PdfViewerHandle, { url: string; filename?: string }
             canvas.height = vp.height;
             canvas.style.display = "block";
             canvas.style.maxWidth = "100%";
-            canvas.style.maxHeight = "100%";
             canvas.style.height = "auto";
             canvas.style.marginBottom = i < pages.length - 1 ? "8px" : "0";
 
@@ -107,7 +106,7 @@ const PdfViewer = forwardRef<PdfViewerHandle, { url: string; filename?: string }
     return (
       <div
         ref={containerRef}
-        className="w-full h-full rounded-xl bg-gray-100 p-2"
+        className="w-full h-full overflow-auto rounded-xl bg-gray-100 p-2"
       />
     );
   }
