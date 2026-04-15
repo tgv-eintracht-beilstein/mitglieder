@@ -19,7 +19,7 @@ exports.handler = async (event) => {
   }
 
   const now = new Date().toISOString();
-  const id = `${now}#${Math.random().toString(36).slice(2, 8)}`;
+  const id = `${now}#${crypto.randomUUID()}`;
   const item = {
     id,
     formType,

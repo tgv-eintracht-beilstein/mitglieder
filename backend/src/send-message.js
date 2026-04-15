@@ -22,7 +22,7 @@ exports.handler = async (event) => {
   }
 
   const now = new Date().toISOString();
-  const msgId = `${now}#${Math.random().toString(36).slice(2, 8)}`;
+  const msgId = `${now}#${crypto.randomUUID()}`;
 
   // Determine recipients
   let recipients = [recipientEmail];
