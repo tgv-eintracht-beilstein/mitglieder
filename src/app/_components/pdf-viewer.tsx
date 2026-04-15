@@ -57,48 +57,34 @@ const PdfViewer = forwardRef<PdfViewerHandle, { url: string; filename?: string }
           pdfRef.current = pdf;
 
           containerRef.current.innerHTML = "";
-          const containerWidth = (containerRef.current.clientWidth || 800) - 16; // minus padding
-          const containerHeight = containerRef.current.clientHeight || 0;
+          const containerWidth = (containerRef.current.clientWidth || 800) - 16;
 
-          // First pass: get all page viewports at width-fit scale
           const pages = [];
           for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            pages.push(page);
-          }
-          const viewports = pages.map(p => p.getViewport({ scale: 1 }));
-
-          let scale = containerWidth / Math.max(...viewports.map(v => v.width));
-
-          // If container has height, check if pages fit — if not, scale down
-          if (containerHeight > 0) {
-            const gap = 8 * (pages.length - 1);
-            const totalH = viewports.reduce((sum, v) => sum + v.height * scale, 0) + gap;
-            if (totalH > containerHeight) {
-              scale = scale * (containerHeight / totalH);
-            }
+            pages.push(await pdf.getPage(i));
           }
 
-          const dpr = window.devicePixelRatio || 1;
+          // Render at full width-fit quality
+          const maxW = Math.max(...pages.map(p => p.getViewport({ scale: 1 }).width));
+          const renderScale = (containerWidth / maxW) * (window.devicePixelRatio || 1);
 
           for (let i = 0; i < pages.length; i++) {
             if (cancelled) break;
             const page = pages[i];
-            const scaled = page.getViewport({ scale });
-            const hiRes = page.getViewport({ scale: scale * dpr });
+            const vp = page.getViewport({ scale: renderScale });
 
             const canvas = document.createElement("canvas");
-            canvas.width = hiRes.width;
-            canvas.height = hiRes.height;
+            canvas.width = vp.width;
+            canvas.height = vp.height;
             canvas.style.display = "block";
-            canvas.style.width = `${scaled.width}px`;
-            canvas.style.height = `${scaled.height}px`;
             canvas.style.maxWidth = "100%";
+            canvas.style.maxHeight = "100%";
+            canvas.style.height = "auto";
             canvas.style.marginBottom = i < pages.length - 1 ? "8px" : "0";
 
             containerRef.current.appendChild(canvas);
             const ctx = canvas.getContext("2d")!;
-            await page.render({ canvasContext: ctx, canvas, viewport: hiRes }).promise;
+            await page.render({ canvasContext: ctx, canvas, viewport: vp }).promise;
           }
         } catch {
           if (!cancelled) setError(true);
