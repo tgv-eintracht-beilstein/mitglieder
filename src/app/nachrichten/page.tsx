@@ -208,7 +208,7 @@ export default function NachrichtenPage() {
 
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
-              <img src="/tgv-logo-sw.svg" alt="TGV Logo" className="w-24 h-24 opacity-20 mb-6" />
+              <img src="/tgv-logo-sw.png" alt="TGV Logo" className="w-24 h-24 opacity-20 mb-6" />
               <p className="text-lg font-medium text-gray-400">Alles erledigt!</p>
               <p className="text-sm text-gray-300 mt-1">Keine neuen Nachrichten vorhanden.</p>
             </div>
