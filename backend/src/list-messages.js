@@ -1,7 +1,9 @@
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { QueryCommand, ScanCommand, DynamoDBDocumentClient } = require("@aws-sdk/lib-dynamodb");
+const { QueryCommand, DynamoDBDocumentClient } = require("@aws-sdk/lib-dynamodb");
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient());
+
+const FORM_TYPES = ["mitglied-werden", "ehrenamtspauschale", "reisekostenabrechnung", "übungsleiterpauschale"];
 
 exports.handler = async (event) => {
   const claims = event.requestContext?.authorizer?.jwt?.claims || {};
@@ -34,31 +36,35 @@ exports.handler = async (event) => {
     console.error("Error fetching regular messages:", err);
   }
 
-  // If in Geschäftsstelle and viewing INBOX, also include form submissions
+  // If in Geschäftsstelle and viewing INBOX, query each form type partition
   if (isGst && folder === "INBOX") {
     try {
-      const formData = await ddb.send(new ScanCommand({
-        TableName: process.env.TABLE_NAME,
-        FilterExpression: "begins_with(PK, :prefix)",
-        ExpressionAttributeValues: { ":prefix": "FORM#" }
-      }));
+      const results = await Promise.all(
+        FORM_TYPES.map(ft => ddb.send(new QueryCommand({
+          TableName: process.env.TABLE_NAME,
+          KeyConditionExpression: "PK = :pk",
+          ExpressionAttributeValues: { ":pk": `FORM#${ft}` }
+        })))
+      );
 
-      const formMessages = (formData.Items || []).map(f => ({
-        id: f.SK,
-        from: f.submittedBy,
-        to: "Geschäftsstelle",
-        subject: `Einreichung: ${f.formType}`,
-        body: `Neue Formular-Einreichung vom Typ ${f.formType}.`,
-        sentAt: f.createdAt,
-        type: "SUBMISSION",
-        formType: f.formType,
-        pdfKeys: f.pdfKeys,
-        formData: f.formData
-      }));
+      const formMessages = results.flatMap(r =>
+        (r.Items || []).map(f => ({
+          id: f.SK,
+          from: f.submittedBy,
+          to: "Geschäftsstelle",
+          subject: `Einreichung: ${f.formType}`,
+          body: `Neue Formular-Einreichung vom Typ ${f.formType}.`,
+          sentAt: f.createdAt,
+          type: "SUBMISSION",
+          formType: f.formType,
+          pdfKeys: f.pdfKeys,
+          formData: f.formData
+        }))
+      );
 
       items = [...items, ...formMessages].sort((a, b) => b.sentAt.localeCompare(a.sentAt));
     } catch (err) {
-      console.error("Error scanning form submissions:", err);
+      console.error("Error querying form submissions:", err);
     }
   }
 
