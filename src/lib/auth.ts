@@ -34,24 +34,91 @@ async function generatePKCE() {
   return { verifier, challenge };
 }
 
-export function getTokens() {
+const STORAGE_KEY = "auth_tokens";
+
+interface StoredTokens {
+  access_token: string;
+  id_token: string;
+  refresh_token?: string;
+  username: string;
+  groups: string[];
+  expires_at: number;
+}
+
+function readTokens(): StoredTokens | null {
   if (typeof window === "undefined") return null;
-  const raw = sessionStorage.getItem("auth_tokens");
+  const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return null;
-  const tokens = JSON.parse(raw);
-  if (tokens.expires_at && Date.now() > tokens.expires_at) {
-    sessionStorage.removeItem("auth_tokens");
-    return null;
-  }
-  return tokens as { access_token: string; id_token: string; username: string; groups: string[] };
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
+function writeTokens(tokens: StoredTokens) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tokens));
+}
+
+function clearTokens() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+export function getTokens() {
+  return readTokens();
 }
 
 export function getUsername() {
-  return getTokens()?.username ?? null;
+  return readTokens()?.username ?? null;
 }
 
 export function getGroups() {
-  return getTokens()?.groups ?? [];
+  return readTokens()?.groups ?? [];
+}
+
+async function refreshTokens(): Promise<StoredTokens | null> {
+  const stored = readTokens();
+  if (!stored?.refresh_token) return null;
+
+  try {
+    const cfg = await getConfig();
+    const res = await fetch(`${cfg.cognitoDomain}/oauth2/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        client_id: cfg.clientId,
+        refresh_token: stored.refresh_token,
+      }),
+    });
+
+    if (!res.ok) {
+      clearTokens();
+      return null;
+    }
+
+    const data = await res.json();
+    const payload = JSON.parse(atob(data.id_token.split(".")[1]));
+    const updated: StoredTokens = {
+      access_token: data.access_token,
+      id_token: data.id_token,
+      refresh_token: data.refresh_token || stored.refresh_token,
+      username: payload.email || payload.sub,
+      groups: payload["cognito:groups"] || [],
+      expires_at: Date.now() + data.expires_in * 1000,
+    };
+    writeTokens(updated);
+    return updated;
+  } catch {
+    clearTokens();
+    return null;
+  }
+}
+
+async function getValidTokens(): Promise<StoredTokens | null> {
+  const stored = readTokens();
+  if (!stored) return null;
+  // Refresh 60s before expiry
+  if (stored.expires_at && Date.now() > stored.expires_at - 60_000) {
+    return refreshTokens();
+  }
+  return stored;
 }
 
 export async function login() {
@@ -93,21 +160,19 @@ export async function handleCallback(): Promise<boolean> {
   sessionStorage.removeItem("pkce_verifier");
 
   const payload = JSON.parse(atob(data.id_token.split(".")[1]));
-  sessionStorage.setItem(
-    "auth_tokens",
-    JSON.stringify({
-      access_token: data.access_token,
-      id_token: data.id_token,
-      username: payload.email || payload.sub,
-      groups: payload["cognito:groups"] || [],
-      expires_at: Date.now() + data.expires_in * 1000,
-    })
-  );
+  writeTokens({
+    access_token: data.access_token,
+    id_token: data.id_token,
+    refresh_token: data.refresh_token,
+    username: payload.email || payload.sub,
+    groups: payload["cognito:groups"] || [],
+    expires_at: Date.now() + data.expires_in * 1000,
+  });
   return true;
 }
 
 export async function logout() {
-  sessionStorage.removeItem("auth_tokens");
+  clearTokens();
   const cfg = await getConfig();
   const params = new URLSearchParams({
     client_id: cfg.clientId,
@@ -117,7 +182,7 @@ export async function logout() {
 }
 
 export async function callApi(path: string, options?: RequestInit) {
-  const tokens = getTokens();
+  const tokens = await getValidTokens();
   if (!tokens) throw new Error("Not authenticated");
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
