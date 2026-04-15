@@ -72,17 +72,20 @@ const PdfViewer = forwardRef<PdfViewerHandle, { url: string; filename?: string }
               scale = Math.min(scale, availH / viewport.height);
             }
             const scaled = page.getViewport({ scale });
+            const dpr = window.devicePixelRatio || 1;
+            const hiRes = page.getViewport({ scale: scale * dpr });
 
             const canvas = document.createElement("canvas");
-            canvas.width = scaled.width;
-            canvas.height = scaled.height;
+            canvas.width = hiRes.width;
+            canvas.height = hiRes.height;
             canvas.style.display = "block";
-            canvas.style.width = "100%";
+            canvas.style.width = `${scaled.width}px`;
+            canvas.style.height = `${scaled.height}px`;
             canvas.style.marginBottom = "8px";
 
             containerRef.current.appendChild(canvas);
             const ctx = canvas.getContext("2d")!;
-            await page.render({ canvasContext: ctx, canvas, viewport: scaled }).promise;
+            await page.render({ canvasContext: ctx, canvas, viewport: hiRes }).promise;
           }
         } catch {
           if (!cancelled) setError(true);
