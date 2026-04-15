@@ -58,12 +58,19 @@ const PdfViewer = forwardRef<PdfViewerHandle, { url: string; filename?: string }
 
           containerRef.current.innerHTML = "";
           const containerWidth = containerRef.current.clientWidth || 800;
+          const containerHeight = containerRef.current.clientHeight || 0;
 
           for (let i = 1; i <= pdf.numPages; i++) {
             if (cancelled) break;
             const page = await pdf.getPage(i);
             const viewport = page.getViewport({ scale: 1 });
-            const scale = containerWidth / viewport.width;
+            let scale = containerWidth / viewport.width;
+            // If container has a constrained height, fit the page within it
+            if (containerHeight > 0) {
+              const gap = 8 * (pdf.numPages - 1);
+              const availH = (containerHeight - gap) / pdf.numPages;
+              scale = Math.min(scale, availH / viewport.height);
+            }
             const scaled = page.getViewport({ scale });
 
             const canvas = document.createElement("canvas");
@@ -98,7 +105,7 @@ const PdfViewer = forwardRef<PdfViewerHandle, { url: string; filename?: string }
     return (
       <div
         ref={containerRef}
-        className="w-full rounded-xl bg-gray-100 p-2"
+        className="w-full h-full rounded-xl bg-gray-100 p-2"
       />
     );
   }
