@@ -57,22 +57,34 @@ const PdfViewer = forwardRef<PdfViewerHandle, { url: string; filename?: string }
           pdfRef.current = pdf;
 
           containerRef.current.innerHTML = "";
-          const containerWidth = containerRef.current.clientWidth || 800;
+          const containerWidth = (containerRef.current.clientWidth || 800) - 16; // minus padding
           const containerHeight = containerRef.current.clientHeight || 0;
 
+          // First pass: get all page viewports at width-fit scale
+          const pages = [];
           for (let i = 1; i <= pdf.numPages; i++) {
-            if (cancelled) break;
             const page = await pdf.getPage(i);
-            const viewport = page.getViewport({ scale: 1 });
-            let scale = containerWidth / viewport.width;
-            // If container has a constrained height, fit the page within it
-            if (containerHeight > 0) {
-              const gap = 8 * (pdf.numPages - 1);
-              const availH = (containerHeight - gap) / pdf.numPages;
-              scale = Math.min(scale, availH / viewport.height);
+            pages.push(page);
+          }
+          const viewports = pages.map(p => p.getViewport({ scale: 1 }));
+
+          let scale = containerWidth / Math.max(...viewports.map(v => v.width));
+
+          // If container has height, check if pages fit — if not, scale down
+          if (containerHeight > 0) {
+            const gap = 8 * (pages.length - 1);
+            const totalH = viewports.reduce((sum, v) => sum + v.height * scale, 0) + gap;
+            if (totalH > containerHeight) {
+              scale = scale * (containerHeight / totalH);
             }
+          }
+
+          const dpr = window.devicePixelRatio || 1;
+
+          for (let i = 0; i < pages.length; i++) {
+            if (cancelled) break;
+            const page = pages[i];
             const scaled = page.getViewport({ scale });
-            const dpr = window.devicePixelRatio || 1;
             const hiRes = page.getViewport({ scale: scale * dpr });
 
             const canvas = document.createElement("canvas");
@@ -81,7 +93,8 @@ const PdfViewer = forwardRef<PdfViewerHandle, { url: string; filename?: string }
             canvas.style.display = "block";
             canvas.style.width = `${scaled.width}px`;
             canvas.style.height = `${scaled.height}px`;
-            canvas.style.marginBottom = "8px";
+            canvas.style.maxWidth = "100%";
+            canvas.style.marginBottom = i < pages.length - 1 ? "8px" : "0";
 
             containerRef.current.appendChild(canvas);
             const ctx = canvas.getContext("2d")!;
