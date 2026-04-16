@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import SignatureModal from "@/app/_components/signature-modal";
 import DownloadButton from "@/app/_components/download-button";
-import { validateIban } from "@/lib/iban";
+import { validateIban, formatIban } from "@/lib/iban";
 import { ABTEILUNGEN, AbteilungIcon, DateSelect } from "@/app/_components/aufwandsformular";
 import { UEBUNGSLEITER_CATEGORIES, MULTI_SELECT_ABTEILUNGEN } from "@/lib/constants";
 import { loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
@@ -443,7 +443,7 @@ function MitgliedWerdenPage() {
               className={`${fieldCls} border-gray-300 focus:border-[#b11217]`} />
           </Field>
           <Field label="IBAN" value={validateIban(state.iban) ? "ok" : ""} required>
-            <input type="text" value={state.iban} onChange={(e) => set("iban", e.target.value.toUpperCase())} placeholder="DE00 0000 0000 0000 0000 00"
+            <input type="text" value={state.iban} onChange={(e) => set("iban", formatIban(e.target.value.toUpperCase()))} placeholder="DE00 0000 0000 0000 0000 00"
               className={`${fieldCls} uppercase ${state.iban === "" ? "border-[#b11217] focus:border-[#b11217]" : validateIban(state.iban) ? "border-green-500 text-green-700 focus:border-green-500" : "border-[#b11217] text-[#b11217] focus:border-[#b11217]"}`} />
           </Field>
           <div className="pt-3 border-t border-gray-100">

@@ -1609,7 +1609,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                 IBAN:{!validateIban(state.iban) && <span className="leading-none">*</span>}
               </span>
               <PI value={formatIban(state.iban)} className="flex-1 uppercase">
-                <input type="text" value={state.iban} onChange={(e) => set("iban", e.target.value.toUpperCase())}
+                <input type="text" value={state.iban} onChange={(e) => set("iban", formatIban(e.target.value.toUpperCase()))}
                   placeholder="DE00 0000 0000 0000 0000 00"
                   className={`w-full border-b bg-transparent px-1 py-0.5 text-sm uppercase focus:outline-none transition-colors ${
                     state.iban === "" ? "border-gray-300 focus:border-blue-500"

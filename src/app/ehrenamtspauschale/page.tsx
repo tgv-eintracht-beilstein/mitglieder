@@ -428,7 +428,7 @@ export default function EhrenamtspauschaleePage() {
               <span className={`shrink-0 text-xs flex items-center gap-0.5 ${!validateIban(state.iban) ? "text-[#b11217]" : "text-gray-500"}`}>
                 IBAN:{!validateIban(state.iban) && <span className="leading-none">*</span>}
               </span>
-              <input type="text" value={state.iban} onChange={e => set("iban", e.target.value.toUpperCase())}
+              <input type="text" value={state.iban} onChange={e => set("iban", formatIban(e.target.value.toUpperCase()))}
                 placeholder="DE00 0000 0000 0000 0000 00"
                 className={`flex-1 print:hidden ${fieldCls} ${state.iban === "" ? "border-gray-300 focus:border-[#b11217]" : validateIban(state.iban) ? "border-green-500 text-green-700 focus:border-green-500" : "border-[#b11217] text-[#b11217] focus:border-[#b11217]"} uppercase`} />
               <span className="hidden print:inline text-sm uppercase">{formatIban(state.iban)}</span>
