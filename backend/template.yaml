@@ -11,10 +11,10 @@ Parameters:
     Default: benutzer.tgveintrachtbeilstein.de
   ProdDomain:
     Type: String
-    Default: https://mitglied.tgveintrachtbeilstein.de
+    Default: https://mitglieder.tgveintrachtbeilstein.de
   LocalPort:
     Type: String
-    Default: "3003"
+    Default: "3000"
   CloudFrontKeyPairId:
     Type: String
     Description: "CloudFront public key id (used for signing URLs). Create in CloudFront console or leave empty to manage manually."
@@ -49,6 +49,7 @@ Resources:
             AllowedMethods: [GET, PUT]
             AllowedOrigins:
               - !Ref ProdDomain
+              - "https://tgveintrachtbeilstein.de"
               - !Sub "http://localhost:${LocalPort}"
             MaxAge: 3600
 
@@ -244,6 +245,7 @@ Resources:
       CorsConfiguration:
         AllowOrigins:
           - !Ref ProdDomain
+          - "https://tgveintrachtbeilstein.de"
           - !Sub "http://localhost:${LocalPort}"
         AllowHeaders:
           - Authorization

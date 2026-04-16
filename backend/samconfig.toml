@@ -7,7 +7,7 @@ s3_prefix = "mitglieder-app"
 region = "eu-central-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "UserPoolId=\"eu-central-1_vJEWudU5g\" CognitoDomain=\"benutzer.tgveintrachtbeilstein.de\" ProdDomain=\"https://mitglied.tgveintrachtbeilstein.de\" LocalPort=\"3003\""
+parameter_overrides = "UserPoolId=\"eu-central-1_vJEWudU5g\" CognitoDomain=\"benutzer.tgveintrachtbeilstein.de\" ProdDomain=\"https://mitglieder.tgveintrachtbeilstein.de\" LocalPort=\"3000\""
 image_repositories = []
 
 [default.global.parameters]
