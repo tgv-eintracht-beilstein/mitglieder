@@ -11,6 +11,7 @@ import { UEBUNGSLEITER_CATEGORIES } from "@/lib/constants";
 import { syncSave, syncLoad, subscribe } from "@/lib/sync";
 import AddressBookModal, { useAddressSelection } from "./address-book-picker";
 import { getSelectedAddresses } from "@/lib/addressBook";
+import { formatIban } from "@/lib/iban";
 const KM_RATE = 0.3;
 const BESCHREIBUNGEN_KEY = "tgv_beschreibungen_v1";
 
@@ -1607,7 +1608,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               <span className={`shrink-0 text-xs flex items-center gap-0.5 ${!validateIban(state.iban) ? "text-[#b11217]" : "text-gray-500"}`}>
                 IBAN:{!validateIban(state.iban) && <span className="leading-none">*</span>}
               </span>
-              <PI value={state.iban} className="flex-1 uppercase">
+              <PI value={formatIban(state.iban)} className="flex-1 uppercase">
                 <input type="text" value={state.iban} onChange={(e) => set("iban", e.target.value.toUpperCase())}
                   placeholder="DE00 0000 0000 0000 0000 00"
                   className={`w-full border-b bg-transparent px-1 py-0.5 text-sm uppercase focus:outline-none transition-colors ${

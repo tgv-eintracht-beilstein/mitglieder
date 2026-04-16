@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { FormState } from "../../types";
+import { formatIban } from "@/lib/iban";
 import { PdfHeader, PdfFooter } from "../../pdf-layout";
 
 const STORAGE_KEY = "mitglied_werden_v1";
@@ -65,7 +66,7 @@ export default function SepaPdf() {
         </div>
         <div>
           <div className={labelCls}>IBAN</div>
-          <div className={`${fieldCls} font-mono tracking-wider`}>{state.iban}</div>
+          <div className={`${fieldCls} font-mono tracking-wider`}>{formatIban(state.iban)}</div>
         </div>
       </div>
 

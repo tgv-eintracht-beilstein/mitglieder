@@ -1,5 +1,6 @@
 import React from "react";
 import { Page, View, Text, s, PdfHeader, PdfFooter, Field, Sig, ApprovalSig, InfoGrid, Checkbox } from "@/lib/pdf";
+import { formatIban } from "@/lib/iban";
 
 function formatDateDE(v: string) {
   if (!v) return "";
@@ -71,7 +72,7 @@ export function EhrenamtspauschaleDoc({ state, dateValue, limit }: {
           <Checkbox checked={state.zahlungBar}>Auszahlbetrag bar erhalten</Checkbox>
           <Checkbox checked={state.zahlungUeberweisung}>Auszahlbetrag bitte überweisen auf nachfolgende Bankverbindung</Checkbox>
           {state.zahlungUeberweisung && state.iban && (
-            <View style={{ marginLeft: 12 }}><Field label="IBAN" value={state.iban} /></View>
+            <View style={{ marginLeft: 12 }}><Field label="IBAN" value={formatIban(state.iban)} /></View>
           )}
         </View>
       )}

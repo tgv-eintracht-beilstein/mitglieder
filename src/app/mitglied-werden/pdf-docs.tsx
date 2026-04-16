@@ -1,5 +1,6 @@
 import React from "react";
 import { Document, Page, View, Text, s, PdfHeader, PdfFooter, Field, Sig, Bullet, Checkbox, InfoGrid, Section } from "@/lib/pdf";
+import { formatIban } from "@/lib/iban";
 import type { FormState, Person, Address } from "./types";
 import { DATENSCHUTZ_KATEGORIEN } from "./types";
 
@@ -151,7 +152,7 @@ export function SepaDoc({ state, addr, city, today }: {
       <InfoGrid
         left={[
           { label: "Kontoinhaber", value: inhaber },
-          { label: "IBAN", value: state.iban },
+          { label: "IBAN", value: formatIban(state.iban) },
         ]}
         right={[
           { label: "Straße", value: addr?.strasse || "" },

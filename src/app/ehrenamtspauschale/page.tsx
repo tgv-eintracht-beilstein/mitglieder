@@ -9,7 +9,7 @@ import VerzichtPageContent from "@/app/_components/verzicht-page-content";
 import { SHARED_ADDRESS_KEY, saveSharedAddress, loadSharedAddress, loadSharedSignature, saveSharedSignature } from "@/lib/sharedAddress";
 import { buildPdfFilename } from "@/lib/pdfFilename";
 import { syncSave, syncLoad, subscribe } from "@/lib/sync";
-import { validateIban } from "@/lib/iban";
+import { validateIban, formatIban } from "@/lib/iban";
 import { AbteilungSelect, ABTEILUNGEN, AbteilungIcon } from "@/app/_components/aufwandsformular";
 import AddressBookModal, { useAddressSelection } from "@/app/_components/address-book-picker";
 import { type SavedAddress, getSelectedAddresses } from "@/lib/addressBook";
@@ -431,7 +431,7 @@ export default function EhrenamtspauschaleePage() {
               <input type="text" value={state.iban} onChange={e => set("iban", e.target.value.toUpperCase())}
                 placeholder="DE00 0000 0000 0000 0000 00"
                 className={`flex-1 print:hidden ${fieldCls} ${state.iban === "" ? "border-gray-300 focus:border-[#b11217]" : validateIban(state.iban) ? "border-green-500 text-green-700 focus:border-green-500" : "border-[#b11217] text-[#b11217] focus:border-[#b11217]"} uppercase`} />
-              <span className="hidden print:inline text-sm uppercase">{state.iban}</span>
+              <span className="hidden print:inline text-sm uppercase">{formatIban(state.iban)}</span>
               {state.iban !== "" && (
                 <span className={`shrink-0 text-xs ${validateIban(state.iban) ? "text-green-600" : "text-[#b11217]"}`}>
                   {validateIban(state.iban) ? "\u2713" : "\u2717"}
