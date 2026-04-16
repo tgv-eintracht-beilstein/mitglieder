@@ -43,7 +43,7 @@ export async function syncSave(key: string, data: unknown): Promise<void> {
 
 export async function syncLoad<T>(key: string): Promise<T | null> {
   const local = localStorage.getItem(key);
-  const localData: T | null = local ? JSON.parse(local) : null;
+  const localData: T | null = local ? (() => { try { return JSON.parse(local); } catch { return local as T; } })() : null;
 
   if (!getTokens()) return localData;
 
