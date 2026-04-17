@@ -81,7 +81,7 @@ export const s = StyleSheet.create({
 export function PdfHeader({ subtitle }: { subtitle?: string } = {}) {
   return (
     <View style={s.headerRow}>
-      <Image src="/tgv-logo.png" style={s.headerLogo} />
+      <Image src="/tgv-logo-sm.png" style={s.headerLogo} />
       <View style={{ flex: 1 }}>
         <Text style={s.headerTitle}>Turn- und Gesangverein "Eintracht" Beilstein 1823 e. V.</Text>
         {subtitle ? <Text style={{ fontSize: 7.5, color: G[500], textAlign: "center", marginTop: 3, lineHeight: 1.3 }}>{subtitle}</Text> : null}

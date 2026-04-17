@@ -102,7 +102,7 @@ export default function MitgliedsbeitraegePage() {
       {/* Print header */}
       <div className="hidden print:flex items-center gap-3 mb-6 pb-4 border-b border-gray-300">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/tgv-logo.png" alt="TGV Logo" width={44} height={44} />
+        <img src="/tgv-logo.webp" alt="TGV Logo" width={44} height={44} />
         <div>
           <div className="font-bold text-base text-gray-900">TGV &quot;Eintracht&quot; Beilstein 1823 e.V.</div>
           <div className="text-xs text-gray-500">Mitgliedsbeiträge 2026</div>
@@ -253,7 +253,7 @@ export default function MitgliedsbeitraegePage() {
       {/* Print footer */}      <div className="hidden print:grid grid-cols-3 gap-4 mt-6 pt-3 border-t border-gray-300 text-[10px] text-gray-500 leading-snug">
         <div className="flex items-start gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/tgv-logo-sw.png" alt="TGV Logo" width={32} height={32} className="opacity-50 shrink-0 mt-0.5" />
+          <img src="/tgv-logo-sw.webp" alt="TGV Logo" width={32} height={32} className="opacity-50 shrink-0 mt-0.5" />
           <div>
             <div className="font-semibold text-gray-700">TGV &quot;Eintracht&quot; Beilstein e. V.</div>
             <div>Albert-Einstein-Str. 20 · 71717 Beilstein</div>

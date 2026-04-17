@@ -2,7 +2,7 @@ export function PdfHeader() {
   return (
     <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-gray-300">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/tgv-logo.png" alt="TGV Logo" width={44} height={44} />
+      <img src="/tgv-logo.webp" alt="TGV Logo" width={44} height={44} />
       <div className="flex-1 text-center">
         <div className="font-bold text-sm text-gray-700 uppercase tracking-wider">
           Turn- und Gesangverein "Eintracht" Beilstein 1823 e. V.
