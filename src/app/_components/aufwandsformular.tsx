@@ -1129,7 +1129,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
     });
   }, []);
 
-  if (!hydrated) return null;
+  if (!hydrated) return <div className="min-h-screen" />;
 
   const sortedRows = [...state.rows].sort((a, b) => {
     const key = (r: Row) => `${r.datum}T${r.von || "00:00"}`;
@@ -1673,12 +1673,12 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                 ✓ Einwilligung zur digitalen Unterschrift erteilt
               </div>
             )}
-            <div className="flex-1 border-0 min-h-[3rem] print:min-h-0 flex flex-col justify-end">
+            <div className="flex-1 border-0 min-h-[3.5rem] print:min-h-0 flex flex-col justify-end">
               {state.signature ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={state.signature} alt="Unterschrift" onClick={() => setShowSignModal(true)}
                   width={571} height={56}
-                  className="cursor-pen hover:opacity-80 transition-opacity print:cursor-default h-14 w-auto object-contain"
+                  className="cursor-pen hover:opacity-80 transition-opacity print:cursor-default max-h-14 object-contain object-left"
                   title="Klicken zum Bearbeiten" />
               ) : (
                 <button onClick={() => setShowSignModal(true)}
