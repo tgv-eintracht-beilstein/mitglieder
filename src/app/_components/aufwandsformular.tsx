@@ -439,6 +439,7 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
         </button>}
         <input
           type="number"
+          aria-label="Jahr"
           value={yearDraft ?? displayYear}
           onFocus={e => { setYearDraft(String(displayYear)); e.target.select(); }}
           onBlur={() => {
@@ -506,6 +507,7 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
         value={value}
         min={`${yearFrom}-01-01`}
         onChange={e => onChange(e.target.value)}
+        aria-label="Datum"
         className="sm:hidden w-full bg-transparent border-b border-gray-300 py-0.5 text-left text-[length:inherit] focus:outline-none focus:border-[#b11217] print:hidden"
       />
       {/* Desktop: custom button + panel */}
@@ -523,8 +525,8 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
   );
 }
 
-function NumberInput({ value, onChange, step = 1, min = 0, className, large }: {
-  value: string; onChange: (v: string) => void; step?: number; min?: number; className?: string; large?: boolean;
+function NumberInput({ value, onChange, step = 1, min = 0, className, large, label = "Anzahl" }: {
+  value: string; onChange: (v: string) => void; step?: number; min?: number; className?: string; large?: boolean; label?: string;
 }) {
   const num = parseFloat(value) || 0;
   function adjust(delta: number) {
@@ -533,11 +535,11 @@ function NumberInput({ value, onChange, step = 1, min = 0, className, large }: {
   }
   return (
     <span className={`inline-flex items-center justify-center border-b border-gray-300 focus-within:border-[#b11217] ${className ?? ""}`}>
-      <button type="button" onClick={() => adjust(-step)}
+      <button type="button" onClick={() => adjust(-step)} aria-label="Weniger"
         className={`text-gray-400 hover:text-gray-700 print:hidden leading-none ${large ? "px-4 py-2 text-xl" : "px-2 py-1"}`}>−</button>
-      <input type="number" value={value} onChange={e => onChange(e.target.value)} step={step} min={min} aria-label="Anzahl"
+      <input type="number" value={value} onChange={e => onChange(e.target.value)} step={step} min={min} aria-label={label}
         className={`text-center bg-transparent focus:outline-none tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${large ? "w-20 text-base" : "w-10 text-xs"}`} />
-      <button type="button" onClick={() => adjust(step)}
+      <button type="button" onClick={() => adjust(step)} aria-label="Mehr"
         className={`text-gray-400 hover:text-gray-700 print:hidden leading-none ${large ? "px-4 py-2 text-xl" : "px-2 py-1"}`}>+</button>
     </span>
   );
@@ -1129,7 +1131,32 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
     });
   }, []);
 
-  if (!hydrated) return <div className="min-h-screen" />;
+  if (!hydrated) return (
+    <div className="reisekosten-form px-1 animate-pulse">
+      <div className="h-8 w-64 bg-gray-200 rounded mb-3" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="h-10 bg-[#b11217]/20" />
+          <div className="p-4 space-y-3">
+            <div className="h-4 w-24 bg-gray-200 rounded" />
+            <div className="h-4 w-full bg-gray-100 rounded" />
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="h-10 bg-[#b11217]/20" />
+          <div className="p-4 space-y-3">
+            {[...Array(5)].map((_, i) => <div key={i} className="h-4 bg-gray-100 rounded" />)}
+          </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden mb-3">
+        <div className="h-10 bg-[#b11217]/20" />
+        <div className="p-4 space-y-2">
+          {[...Array(3)].map((_, i) => <div key={i} className="h-8 bg-gray-50 rounded" />)}
+        </div>
+      </div>
+    </div>
+  );
 
   const sortedRows = [...state.rows].sort((a, b) => {
     const key = (r: Row) => `${r.datum}T${r.von || "00:00"}`;
@@ -1371,12 +1398,12 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                   )}
                   {showStunden && (
                     <td className="border-r border-gray-100 px-1 py-1.5 text-center">
-                      <PI value={row.satz}><NumberInput value={row.satz} onChange={v => updateRow(row.id, "satz", v)} step={0.5} /></PI>
+                      <PI value={row.satz}><NumberInput value={row.satz} onChange={v => updateRow(row.id, "satz", v)} step={0.5} label="Euro pro Stunde" /></PI>
                     </td>
                   )}
                   {showKm && (
                     <td className="border-r border-gray-100 px-1 py-1.5 text-center w-48">
-                      <PI value={row.km}><NumberInput value={row.km} onChange={v => updateRow(row.id, "km", v)} step={1} /></PI>
+                      <PI value={row.km}><NumberInput value={row.km} onChange={v => updateRow(row.id, "km", v)} step={1} label="Kilometer" /></PI>
                     </td>
                   )}
                   <td className="border-r border-gray-100 px-2 py-1.5 text-right font-semibold tabular-nums whitespace-nowrap w-48">{calcRow(row).toFixed(2)} €</td>
@@ -1434,7 +1461,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
                 <td className="px-2 py-1 pb-3 border-l border-gray-200">
                   <div className="flex items-center justify-end gap-1">
                     {spende > 0 && <span className="text-[#b11217] font-bold text-base leading-none print:hidden">−</span>}
-                    <input type="number" min="0" step="0.01" value={state.aufwandsspende} onChange={(e) => set("aufwandsspende", e.target.value)} placeholder="0.00"
+                    <input type="number" min="0" step="0.01" value={state.aufwandsspende} onChange={(e) => set("aufwandsspende", e.target.value)} placeholder="0.00" aria-label="Aufwandsspende"
                       className={`w-full text-right text-xs bg-transparent border-b focus:outline-none focus:border-blue-400 print:hidden ${spende === 0 ? "border-[#b11217] text-[#b11217]" : "border-[#b11217] text-[#b11217]"}`} />
                     {spende > 0 && <span className="text-[#b11217] text-xs font-semibold print:hidden">€</span>}
                   </div>
@@ -1487,7 +1514,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               </div>
               <div className="flex items-center justify-end gap-1">
                 {spende > 0 && <span className="text-[#b11217] font-bold text-base leading-none">−</span>}
-                <input type="number" min="0" step="0.01" value={state.aufwandsspende} onChange={(e) => set("aufwandsspende", e.target.value)} placeholder="0.00"
+                <input type="number" min="0" step="0.01" value={state.aufwandsspende} onChange={(e) => set("aufwandsspende", e.target.value)} placeholder="0.00" aria-label="Aufwandsspende"
                   className="w-28 text-right bg-transparent border-b border-[#b11217] text-[#b11217] focus:outline-none focus:border-[#b11217] tabular-nums" />
                 {spende > 0 && <span className="text-[#b11217] text-sm font-semibold">€</span>}
               </div>
@@ -1561,7 +1588,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             <PrintCheckbox checked={state.steuerBisZu} />
             <span>bis zu</span>
             <input type="number" value={state.steuerBisZuBetrag} onChange={(e) => set("steuerBisZuBetrag", e.target.value)}
-              placeholder="Betrag" className="w-20 border-b border-gray-300 bg-transparent px-1 py-0.5 focus:outline-none focus:border-blue-500 print:hidden" />
+              placeholder="Betrag" aria-label="Steuerfreibetrag" className="w-20 border-b border-gray-300 bg-transparent px-1 py-0.5 focus:outline-none focus:border-blue-500 print:hidden" />
             <span className="hidden print:inline">{state.steuerBisZuBetrag}</span>
             <span>Euro</span>
           </label>
@@ -1611,7 +1638,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               </span>
               <PI value={formatIban(state.iban)} className="flex-1 uppercase">
                 <input type="text" value={state.iban} onChange={(e) => set("iban", formatIban(e.target.value.toUpperCase()))}
-                  placeholder="DE00 0000 0000 0000 0000 00"
+                  placeholder="DE00 0000 0000 0000 0000 00" aria-label="IBAN"
                   className={`w-full border-b bg-transparent px-1 py-0.5 text-sm uppercase focus:outline-none transition-colors ${
                     state.iban === "" ? "border-gray-300 focus:border-blue-500"
                     : validateIban(state.iban) ? "border-green-500 text-green-700"
@@ -1641,6 +1668,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               <div className="flex-1 flex items-center gap-1 group">
                 <input type="text"
                   id="sig-date-input"
+                  aria-label="Ort, Datum"
                   value={state.overrideDate !== null ? state.overrideDate : defaultDate}
                   onChange={e => set("overrideDate", e.target.value)}
                   className="flex-1 bg-transparent border-none outline-none p-0 m-0 focus:ring-0 print:hidden" />
