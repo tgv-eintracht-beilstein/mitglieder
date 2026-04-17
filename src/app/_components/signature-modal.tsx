@@ -118,7 +118,7 @@ export default function SignatureModal({ existing, sharedSignature, onSave, onDe
       <div className="bg-white rounded-xl shadow-xl w-full max-w-lg">
         <div className="p-5 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-base font-semibold">Digitale Unterschrift</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-600 text-xl leading-none">&times;</button>
         </div>
 
         <div className="p-5 space-y-4">
@@ -146,7 +146,7 @@ export default function SignatureModal({ existing, sharedSignature, onSave, onDe
                     onMouseDown={startDraw} onMouseMove={draw} onMouseUp={stopDraw} onMouseLeave={stopDraw}
                     onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={stopDraw} />
                 </div>
-                <p className="text-xs text-gray-400 mt-1">Bitte hier unterschreiben</p>
+                <p className="text-xs text-gray-500 mt-1">Bitte hier unterschreiben</p>
               </>
             )}
 
@@ -158,11 +158,11 @@ export default function SignatureModal({ existing, sharedSignature, onSave, onDe
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={uploadPreview} alt="Unterschrift Vorschau" className="max-h-28 object-contain" />
                     <button type="button" onClick={() => { setUploadPreview(null); setIsEmpty(true); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                      className="text-xs text-gray-400 hover:text-red-500 transition-colors">Bild entfernen</button>
+                      className="text-xs text-gray-500 hover:text-red-500 transition-colors">Bild entfernen</button>
                   </div>
                 ) : (
                   <button type="button" onClick={() => fileInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-gray-300 rounded-lg py-8 flex flex-col items-center gap-2 text-gray-400 hover:border-[#b11217] hover:text-[#b11217] transition-colors">
+                    className="w-full border-2 border-dashed border-gray-300 rounded-lg py-8 flex flex-col items-center gap-2 text-gray-500 hover:border-[#b11217] hover:text-[#b11217] transition-colors">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                     </svg>
@@ -177,7 +177,7 @@ export default function SignatureModal({ existing, sharedSignature, onSave, onDe
               <div className="border-2 border-gray-200 rounded-lg p-4 flex flex-col items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={sharedSignature} alt="Gespeicherte Unterschrift" className="max-h-28 object-contain" />
-                <p className="text-xs text-gray-400">Zuletzt verwendete Unterschrift</p>
+                <p className="text-xs text-gray-500">Zuletzt verwendete Unterschrift</p>
               </div>
             )}
           </div>

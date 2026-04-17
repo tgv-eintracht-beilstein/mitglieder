@@ -107,16 +107,16 @@ export default function ApiZugangPage() {
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <h2 className="font-semibold text-gray-900 mb-3">Ihre API-Schlüssel</h2>
         {loading ? (
-          <p className="text-gray-400 text-sm">Laden…</p>
+          <p className="text-gray-500 text-sm">Laden…</p>
         ) : keys.length === 0 ? (
-          <p className="text-gray-400 text-sm">Keine API-Schlüssel vorhanden.</p>
+          <p className="text-gray-500 text-sm">Keine API-Schlüssel vorhanden.</p>
         ) : (
           <div className="space-y-2">
             {keys.map((k) => (
               <div key={k.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                 <div>
                   <span className="font-medium text-sm text-gray-900">{k.name}</span>
-                  <span className="text-xs text-gray-400 ml-2">
+                  <span className="text-xs text-gray-500 ml-2">
                     Erstellt: {new Date(k.createdAt).toLocaleDateString("de-DE")}
                   </span>
                 </div>

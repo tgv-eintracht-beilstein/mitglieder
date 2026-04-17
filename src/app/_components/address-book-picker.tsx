@@ -74,7 +74,7 @@ function RateOverrides({ addr, onChange, fCls }: { addr: SavedAddress; onChange:
     <>
       {beschreibungen.map(b => (
         <div key={b}>
-          <div className="text-[10px] text-gray-400 mb-0.5">Stundensatz: {b} (€/h)</div>
+          <div className="text-[10px] text-gray-500 mb-0.5">Stundensatz: {b} (€/h)</div>
           <input type="number" step="0.5" min="0" value={overrides[b] ?? ""} onChange={e => set(b, e.target.value)}
             placeholder="—" className={`${fCls} border-gray-300 focus:border-[#b11217]`} />
         </div>
@@ -160,7 +160,7 @@ export default function AddressBookModal({ open, onClose, onCancel, current }: P
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200">
           <h2 className="font-bold text-gray-900">Adressbuch</h2>
-          <button type="button" onClick={onCancel} className="p-1 text-gray-400 hover:text-gray-600">
+          <button type="button" onClick={onCancel} className="p-1 text-gray-500 hover:text-gray-600">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
@@ -186,7 +186,7 @@ export default function AddressBookModal({ open, onClose, onCancel, current }: P
                       className={`w-3.5 h-3.5 shrink-0 ${valid ? "accent-[#b11217]" : "accent-gray-300 cursor-not-allowed"}`} />
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-medium text-gray-900 truncate">{name}</div>
-                      {a.plzOrt && <div className="text-[10px] text-gray-400 truncate">{a.plzOrt}</div>}
+                      {a.plzOrt && <div className="text-[10px] text-gray-500 truncate">{a.plzOrt}</div>}
                     </div>
                     <button type="button" onClick={e => { e.stopPropagation(); handleDelete(a.id); }}
                       className="shrink-0 p-1 text-gray-300 hover:text-[#b11217] transition-colors" title="Löschen">
@@ -198,7 +198,7 @@ export default function AddressBookModal({ open, onClose, onCancel, current }: P
                 );
               })}
               {draft.length === 0 && (
-                <div className="px-3 py-6 text-center text-xs text-gray-400">Keine Adressen</div>
+                <div className="px-3 py-6 text-center text-xs text-gray-500">Keine Adressen</div>
               )}
             </div>
             <div className="p-2 border-t border-gray-200">
@@ -217,7 +217,7 @@ export default function AddressBookModal({ open, onClose, onCancel, current }: P
                 {FIELDS.map(f => (
                   <div key={f.key}>
                     <div className="text-[10px] mb-0.5 flex items-center gap-0.5">
-                      <span className={f.required && !active[f.key] ? "text-[#b11217]" : "text-gray-400"}>{f.label}</span>
+                      <span className={f.required && !active[f.key] ? "text-[#b11217]" : "text-gray-500"}>{f.label}</span>
                       {f.required && !active[f.key] && <span className="text-[#b11217] leading-none">*</span>}
                     </div>
                     {f.type === "date"
@@ -233,7 +233,7 @@ export default function AddressBookModal({ open, onClose, onCancel, current }: P
                 <RateOverrides addr={active} onChange={handleChange} fCls={fCls} />
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-xs text-gray-400">
+              <div className="flex items-center justify-center h-full text-xs text-gray-500">
                 Adresse auswählen oder neue erstellen
               </div>
             )}

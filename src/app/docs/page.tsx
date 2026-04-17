@@ -18,12 +18,12 @@ function DocRow({ slug, title, preface, downloadHref }: { slug?: string; title: 
       {slug ? (
         <Link href={`/docs/${slug}`} className="flex-1 min-w-0">
           <div className="font-semibold text-gray-900 group-hover:text-[#b11217] transition-colors">{title}</div>
-          {preface && <div className="text-xs text-gray-400 mt-0.5 line-clamp-2">{preface}</div>}
+          {preface && <div className="text-xs text-gray-500 mt-0.5 line-clamp-2">{preface}</div>}
         </Link>
       ) : (
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-gray-900 group-hover:text-[#b11217] transition-colors">{title}</div>
-          {preface && <div className="text-xs text-gray-400 mt-0.5 line-clamp-2">{preface}</div>}
+          {preface && <div className="text-xs text-gray-500 mt-0.5 line-clamp-2">{preface}</div>}
         </div>
       )}
       <a
@@ -31,7 +31,7 @@ function DocRow({ slug, title, preface, downloadHref }: { slug?: string; title: 
         target="_blank"
         rel="noopener noreferrer"
         title="Herunterladen"
-        className="shrink-0 p-1.5 text-gray-400 hover:text-[#b11217] transition-colors"
+        className="shrink-0 p-1.5 text-gray-500 hover:text-[#b11217] transition-colors"
       >
         <DownloadIcon />
       </a>
@@ -93,7 +93,7 @@ export default function DocsIndex() {
         <div className="rounded-lg border border-gray-100 px-4 py-3 hover:border-[#b11217] hover:shadow-sm transition-all group">
           <Link href="/docs/faq" className="block">
             <div className="font-semibold text-gray-900 group-hover:text-[#b11217] transition-colors">Häufig gestellte Fragen</div>
-            <div className="text-xs text-gray-400 mt-0.5">Antworten auf die wichtigsten Fragen rund um Mitgliedschaft, Formulare und Vereinsorganisation</div>
+            <div className="text-xs text-gray-500 mt-0.5">Antworten auf die wichtigsten Fragen rund um Mitgliedschaft, Formulare und Vereinsorganisation</div>
           </Link>
         </div>
       </Section>

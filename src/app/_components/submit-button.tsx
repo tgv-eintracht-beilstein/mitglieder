@@ -135,12 +135,12 @@ export default function SubmitButton({ formType, getFormData, getPdfBlobs, disab
         {hovered && disabledProp && sorted.length > 0 && (
           <div className="fixed z-[300] w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-3 print:hidden"
             style={{ top: side === "bottom" ? pos.top : "auto", bottom: side === "top" ? pos.bottom : "auto", right: pos.right }}>
-            <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Pflichtfelder</div>
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Pflichtfelder</div>
             <ul className="space-y-1">
               {sorted.map(c => (
                 <li key={c.label} className="flex items-center gap-2 text-xs">
                   <span className={`shrink-0 font-bold ${c.valid ? "text-green-500" : "text-[#b11217]"}`}>{c.valid ? "\u2713" : "\u2717"}</span>
-                  <span className={c.valid ? "text-gray-400" : "text-gray-800 font-medium"}>{c.label}</span>
+                  <span className={c.valid ? "text-gray-500" : "text-gray-800 font-medium"}>{c.label}</span>
                 </li>
               ))}
             </ul>
@@ -191,7 +191,7 @@ export default function SubmitButton({ formType, getFormData, getPdfBlobs, disab
           <div className="bg-white h-full md:h-auto md:rounded-2xl md:shadow-2xl w-full md:max-w-5xl md:max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
               <span className="font-semibold text-gray-900">Vorschau – {files.length} {files.length === 1 ? "Datei" : "Dateien"}</span>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-700 transition-colors">
+              <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
             </div>
@@ -216,7 +216,7 @@ export default function SubmitButton({ formType, getFormData, getPdfBlobs, disab
                 {preview ? (
                   <PdfViewer key={preview.url} url={preview.url} filename={preview.name} />
                 ) : (
-                  <p className="text-sm text-gray-400 text-center mt-20">Datei auswählen für Vorschau</p>
+                  <p className="text-sm text-gray-500 text-center mt-20">Datei auswählen für Vorschau</p>
                 )}
               </div>
             </div>

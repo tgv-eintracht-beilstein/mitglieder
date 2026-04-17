@@ -107,9 +107,9 @@ export default function MeineDateienPage() {
       </div>
 
       {loading ? (
-        <p className="text-gray-400 text-sm">Laden…</p>
+        <p className="text-gray-500 text-sm">Laden…</p>
       ) : files.length === 0 ? (
-        <p className="text-gray-400 text-sm">Keine Dateien vorhanden.</p>
+        <p className="text-gray-500 text-sm">Keine Dateien vorhanden.</p>
       ) : (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm divide-y divide-gray-100">
           {files.map((file) => (
@@ -121,13 +121,13 @@ export default function MeineDateienPage() {
                 <button onClick={() => handlePreview(file)} className="text-sm font-medium text-gray-900 hover:text-[#b11217] truncate block max-w-full text-left transition-colors">
                   {file.name}
                 </button>
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-gray-500">
                   {formatSize(file.size)} · {new Date(file.lastModified).toLocaleDateString("de-DE")}
                 </div>
               </div>
               <button
                 onClick={() => handlePreview(file)}
-                className="text-xs text-gray-400 hover:text-[#b11217] transition-colors shrink-0"
+                className="text-xs text-gray-500 hover:text-[#b11217] transition-colors shrink-0"
                 title="Vorschau"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -137,7 +137,7 @@ export default function MeineDateienPage() {
               <button
                 onClick={() => handleDelete(file)}
                 disabled={deleting === file.key}
-                className="text-xs text-gray-400 hover:text-red-600 transition-colors shrink-0 disabled:opacity-50"
+                className="text-xs text-gray-500 hover:text-red-600 transition-colors shrink-0 disabled:opacity-50"
                 title="Löschen"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -154,7 +154,7 @@ export default function MeineDateienPage() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
               <span className="font-semibold text-gray-900 truncate">{preview.name}</span>
-              <button onClick={() => setPreview(null)} className="text-gray-400 hover:text-gray-700 transition-colors">
+              <button onClick={() => setPreview(null)} className="text-gray-500 hover:text-gray-700 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
             </div>

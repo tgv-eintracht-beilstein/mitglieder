@@ -55,12 +55,12 @@ export default function DownloadButton({ filename, disabled: disabledProp, missi
             bottom: side === "top" ? pos.bottom : "auto",
             right: pos.right
           }}>
-          <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Pflichtfelder</div>
+          <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Pflichtfelder</div>
           <ul className="space-y-1">
             {sorted.map(c => (
               <li key={c.label} className="flex items-center gap-2 text-xs">
                 <span className={`shrink-0 font-bold ${c.valid ? "text-green-500" : "text-[#b11217]"}`}>{c.valid ? "\u2713" : "\u2717"}</span>
-                <span className={c.valid ? "text-gray-400" : "text-gray-800 font-medium"}>{c.label}</span>
+                <span className={c.valid ? "text-gray-500" : "text-gray-800 font-medium"}>{c.label}</span>
               </li>
             ))}
           </ul>

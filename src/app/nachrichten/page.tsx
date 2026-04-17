@@ -304,7 +304,7 @@ export default function NachrichtenPage() {
           {threads.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <img src="/tgv-logo-sw.webp" alt="TGV Logo" className="w-24 h-24 opacity-20 mb-6" />
-              <p className="text-lg font-medium text-gray-400">Alles erledigt!</p>
+              <p className="text-lg font-medium text-gray-500">Alles erledigt!</p>
               <p className="text-sm text-gray-300 mt-1">Keine neuen Nachrichten vorhanden.</p>
             </div>
           ) : (
@@ -323,9 +323,9 @@ export default function NachrichtenPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className={`text-sm font-medium truncate ${isSel ? 'text-[#b11217]' : 'text-gray-900'}`}>{t.subject}</span>
-                            {t.messages.length > 1 && <span className="text-[10px] text-gray-400 bg-gray-100 rounded-full px-1.5 py-0.5 shrink-0">{t.messages.length}</span>}
+                            {t.messages.length > 1 && <span className="text-[10px] text-gray-500 bg-gray-100 rounded-full px-1.5 py-0.5 shrink-0">{t.messages.length}</span>}
                           </div>
-                          <div className="text-xs text-gray-400 truncate">
+                          <div className="text-xs text-gray-500 truncate">
                             {t.latest.folder === "SENT" ? `An: ${t.latest.to}` : t.latest.from} · {new Date(t.latest.sentAt).toLocaleString("de-DE")}
                           </div>
                         </div>
@@ -358,7 +358,7 @@ export default function NachrichtenPage() {
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
                         <h2 className="text-base font-bold text-gray-900 truncate">{thread.subject}</h2>
-                        <div className="text-xs text-gray-400">{thread.messages.length} {thread.messages.length === 1 ? "Nachricht" : "Nachrichten"}</div>
+                        <div className="text-xs text-gray-500">{thread.messages.length} {thread.messages.length === 1 ? "Nachricht" : "Nachrichten"}</div>
                       </div>
                       {isGst && thread.messages.some((m: any) => m.pdfKeys?.length) && (
                         <div className="flex items-center gap-1 shrink-0">
@@ -384,7 +384,7 @@ export default function NachrichtenPage() {
                             <span className={`text-xs font-medium ${isMine ? "text-[#b11217]" : "text-gray-600"}`}>
                               {isMine ? "Ich" : m.from}
                             </span>
-                            <span className="text-[10px] text-gray-400">{new Date(m.sentAt).toLocaleString("de-DE")}</span>
+                            <span className="text-[10px] text-gray-500">{new Date(m.sentAt).toLocaleString("de-DE")}</span>
                           </div>
                             <div className="text-sm text-gray-800 whitespace-pre-wrap">{m.body}</div>
 
@@ -398,7 +398,7 @@ export default function NachrichtenPage() {
                             {/* PDF attachments inline */}
                             {m.pdfKeys?.map((key: string) => {
                               const au = attachmentUrls[key];
-                              if (!au) return <div key={key} className="text-xs text-gray-400 mt-2">Lade Anhang…</div>;
+                              if (!au) return <div key={key} className="text-xs text-gray-500 mt-2">Lade Anhang…</div>;
                               if (au === "NOT_FOUND") return <div key={key} className="text-xs text-red-500 mt-2">Anhang nicht gefunden.</div>;
                               return (
                                 <div key={key} className="relative group mt-3">

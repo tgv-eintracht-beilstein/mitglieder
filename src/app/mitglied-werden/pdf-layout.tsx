@@ -22,15 +22,15 @@ export function PdfFooter() {
           <p>D-71717 Beilstein</p>
         </div>
         <div className="space-y-0.5">
-          <p><span className="inline-block w-16 text-gray-400">Telefon</span>+49 (0) 7062 5753</p>
-          <p><span className="inline-block w-16 text-gray-400">E-Mail</span>info@tgveintrachtbeilstein.de</p>
-          <p><span className="inline-block w-16 text-gray-400">Webseite</span>https://www.tgveintrachtbeilstein.de</p>
-          <p><span className="inline-block w-16 text-gray-400">Steuer-Nr.</span>65208/49689</p>
+          <p><span className="inline-block w-16 text-gray-500">Telefon</span>+49 (0) 7062 5753</p>
+          <p><span className="inline-block w-16 text-gray-500">E-Mail</span>info@tgveintrachtbeilstein.de</p>
+          <p><span className="inline-block w-16 text-gray-500">Webseite</span>https://www.tgveintrachtbeilstein.de</p>
+          <p><span className="inline-block w-16 text-gray-500">Steuer-Nr.</span>65208/49689</p>
         </div>
         <div className="space-y-0.5">
           <p className="font-semibold text-gray-700">Volksbank Beilstein-Ilsfeld-Abstatt eG</p>
-          <p><span className="inline-block w-10 text-gray-400">IBAN</span>DE63 6206 2215 0001 0770 07</p>
-          <p><span className="inline-block w-10 text-gray-400">BIC</span>GENODES1BIA</p>
+          <p><span className="inline-block w-10 text-gray-500">IBAN</span>DE63 6206 2215 0001 0770 07</p>
+          <p><span className="inline-block w-10 text-gray-500">BIC</span>GENODES1BIA</p>
         </div>
       </div>
     </div>

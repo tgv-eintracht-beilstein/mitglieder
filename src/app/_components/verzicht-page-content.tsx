@@ -48,27 +48,27 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
         <div className="p-4">
           <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
             <div>
-              <div className="text-[10px] text-gray-400 mb-0.5">Jahr</div>
+              <div className="text-[10px] text-gray-500 mb-0.5">Jahr</div>
               <span className="font-semibold text-gray-900">{state.jahr}</span>
             </div>
             <div>
-              <div className="text-[10px] text-gray-400 mb-0.5">Pauschale nach § 3 Nr. 26a EStG</div>
+              <div className="text-[10px] text-gray-500 mb-0.5">Pauschale nach § 3 Nr. 26a EStG</div>
               <span className="font-semibold text-gray-900">{state.betrag || "0,00"} €</span>
             </div>
             <div>
-              <div className="text-[10px] text-gray-400 mb-0.5">Spendenbetrag</div>
+              <div className="text-[10px] text-gray-500 mb-0.5">Spendenbetrag</div>
               <span className="font-semibold text-gray-900">{state.spendenbetrag || "0,00"} €</span>
             </div>
             <div>
-              <div className="text-[10px] text-gray-400 mb-0.5">Person</div>
+              <div className="text-[10px] text-gray-500 mb-0.5">Person</div>
               <span className="font-semibold text-gray-900">{state.vorname} {state.nachname}</span>
             </div>
             <div>
-              <div className="text-[10px] text-gray-400 mb-0.5">Straße, Hausnummer</div>
+              <div className="text-[10px] text-gray-500 mb-0.5">Straße, Hausnummer</div>
               <span className="font-semibold text-gray-900">{state.strasse}</span>
             </div>
             <div>
-              <div className="text-[10px] text-gray-400 mb-0.5">PLZ, Ort</div>
+              <div className="text-[10px] text-gray-500 mb-0.5">PLZ, Ort</div>
               <span className="font-semibold text-gray-900">{state.plzOrt}</span>
             </div>
           </div>
@@ -100,7 +100,7 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
         <div className="p-4 text-sm space-y-6">
           {/* Row 1: Ort, Datum + Unterschrift */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
+          <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-500">
             <div className="flex flex-col">
               <div className="flex-1 border-0 min-h-[3rem] print:min-h-0 flex items-end pb-1 text-gray-700 font-medium">
                 <div className="flex-1 flex items-center gap-1 group">
@@ -134,7 +134,7 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
             </div>
             <div className="flex flex-col">
               {state.signature && (
-                <div className="text-[7pt] text-green-600 leading-tight mb-1">
+                <div className="text-[7pt] text-green-700 leading-tight mb-1">
                   &#10003; Einwilligung zur digitalen Unterschrift erteilt
                 </div>
               )}
@@ -143,6 +143,7 @@ export default function VerzichtPageContent({ state, overrideDate, onOverrideDat
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={state.signature} alt="Unterschrift"
                     onClick={onSignClick}
+                    width={571} height={56}
                     style={{ height: 56, width: "auto", imageRendering: "auto", objectFit: "contain" }}
                     className="cursor-pen hover:opacity-80 transition-opacity print:cursor-default"
                     title="Klicken zum Bearbeiten" />

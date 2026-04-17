@@ -103,13 +103,13 @@ export default function ProfilePage() {
                 <h2 className="text-2xl font-semibold mb-4">Benutzerinformationen</h2>
                 <div className="space-y-4">
                   <div className="border-b border-gray-100 pb-2">
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Email / Login</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Email / Login</span>
                     <span className="text-lg font-medium">{tokens.username}</span>
                   </div>
                   
                   {Object.entries(attributes).map(([key, val]) => (
                     <div key={key} className="border-b border-gray-100 pb-2">
-                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">
                         {key.startsWith("custom:") ? key.split(":")[1] : (labelMap[key] || key)}
                       </span>
                       <span className="text-lg font-medium">{val}</span>

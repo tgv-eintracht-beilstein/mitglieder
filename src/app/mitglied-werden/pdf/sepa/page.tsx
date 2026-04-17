@@ -26,7 +26,7 @@ export default function SepaPdf() {
   const inhaber = state.kontoinhaber || (first ? `${first.vorname} ${first.nachname}` : "");
 
   const fieldCls = "border-b border-gray-300 py-1 min-h-[1.5rem] text-sm";
-  const labelCls = "text-[9px] text-gray-400 uppercase tracking-wider mb-0.5";
+  const labelCls = "text-[9px] text-gray-500 uppercase tracking-wider mb-0.5";
 
   return (
     <div className="p-8 text-sm text-gray-700 leading-relaxed">
@@ -80,7 +80,7 @@ export default function SepaPdf() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-8 mt-12 text-xs text-gray-400 items-end">
+      <div className="grid grid-cols-2 gap-8 mt-12 text-xs text-gray-500 items-end">
         <div>
           <div className="h-14 flex items-end pb-1 text-gray-700 font-medium">{city}, {today}</div>
           <div className="border-t border-gray-400 pt-1">Ort, Datum</div>

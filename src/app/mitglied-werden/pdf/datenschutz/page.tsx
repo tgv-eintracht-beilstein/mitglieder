@@ -65,7 +65,7 @@ function DatenschutzPdf() {
       <h3 className="text-sm font-bold text-[#b11217] uppercase tracking-wide mb-3">Erklärung</h3>
 
       <div className="mb-4">
-        <div className="text-[9px] text-gray-400 uppercase tracking-wider mb-0.5">Name in Druckbuchstaben</div>
+        <div className="text-[9px] text-gray-500 uppercase tracking-wider mb-0.5">Name in Druckbuchstaben</div>
         <div className="border-b border-gray-300 py-1 min-h-[1.5rem] text-sm uppercase">{p.vorname} {p.nachname}</div>
       </div>
 
@@ -86,7 +86,7 @@ function DatenschutzPdf() {
         Darüber hinaus bestätige ich, die <span className="font-semibold">Datenschutzverordnung</span> des TGV &quot;Eintracht&quot; Beilstein 1823 e. V. gelesen und akzeptiert zu haben.
       </p>
 
-      <div className="grid grid-cols-2 gap-8 mt-10 text-xs text-gray-400 items-end">
+      <div className="grid grid-cols-2 gap-8 mt-10 text-xs text-gray-500 items-end">
         <div>
           <div className="h-14 flex items-end pb-1 text-gray-700 font-medium">{city}, {today}</div>
           <div className="border-t border-gray-400 pt-1">Ort, Datum</div>
@@ -105,7 +105,7 @@ function DatenschutzPdf() {
         </div>
       </div>
 
-      <p className="text-[8px] text-gray-400 mt-6 leading-relaxed">
+      <p className="text-[8px] text-gray-500 mt-6 leading-relaxed">
         Hinweis: Bitte beachten Sie, dass keinerlei Haftung für die korrekte Anwendung im Einzelfall und Aktualität der Informationen zum
         Zeitpunkt der Verwendung übernommen werden kann. Die Informationen können insoweit nur Anregungen liefern und sind stets an
         die individuellen Bedürfnisse im Einzelfall anzupassen. Wir empfehlen ergänzend rechtlichen Rat im Vorfeld einzuholen.

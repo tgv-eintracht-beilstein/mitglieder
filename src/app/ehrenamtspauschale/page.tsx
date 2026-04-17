@@ -450,7 +450,7 @@ export default function EhrenamtspauschaleePage() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-3">
         <div className="p-4 text-sm space-y-6">
           {/* Row 1: Ort, Datum + Unterschrift */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
+          <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-500">
             <div className="flex flex-col">
               <div className="flex-1 border-0 min-h-[3rem] print:min-h-0 flex items-end pb-1 text-gray-700 font-medium">
                 <div className="flex-1 flex items-center gap-1 group">
@@ -507,7 +507,7 @@ export default function EhrenamtspauschaleePage() {
           </div>
 
           {/* Row 2: Ort, Datum + Abteilungsleiter (print/PDF only) */}
-          <div className="hidden print:grid grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
+          <div className="hidden print:grid grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-500">
             <div className="flex flex-col">
               <div className="flex-1 border-0 min-h-[3rem]" />
               <div className="border-t border-gray-400 pt-1">Ort, Datum</div>
@@ -519,7 +519,7 @@ export default function EhrenamtspauschaleePage() {
           </div>
 
           {/* Row 3: Ort, Datum + 1. Vorsitzender (print/PDF only) */}
-          <div className="hidden print:grid grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
+          <div className="hidden print:grid grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-500">
             <div className="flex flex-col">
               <div className="flex-1 border-0 min-h-[3rem]" />
               <div className="border-t border-gray-400 pt-1">Ort, Datum</div>
@@ -579,7 +579,7 @@ export default function EhrenamtspauschaleePage() {
 
       {/* PDF footer (single, at the very bottom of main form) */}
       <div className="pdf-footer hidden print:flex mt-10 pt-6 border-t border-gray-100">
-        <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-400">
+        <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-500">
           <div className="space-y-1">
             <p className="font-bold text-gray-600 tracking-wider">KONTAKT</p>
             <p>Albert-Einstein-Str. 20 · 71717 Beilstein</p>
@@ -626,7 +626,7 @@ export default function EhrenamtspauschaleePage() {
             />
           </div>
           <div className="pdf-footer hidden print:flex mt-10 pt-6 border-t border-gray-100">
-            <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-400">
+            <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-500">
               <div className="space-y-1">
                 <p className="font-bold text-gray-600 tracking-wider">KONTAKT</p>
                 <p>Albert-Einstein-Str. 20 · 71717 Beilstein</p>

@@ -98,7 +98,7 @@ export default function Home() {
               <div className="font-semibold text-gray-900 group-hover:text-[#b11217] transition-colors">
                 {label}
               </div>
-              <div className="text-xs text-gray-400 mt-0.5 leading-snug">{desc}</div>
+              <div className="text-xs text-gray-500 mt-0.5 leading-snug">{desc}</div>
             </div>
             <svg className="ml-auto shrink-0 text-gray-200 group-hover:text-[#b11217] transition-colors" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 3l5 5-5 5"/>

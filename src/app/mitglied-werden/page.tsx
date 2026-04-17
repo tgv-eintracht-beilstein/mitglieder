@@ -26,7 +26,7 @@ function Field({ label, value, required, children }: { label: string; value: str
   return (
     <div>
       <div className="text-[10px] mb-0.5 flex items-center gap-0.5">
-        <span className={required && !value ? "text-[#b11217]" : "text-gray-400"}>{label}</span>
+        <span className={required && !value ? "text-[#b11217]" : "text-gray-500"}>{label}</span>
         {required && !value && <span className="text-[#b11217] leading-none">*</span>}
       </div>
       {children}
@@ -164,7 +164,7 @@ function CostEstimate({ personen, familie }: { personen: Person[]; familie: bool
       <div className="px-4 py-3">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-xs text-gray-400 border-b border-gray-100">
+            <tr className="text-xs text-gray-500 border-b border-gray-100">
               <th className="text-left py-1 font-normal">Person</th>
               <th className="text-left py-1 font-normal">Typ</th>
               <th className="text-right py-1 font-normal">Verein</th>
@@ -194,7 +194,7 @@ function CostEstimate({ personen, familie }: { personen: Person[]; familie: bool
             </tr>
           </tfoot>
         </table>
-        <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+        <p className="text-xs text-gray-500 mt-2 leading-relaxed">
           Unverbindliche Schätzung gemäß Beitragsordnung (Anlage A). Der tatsächliche Beitrag kann
           je nach Mitgliedsstatus, Eintrittszeitpunkt und Abteilungsregelung abweichen. Die endgültige
           Berechnung erfolgt nach Bearbeitung des Aufnahmeantrags durch die Geschäftsstelle.
@@ -382,7 +382,7 @@ function MitgliedWerdenPage() {
                 </span>
               </label>
               {p.datenschutzAkzeptiert && (
-                <div className="ml-6 flex items-center gap-2 text-[10px] text-gray-400">
+                <div className="ml-6 flex items-center gap-2 text-[10px] text-gray-500">
                   <span>Alle {DATENSCHUTZ_KATEGORIEN.length} Kategorien ausgewählt</span>
                   <button type="button" onClick={(e) => { e.preventDefault(); setDsEditPersonId(p.id); }}
                     className="text-[#b11217] hover:underline">Bearbeiten</button>
@@ -390,7 +390,7 @@ function MitgliedWerdenPage() {
               )}
               {/* Per-person signature */}
               <div className="pt-2 border-t border-gray-100">
-                <div className="text-[10px] text-gray-400 mb-1">Unterschrift <span className="text-gray-300">(optional – kann auch handschriftlich auf dem Ausdruck erfolgen)</span></div>
+                <div className="text-[10px] text-gray-500 mb-1">Unterschrift <span className="text-gray-500">(optional – kann auch handschriftlich auf dem Ausdruck erfolgen)</span></div>
                 {p.signature ? (
                   <div className="flex items-center gap-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -447,7 +447,7 @@ function MitgliedWerdenPage() {
               className={`${fieldCls} uppercase ${state.iban === "" ? "border-[#b11217] focus:border-[#b11217]" : validateIban(state.iban) ? "border-green-500 text-green-700 focus:border-green-500" : "border-[#b11217] text-[#b11217] focus:border-[#b11217]"}`} />
           </Field>
           <div className="pt-3 border-t border-gray-100">
-            <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
+            <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-500">
               <div className="flex flex-col">
                 <div className="flex-1 border-0 min-h-[3rem] print:min-h-0 flex items-end pb-1 text-gray-700 font-medium">
                   <input type="text" id="sig-date-mw"
@@ -480,7 +480,7 @@ function MitgliedWerdenPage() {
                     </div>
                   )}
                 </div>
-                <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Unterschrift Kontoinhaber <span className="text-gray-300">(optional)</span></div>
+                <div className="mt-1 print:mt-0 border-t border-gray-400 pt-1">Unterschrift Kontoinhaber <span className="text-gray-500">(optional)</span></div>
               </div>
             </div>
           </div>
@@ -505,7 +505,7 @@ function MitgliedWerdenPage() {
             <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-5" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900">Datenschutz-Kategorien</h3>
-                <button onClick={() => setDsEditPersonId(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+                <button onClick={() => setDsEditPersonId(null)} className="text-gray-500 hover:text-gray-600 text-xl leading-none">&times;</button>
               </div>
               <p className="text-xs text-gray-500 mb-3">{p.vorname} {p.nachname} – Welche Daten dürfen veröffentlicht werden?</p>
               <div className="space-y-2">

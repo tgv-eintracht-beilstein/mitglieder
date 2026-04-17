@@ -164,8 +164,8 @@ export function AbteilungSelect({ value, onChange }: { value: string; onChange: 
         className="print:hidden w-full flex items-center gap-2 border-b border-gray-300 bg-transparent py-0.5 text-sm focus:outline-none focus:border-[#b11217] text-left"
       >
         {selected && <AbteilungIcon slug={selected.slug} size={18} />}
-        <span className={value ? "" : "text-gray-400"}>{value || "– bitte wählen –"}</span>
-        <svg className="ml-auto shrink-0 text-gray-400" width={12} height={12} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round" /></svg>
+        <span className={value ? "" : "text-gray-500"}>{value || "– bitte wählen –"}</span>
+        <svg className="ml-auto shrink-0 text-gray-500" width={12} height={12} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round" /></svg>
       </button>
 
       {/* Print view */}
@@ -175,7 +175,7 @@ export function AbteilungSelect({ value, onChange }: { value: string; onChange: 
           {value}
         </span>
       ) : (
-        <span className="hidden print:block text-sm text-gray-400">– keine Abteilung gewählt –</span>
+        <span className="hidden print:block text-sm text-gray-500">– keine Abteilung gewählt –</span>
       )}
 
       {/* Desktop dropdown */}
@@ -243,8 +243,8 @@ function UEbungsleiterCategorySelect({ value, onChange, abteilung }: { value: st
          onClick={() => setOpen(o => !o)}
          className="print:hidden w-full flex items-center gap-2 border-b border-gray-300 bg-transparent py-0.5 text-sm focus:outline-none focus:border-[#b11217] text-left"
        >
-         <span className={value ? "" : "text-gray-400"}>{value || "– bitte wählen –"}</span>
-         <svg className="ml-auto shrink-0 text-gray-400" width={12} height={12} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round" /></svg>
+         <span className={value ? "" : "text-gray-500"}>{value || "– bitte wählen –"}</span>
+         <svg className="ml-auto shrink-0 text-gray-500" width={12} height={12} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round" /></svg>
        </button>
 
        {/* Print view */}
@@ -253,7 +253,7 @@ function UEbungsleiterCategorySelect({ value, onChange, abteilung }: { value: st
            {value}
          </span>
        ) : (
-         <span className="hidden print:block text-sm text-gray-400">– keine Kategorie gewählt –</span>
+         <span className="hidden print:block text-sm text-gray-500">– keine Kategorie gewählt –</span>
        )}
 
        {/* Desktop dropdown */}
@@ -352,8 +352,8 @@ export function MonthSelect({ value, onChange }: { value: string; onChange: (v: 
     <div className="relative w-full">
       <button ref={btnRef} type="button" onClick={openPanel}
         className="print:hidden w-full flex items-center gap-2 border-b border-gray-300 bg-transparent py-0.5 text-sm focus:outline-none focus:border-[#b11217] text-left">
-        <span className={value ? "" : "text-gray-400"}>{label}</span>
-        <svg className="ml-auto shrink-0 text-gray-400" width={12} height={12} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round"/></svg>
+        <span className={value ? "" : "text-gray-500"}>{label}</span>
+        <svg className="ml-auto shrink-0 text-gray-500" width={12} height={12} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round"/></svg>
       </button>
       <span className="hidden print:block text-sm">{label}</span>
       {open && (
@@ -434,7 +434,7 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
   const desktopPanel = (
     <div className="p-3 space-y-3 min-w-[260px]">
       <div className="flex items-center gap-2">
-        {pickMonth && <button type="button" onClick={() => setPickMonth(false)} className="order-last text-gray-400 hover:text-gray-600">
+        {pickMonth && <button type="button" onClick={() => setPickMonth(false)} className="order-last text-gray-500 hover:text-gray-600">
           <svg width={14} height={14} viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>
         </button>}
         <input
@@ -513,8 +513,8 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
       {/* Desktop: custom button + panel */}
       <button ref={btnRef} type="button" onClick={openPanel}
         className="hidden sm:flex w-full items-center gap-1 border-b border-gray-300 bg-transparent py-0.5 text-[length:inherit] focus:outline-none focus:border-[#b11217] text-left print:hidden">
-        <span className={value ? "" : "text-gray-400"}>{label}</span>
-        <svg className="ml-auto shrink-0 text-gray-400" width={12} height={12} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round"/></svg>
+        <span className={value ? "" : "text-gray-500"}>{label}</span>
+        <svg className="ml-auto shrink-0 text-gray-500" width={12} height={12} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round"/></svg>
       </button>
       <span className="hidden print:block text-sm">{label}</span>
       {open && (
@@ -536,11 +536,11 @@ function NumberInput({ value, onChange, step = 1, min = 0, className, large, lab
   return (
     <span className={`inline-flex items-center justify-center border-b border-gray-300 focus-within:border-[#b11217] ${className ?? ""}`}>
       <button type="button" onClick={() => adjust(-step)} aria-label="Weniger"
-        className={`text-gray-400 hover:text-gray-700 print:hidden leading-none ${large ? "px-4 py-2 text-xl" : "px-2 py-1"}`}>−</button>
+        className={`text-gray-500 hover:text-gray-700 print:hidden leading-none ${large ? "px-4 py-2 text-xl" : "px-2 py-1"}`}>−</button>
       <input type="number" value={value} onChange={e => onChange(e.target.value)} step={step} min={min} aria-label={label}
         className={`text-center bg-transparent focus:outline-none tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${large ? "w-20 text-base" : "w-10 text-xs"}`} />
       <button type="button" onClick={() => adjust(step)} aria-label="Mehr"
-        className={`text-gray-400 hover:text-gray-700 print:hidden leading-none ${large ? "px-4 py-2 text-xl" : "px-2 py-1"}`}>+</button>
+        className={`text-gray-500 hover:text-gray-700 print:hidden leading-none ${large ? "px-4 py-2 text-xl" : "px-2 py-1"}`}>+</button>
     </span>
   );
 }
@@ -745,8 +745,8 @@ function TimeSelect({ value, onChange, className }: {
     <span className={`relative inline-block ${className ?? ""}`}>
       <button ref={btnRef} type="button" onClick={openPanel}
         className="w-full flex items-center gap-1 border-b border-gray-300 bg-transparent py-0.5 text-[length:inherit] focus:outline-none focus:border-[#b11217] text-left print:hidden tabular-nums">
-        <span className={value ? "" : "text-gray-400"}>{label}</span>
-        <svg className="ml-auto shrink-0 text-gray-400" width={10} height={10} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round"/></svg>
+        <span className={value ? "" : "text-gray-500"}>{label}</span>
+        <svg className="ml-auto shrink-0 text-gray-500" width={10} height={10} viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round"/></svg>
       </button>
       <span className="hidden print:inline text-xs tabular-nums">{label}</span>
       {open && (
@@ -1306,7 +1306,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               <span className="text-sm">
                 {state.monatVon
                   ? <span className="text-gray-700">{formatMonthRange(state.monatVon, state.monatBis)}</span>
-                  : <span className="text-gray-400 italic text-xs">wird aus Tätigkeiten abgeleitet</span>
+                  : <span className="text-gray-500 italic text-xs">wird aus Tätigkeiten abgeleitet</span>
                 }
               </span>
             ),
@@ -1339,12 +1339,12 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               className={`w-full text-left px-4 py-3 transition-colors ${duplicateIds.has(row.id) ? "bg-red-50 hover:bg-red-100" : "hover:bg-gray-50"}`}>
               <div className="flex justify-between items-start">
                 <div className="text-sm font-medium text-gray-800">
-                  {row.datum || <span className="text-gray-300">Kein Datum</span>}
-                  {showStunden && (row.von || row.bis) && <span className="text-gray-400 font-normal ml-2 text-xs">{row.von}–{row.bis}</span>}
+                  {row.datum || <span className="text-gray-500">Kein Datum</span>}
+                  {showStunden && (row.von || row.bis) && <span className="text-gray-500 font-normal ml-2 text-xs">{row.von}–{row.bis}</span>}
                 </div>
                 <div className="text-sm font-semibold text-[#b11217] tabular-nums ml-4 shrink-0">{calcRow(row).toFixed(2)} €</div>
               </div>
-              <div className="flex gap-3 mt-0.5 text-xs text-gray-400">
+              <div className="flex gap-3 mt-0.5 text-xs text-gray-500">
                 {showStunden && (row.von || row.bis) && <span>{calcStunden(row.von, row.bis).toFixed(2)} Std.</span>}
                 {showKm && row.km && <span>{row.km} km</span>}
                 {row.beschreibung && <span className="truncate">{row.beschreibung}</span>}
@@ -1720,7 +1720,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
         </div>
 
         {/* Row 2: Unterschrift 1./2. Vors./Abt.L. (print/PDF only) */}
-        <div className="hidden print:grid grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400 mt-6">
+        <div className="hidden print:grid grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-500 mt-6">
           <div className="flex flex-col">
             <div className="flex-1 border-0 min-h-[3rem]" />
             <div className="border-t border-gray-400 pt-1">Ort, Datum</div>
@@ -1787,7 +1787,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       )}
 
       <div className="pdf-footer hidden print:flex mt-10 pt-6 border-t border-gray-100">
-        <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-400">
+        <div className="grid grid-cols-3 gap-6 text-[9px] leading-relaxed text-gray-500">
           <div className="space-y-1">
             <p className="font-bold text-gray-600 tracking-wider">KONTAKT</p>
             <p>Albert-Einstein-Str. 20 · 71717 Beilstein</p>
