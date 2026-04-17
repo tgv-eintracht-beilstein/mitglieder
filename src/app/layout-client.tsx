@@ -25,13 +25,12 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
 
               <Link href="https://tgveintrachtbeilstein.de" className="flex items-center justify-center shrink-0 mx-6 lg:mx-10 relative z-10 !no-underline group">
                 <Image
-                  src="/tgv-logo.png"
+                  src="/tgv-logo.webp"
                   alt="TGV Logo"
                   width={56}
                   height={56}
                   className="site-logo relative drop-shadow-lg"
                   loading="eager"
-                  unoptimized
                 />
               </Link>
 
@@ -71,7 +70,7 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
                 BIC: GENODES1BIA
               </div>
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-700 text-center text-xs text-gray-400">
+            <div className="mt-6 pt-4 border-t border-gray-700 text-center text-xs text-gray-300">
               <Link href="/impressum" className="hover:text-white transition-colors">
                 Impressum & Datenschutz
               </Link>

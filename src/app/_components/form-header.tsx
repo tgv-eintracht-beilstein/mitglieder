@@ -64,7 +64,7 @@ export default function FormHeader({ title, contextFields, personalFields, onAdd
             {contextFields.map((f) => (
               <div key={f.label}>
                 <div className="text-[10px] mb-0.5 flex items-center gap-0.5">
-                  <span className={f.required && !f.value ? "text-[#b11217]" : "text-gray-400"}>{f.label}</span>
+                  <span className={f.required && !f.value ? "text-[#b11217]" : "text-gray-500"}>{f.label}</span>
                   {f.required && !f.value && <span className="text-[#b11217] leading-none">*</span>}
                 </div>
                 <div className={f.required && !f.value ? "[&_input]:border-[#b11217] [&_select]:border-[#b11217] [&_button]:border-[#b11217]" : ""}>
@@ -101,14 +101,14 @@ export default function FormHeader({ title, contextFields, personalFields, onAdd
             ) : (
               personalFields.map((f) => (
                 <div key={f.key}>
-                  <div className="text-[10px] mb-0.5 flex items-center gap-0.5">
-                    <span className={f.required && !f.value ? "text-[#b11217]" : "text-gray-400"}>{f.label}</span>
+                  <label htmlFor={`field-${f.key}`} className="text-[10px] mb-0.5 flex items-center gap-0.5">
+                    <span className={f.required && !f.value ? "text-[#b11217]" : "text-gray-500"}>{f.label}</span>
                     {f.required && !f.value && <span className="text-[#b11217] leading-none">*</span>}
-                  </div>
+                  </label>
                   <PI value={f.type === "date" ? formatDateDE(f.value) : f.value}>
                     {f.type === "date"
                       ? <DateSelect value={f.value} onChange={f.onChange} className={`text-sm ${f.required && !f.value ? "[&_button]:border-[#b11217] [&_input]:border-[#b11217]" : ""}`} />
-                      : <input type={f.type ?? "text"} value={f.value} onChange={e => f.onChange(e.target.value)} className={`${fieldCls} ${fieldBorder(f.value, f.required, f.invalid)}`} />
+                      : <input id={`field-${f.key}`} type={f.type ?? "text"} value={f.value} onChange={e => f.onChange(e.target.value)} className={`${fieldCls} ${fieldBorder(f.value, f.required, f.invalid)}`} />
                     }
                   </PI>
                 </div>
@@ -125,7 +125,7 @@ export default function FormHeader({ title, contextFields, personalFields, onAdd
             <div className="px-3 py-2 space-y-2">
               {contextFields.map((f) => (
                 <div key={f.label}>
-                  <div className="text-[10px] text-gray-400 mb-0.5">{f.label}</div>
+                  <div className="text-[10px] text-gray-500 mb-0.5">{f.label}</div>
                   <span className="text-sm">{f.printValue}</span>
                 </div>
               ))}
@@ -133,7 +133,7 @@ export default function FormHeader({ title, contextFields, personalFields, onAdd
             <div className="px-3 py-2 space-y-1">
               {personalFields.map((f) => (
                 <div key={f.key} className="flex items-baseline gap-2">
-                  <span className="text-[10px] text-gray-400 w-20 shrink-0">{f.label}</span>
+                  <span className="text-[10px] text-gray-500 w-20 shrink-0">{f.label}</span>
                   <span className="text-sm">{f.type === "date" ? formatDateDE(f.value) : f.value}</span>
                 </div>
               ))}

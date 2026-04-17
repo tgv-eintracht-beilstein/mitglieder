@@ -71,6 +71,7 @@ function BeschreibungInput({ value, onChange, className, large }: {
         onFocus={() => { setFiltered(value.trim() ? suggestions.filter(s => s.toLowerCase().includes(value.trim().toLowerCase()) && s !== value) : suggestions); setOpen(true); }}
         onBlur={handleBlur}
         placeholder={large ? "Kursbezeichnung / Reiseziel" : ""}
+        aria-label="Kursbezeichnung"
         className={baseCls}
       />
       {open && filtered.length > 0 && (
@@ -473,7 +474,7 @@ export function DateSelect({ value, onChange, className, minYear }: { value: str
       ) : (
         <div className="grid grid-cols-7 gap-1">
         {["Mo","Di","Mi","Do","Fr","Sa","So"].map(d => (
-          <div key={d} className="text-center text-[10px] text-gray-400 font-medium py-1">{d}</div>
+          <div key={d} className="text-center text-[10px] text-gray-500 font-medium py-1">{d}</div>
         ))}
         {Array.from({ length: new Date(displayYear, displayMonth - 1, 1).getDay() === 0 ? 6 : new Date(displayYear, displayMonth - 1, 1).getDay() - 1 }, (_, i) => (
           <div key={`e${i}`} />
@@ -533,11 +534,11 @@ function NumberInput({ value, onChange, step = 1, min = 0, className, large }: {
   return (
     <span className={`inline-flex items-center justify-center border-b border-gray-300 focus-within:border-[#b11217] ${className ?? ""}`}>
       <button type="button" onClick={() => adjust(-step)}
-        className={`text-gray-400 hover:text-gray-700 print:hidden leading-none ${large ? "px-4 py-2 text-xl" : "px-1"}`}>−</button>
-      <input type="number" value={value} onChange={e => onChange(e.target.value)} step={step} min={min}
+        className={`text-gray-400 hover:text-gray-700 print:hidden leading-none ${large ? "px-4 py-2 text-xl" : "px-2 py-1"}`}>−</button>
+      <input type="number" value={value} onChange={e => onChange(e.target.value)} step={step} min={min} aria-label="Anzahl"
         className={`text-center bg-transparent focus:outline-none tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${large ? "w-20 text-base" : "w-10 text-xs"}`} />
       <button type="button" onClick={() => adjust(step)}
-        className={`text-gray-400 hover:text-gray-700 print:hidden leading-none ${large ? "px-4 py-2 text-xl" : "px-1"}`}>+</button>
+        className={`text-gray-400 hover:text-gray-700 print:hidden leading-none ${large ? "px-4 py-2 text-xl" : "px-2 py-1"}`}>+</button>
     </span>
   );
 }
@@ -708,7 +709,7 @@ function TimeSelect({ value, onChange, className }: {
     const btnM = large ? "py-4 text-lg font-medium" : "py-1.5 text-xs";
     return (
       <div className={large ? "p-4 space-y-4" : "p-3 space-y-2 w-56"}>
-        <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Stunde</div>
+        <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Stunde</div>
         <div className="grid grid-cols-6 gap-1">
           {hours.map(h => (
             <button key={h} type="button"
@@ -721,7 +722,7 @@ function TimeSelect({ value, onChange, className }: {
             </button>
           ))}
         </div>
-        <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wide pt-1">Minute</div>
+        <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wide pt-1">Minute</div>
         <div className="grid grid-cols-4 gap-2">
           {MINUTES.map(m => (
             <button key={m} type="button"
@@ -832,12 +833,12 @@ function RowEditModal({ row, onSave, onDelete, onClose, showKm = true, showStund
       </div>
       <div className="flex-1 overflow-y-auto p-5 space-y-5">
         <div>
-          <label className="text-xs text-gray-400">Datum</label>
+          <label className="text-xs text-gray-500">Datum</label>
           <DateSelect value={draft.datum} onChange={v => f("datum", v)} className={fieldCls} />
         </div>
         {showStunden && (
           <div>
-            <label className="text-xs text-gray-400">von</label>
+            <label className="text-xs text-gray-500">von</label>
             <TimeSelect value={draft.von} onChange={v => {
               const [oh, om] = draft.von.split(":").map(Number);
               const [bh, bm] = draft.bis.split(":").map(Number);
@@ -851,7 +852,7 @@ function RowEditModal({ row, onSave, onDelete, onClose, showKm = true, showStund
         )}
         {showStunden && (
           <div>
-            <label className="text-xs text-gray-400">bis</label>
+            <label className="text-xs text-gray-500">bis</label>
             <TimeSelect value={draft.bis} onChange={v => f("bis", v < draft.von ? draft.von : v)} className="w-full text-base" />
           </div>
         )}
@@ -862,13 +863,13 @@ function RowEditModal({ row, onSave, onDelete, onClose, showKm = true, showStund
         )}
         {showStunden && (
           <div>
-            <label className="text-xs text-gray-400">€ / Std.</label>
+            <label className="text-xs text-gray-500">€ / Std.</label>
             <div className="py-2"><NumberInput value={draft.satz} onChange={v => f("satz", v)} step={0.5} className="w-full" large /></div>
           </div>
         )}
         {showKm && (
           <div>
-            <label className="text-xs text-gray-400">km</label>
+            <label className="text-xs text-gray-500">km</label>
             <div className="py-2"><NumberInput value={draft.km} onChange={v => f("km", v)} step={1} className="w-full" large /></div>
           </div>
         )}
@@ -876,7 +877,7 @@ function RowEditModal({ row, onSave, onDelete, onClose, showKm = true, showStund
           Ergebnis: <span className="font-semibold tabular-nums">{ergebnis.toFixed(2)} €</span>
         </div>
         <div>
-          <label className={`text-xs ${!draft.beschreibung.trim() ? "text-[#b11217]" : "text-gray-400"}`}>
+          <label className={`text-xs ${!draft.beschreibung.trim() ? "text-[#b11217]" : "text-gray-500"}`}>
             Kursbezeichnung / Reiseziel{!draft.beschreibung.trim() && <span className="ml-0.5">*</span>}
           </label>
           <BeschreibungInput value={draft.beschreibung} onChange={v => f("beschreibung", v)} large />
@@ -1330,15 +1331,15 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           <table className="w-full text-xs border-collapse" style={{ minWidth: 700 }}>
             <thead>
               <tr className="bg-gray-50 text-gray-600 border-b border-gray-200 text-center">
-                <th className="border-r border-gray-200 px-2 py-2 text-left">Datum</th>
-                {showStunden && <th className="border-r border-gray-200 px-2 py-2">von</th>}
-                {showStunden && <th className="border-r border-gray-200 px-2 py-2">bis</th>}
-                {showStunden && <th className="border-r border-gray-200 px-2 py-2 whitespace-nowrap">Aufwand Std.</th>}
-                {showStunden && <th className="border-r border-gray-200 px-2 py-2">€/Std.</th>}
-                {showKm && <th className="border-r border-gray-200 px-2 py-2 w-48">km</th>}
-                <th className="border-r border-gray-200 px-2 py-2 whitespace-nowrap w-48 text-right">Ergebnis</th>
-                <th className="border-r border-gray-200 px-2 py-2 text-left">Kursbezeichnung / Reiseziel</th>
-                <th className="px-2 py-2 print:hidden w-8"></th>
+                <th scope="col" className="border-r border-gray-200 px-2 py-2 text-left">Datum</th>
+                {showStunden && <th scope="col" className="border-r border-gray-200 px-2 py-2">von</th>}
+                {showStunden && <th scope="col" className="border-r border-gray-200 px-2 py-2">bis</th>}
+                {showStunden && <th scope="col" className="border-r border-gray-200 px-2 py-2 whitespace-nowrap">Aufwand Std.</th>}
+                {showStunden && <th scope="col" className="border-r border-gray-200 px-2 py-2">€/Std.</th>}
+                {showKm && <th scope="col" className="border-r border-gray-200 px-2 py-2 w-48">km</th>}
+                <th scope="col" className="border-r border-gray-200 px-2 py-2 whitespace-nowrap w-48 text-right">Ergebnis</th>
+                <th scope="col" className="border-r border-gray-200 px-2 py-2 text-left">Kursbezeichnung / Reiseziel</th>
+                <th scope="col" className="px-2 py-2 print:hidden w-8"><span className="sr-only">Aktionen</span></th>
               </tr>
             </thead>
             <tbody>
@@ -1428,7 +1429,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               <tr className="bg-gray-50">
                 <td colSpan={colsBefore} className="px-3 py-1 pb-3">
                   <span className={`font-bold ${spende === 0 ? "text-[#b11217]" : "text-gray-800"}`}>abzüglich Aufwandsspende</span>
-                  <span className="ml-1.5 text-[10px] text-gray-400 font-normal">Betrag, den Sie dem Verein spenden</span>
+                  <span className="ml-1.5 text-[10px] text-gray-500 font-normal">Betrag, den Sie dem Verein spenden</span>
                 </td>
                 <td className="px-2 py-1 pb-3 border-l border-gray-200">
                   <div className="flex items-center justify-end gap-1">
@@ -1460,7 +1461,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               )}
               <tr className="bg-gray-100 border-t border-gray-300">
                 <td colSpan={colsBefore} className="px-3 py-2 font-bold text-sm">Auszahlbetrag</td>
-                <td className={`px-2 py-2 text-right font-bold text-sm tabular-nums border-l border-gray-200 whitespace-nowrap ${auszahlbetrag > 0 ? "text-green-600" : ""}`}>{auszahlbetrag.toFixed(2)} €</td>
+                <td className={`px-2 py-2 text-right font-bold text-sm tabular-nums border-l border-gray-200 whitespace-nowrap ${auszahlbetrag > 0 ? "text-green-700" : ""}`}>{auszahlbetrag.toFixed(2)} €</td>
                 <td colSpan={2} className="print:hidden" />
               </tr>
             </tfoot>
@@ -1482,7 +1483,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
             <div className="flex justify-between items-center">
               <div>
                 <span className={`font-medium ${spende === 0 ? "text-[#b11217]" : "text-gray-600"}`}>abzgl. Aufwandsspende</span>
-                <div className="text-[10px] text-gray-400">Betrag, den Sie dem Verein spenden</div>
+                <div className="text-[10px] text-gray-500">Betrag, den Sie dem Verein spenden</div>
               </div>
               <div className="flex items-center justify-end gap-1">
                 {spende > 0 && <span className="text-[#b11217] font-bold text-base leading-none">−</span>}
@@ -1502,7 +1503,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           </div>
           <div className="flex justify-between font-bold text-gray-900 pt-1 border-t border-gray-200">
             <span>Auszahlbetrag</span>
-            <span className={`tabular-nums ${auszahlbetrag > 0 ? "text-green-600" : ""}`}>{auszahlbetrag.toFixed(2)} €</span>
+            <span className={`tabular-nums ${auszahlbetrag > 0 ? "text-green-700" : ""}`}>{auszahlbetrag.toFixed(2)} €</span>
           </div>
           {spendeGekuerzt && (
             <div className="text-xs text-amber-600 italic">
@@ -1634,7 +1635,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4">
         <div className="p-4 text-sm">
         {/* Row 1: Ort, Datum + Unterschrift Leistungsempfänger */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-400">
+        <div className="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-8 gap-y-4 text-xs text-gray-500">
           <div className="flex flex-col">
             <div className="flex-1 border-0 min-h-[3rem] print:min-h-0 flex items-end pb-1 text-gray-700 font-medium">
               <div className="flex-1 flex items-center gap-1 group">
@@ -1668,7 +1669,7 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
           </div>
           <div className="flex flex-col">
             {state.signature && (
-              <div className="text-[7pt] text-green-600 leading-tight mb-1">
+              <div className="text-[7pt] text-green-700 leading-tight mb-1">
                 ✓ Einwilligung zur digitalen Unterschrift erteilt
               </div>
             )}
@@ -1676,8 +1677,8 @@ export default function Aufwandsformular({ config }: { config: AufwandsformularC
               {state.signature ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={state.signature} alt="Unterschrift" onClick={() => setShowSignModal(true)}
-                  style={{ height: 56, width: "auto", imageRendering: "auto", objectFit: "contain" }}
-                  className="cursor-pen hover:opacity-80 transition-opacity print:cursor-default"
+                  width={571} height={56}
+                  className="cursor-pen hover:opacity-80 transition-opacity print:cursor-default h-14 w-auto object-contain"
                   title="Klicken zum Bearbeiten" />
               ) : (
                 <button onClick={() => setShowSignModal(true)}
