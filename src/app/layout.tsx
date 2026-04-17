@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://mitglied.tgveintrachtbeilstein.de"),
   title: `TGV \u201eEintracht\u201c Beilstein e. V.`,
   description: `TGV \u201eEintracht\u201c Beilstein e. V. \u2013 Mitgliederbereich`,
+  other: {
+    "msapplication-config": "/favicon/browserconfig.xml",
+  },
 };
 
 export default function RootLayout({
@@ -20,6 +23,8 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
         <link rel="manifest" href="/favicon/site.webmanifest" />
         <link rel="shortcut icon" href="/favicon/favicon.ico" />
+        <link rel="mask-icon" href="/favicon/safari-pinned-tab.svg" color="#000000" />
+        <meta name="theme-color" content="#000000" />
       </head>
       <Suspense fallback={null}>
         <LayoutContent>{children}</LayoutContent>
