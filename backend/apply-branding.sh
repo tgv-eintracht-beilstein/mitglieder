@@ -6,7 +6,7 @@
 set -euo pipefail
 
 REGION="eu-central-1"
-USER_POOL_ID="eu-central-1_vJEWudU5g"
+USER_POOL_ID="eu-central-1_XZYux89m6"
 
 # Get client IDs from stack outputs
 STACK="mitglieder-app"

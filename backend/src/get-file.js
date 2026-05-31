@@ -41,6 +41,7 @@ exports.handler = async (event) => {
   if (!sub) return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
 
   const key = event.queryStringParameters?.key;
+  const versionId = event.queryStringParameters?.versionId;
   if (!key) return { statusCode: 400, body: JSON.stringify({ error: "Key required" }) };
 
   const isGeschaeftstelle = groups.includes("geschäftsstelle") || groups.includes("tgv-geschaeftsstelle");
@@ -73,7 +74,7 @@ exports.handler = async (event) => {
   // fallback to S3 presigned URL
   const url = await getSignedUrl(
     s3,
-    new GetObjectCommand({ Bucket: process.env.BUCKET_NAME, Key: key }),
+    new GetObjectCommand({ Bucket: process.env.BUCKET_NAME, Key: key, ...(versionId && { VersionId: versionId }) }),
     { expiresIn: 300 }
   );
 

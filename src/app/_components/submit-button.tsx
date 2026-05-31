@@ -94,14 +94,18 @@ export default function SubmitButton({ formType, getFormData, getPdfBlobs, disab
       for (const f of files) {
         keys.push(await uploadPdf(f.blob, f.filename));
       }
-      await submitForm(formType, getFormData(), keys);
+      if (!user) {
+        // Not logged in: submit to Geschäftsstelle
+        await submitForm(formType, getFormData(), keys);
+      }
+      // Logged in: files are already uploaded to "Meine Dateien"
       setFiles([]);
       setPreview(null);
       setDone(true);
       setTimeout(() => setDone(false), 3000);
     } catch (e) {
       console.error(e);
-      alert("Fehler beim Absenden. Bitte versuchen Sie es erneut.");
+      alert("Fehler beim Hochladen. Bitte versuchen Sie es erneut.");
     } finally {
       setSubmitting(false);
     }
@@ -165,7 +169,7 @@ export default function SubmitButton({ formType, getFormData, getPdfBlobs, disab
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 6L9 17l-5-5"/>
               </svg>
-              Gesendet ✓
+              {user ? "Hochgeladen ✓" : "Gesendet ✓"}
             </>
           ) : disabledProp && missingCount ? (
             <>
@@ -180,7 +184,7 @@ export default function SubmitButton({ formType, getFormData, getPdfBlobs, disab
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
               </svg>
-              Vorschau {user && <>&amp; Absenden</>}
+              Vorschau {user && <>&amp; Hochladen</>}
             </>
           )}
         </button>
@@ -251,10 +255,10 @@ export default function SubmitButton({ formType, getFormData, getPdfBlobs, disab
                   disabled={submitting}
                   className="flex items-center gap-1.5 px-5 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-60"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M7 11V3M4 6l3-3 3 3"/><path d="M1 10v1a2 2 0 002 2h8a2 2 0 002-2v-1"/>
                   </svg>
-                  {submitting ? "Sende…" : "Absenden"}
+                  {submitting ? "Lädt hoch…" : "In Meine Dateien hochladen"}
                 </button>
               )}
             </div>

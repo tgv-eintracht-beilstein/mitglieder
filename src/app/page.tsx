@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useDebug } from "@/lib/use-debug";
+import { getTokens, callApi } from "@/lib/auth";
 
 const pages = [
   {
@@ -66,23 +68,96 @@ const pages = [
   },
 ];
 
+interface AnnouncementItem {
+  name: string;
+  text: string;
+  departments: string[];
+}
+
+interface Announcements {
+  upcomingBirthdays: AnnouncementItem[];
+  pastBirthdays: AnnouncementItem[];
+  anniversaries: AnnouncementItem[];
+}
+
+interface MyData {
+  contactDetails: {
+    first_name: string;
+    family_name: string;
+    date_of_birth: string | null;
+    street: string;
+    zip: string;
+    city: string;
+    private_phone: string;
+    mobile_phone: string;
+  };
+  joinDate: string | null;
+  membershipNumber: string | null;
+  groups: { name: string; start: string | null; end: string | null }[];
+}
+
+function formatDate(d: string | null) {
+  if (!d) return "–";
+  const date = new Date(d);
+  return date.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
 export default function Home() {
   const [debug] = useDebug();
-  const visiblePages = debug ? pages : pages.filter(p => p.href !== "/profil");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const visiblePages = debug || isLoggedIn ? pages : pages.filter(p => p.href !== "/profil");
+
+  const [announcements, setAnnouncements] = useState<Announcements | null>(null);
+  const [myData, setMyData] = useState<MyData | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const loggedIn = !!getTokens();
+    setIsLoggedIn(loggedIn);
+    if (!loggedIn) return;
+    setLoading(true);
+    Promise.all([
+      callApi("/announcements").catch(() => null),
+      callApi("/my-data").catch(() => null),
+    ]).then(([ann, data]) => {
+      setAnnouncements(ann);
+      setMyData(data);
+    }).finally(() => setLoading(false));
+  }, []);
 
   return (
-    <div className="max-w-2xl mx-auto mt-10">
+    <div className="max-w-4xl mx-auto mt-10">
       <div className="flex justify-between items-start mb-10">
         <div className="flex-1 pr-4">
           <h1 className="text-3xl font-bold text-gray-900 mb-3">
-            Willkommen im Mitgliederbereich
+            {isLoggedIn ? "Dashboard" : "Willkommen im Mitgliederbereich"}
           </h1>
           <p className="text-gray-500 text-sm leading-relaxed">
-            Hier finden Sie alle wichtigen Formulare und Dokumente des TGV &quot;Eintracht&quot; Beilstein 1823 e. V.
-            Wählen Sie einen Bereich aus, um fortzufahren.
+            {isLoggedIn
+              ? "Übersicht über Ihre Mitgliedschaft und aktuelle Vereinsnachrichten."
+              : "Hier finden Sie alle wichtigen Formulare und Dokumente des TGV \"Eintracht\" Beilstein 1823 e. V. Wählen Sie einen Bereich aus, um fortzufahren."}
           </p>
         </div>
       </div>
+
+      {isLoggedIn && (
+        <div className="space-y-4 mb-8">
+          {/* Announcements - Three Columns */}
+          {loading && !announcements && (
+            <div className="flex items-center justify-center py-8 text-gray-400">
+              <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              Lade Vereinsnachrichten…
+            </div>
+          )}
+          {announcements && (
+            <div className="grid md:grid-cols-3 gap-4">
+              <AnnouncementColumn title="🎉 Vereinsjubiläen" items={announcements.anniversaries.slice(0, 5)} />
+              <AnnouncementColumn title="🎂 Anstehende Geburtstage" items={announcements.upcomingBirthdays.slice(0, 5)} />
+              <AnnouncementColumn title="🎂 Vergangene Geburtstage" items={announcements.pastBirthdays.slice(0, 5)} />
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid gap-3">
         {visiblePages.map(({ href, label, desc, icon }) => (
@@ -106,6 +181,29 @@ export default function Home() {
           </Link>
         ))}
       </div>
+    </div>
+  );
+}
+
+function AnnouncementColumn({ title, items }: { title: string; items: { name: string; text: string; departments: string[] }[] }) {
+  if (!items.length) return null;
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+      <h3 className="font-semibold text-sm text-gray-900 mb-3">{title}</h3>
+      <ul className="space-y-2">
+        {items.map((item, i) => (
+          <li key={i} className="text-xs text-gray-600 leading-relaxed">
+            <span className="font-medium text-gray-800">{item.name}</span> {item.text}
+            {item.departments.length > 0 && (
+              <span className="inline-flex flex-wrap gap-1 ml-1">
+                {item.departments.map((d, j) => (
+                  <span key={j} className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px] font-medium">{d}</span>
+                ))}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

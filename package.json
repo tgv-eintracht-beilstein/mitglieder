@@ -1,9 +1,14 @@
 {
   "private": true,
+  "workspaces": [
+    "backend/",
+    "infrastructure/"
+  ],
   "scripts": {
     "dev": "next",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "deploy": "next build && aws s3 sync out/ s3://mitglieder-app-formsbucket-qvr5mx8bs6xa/ --delete --exclude 'users/*' --region eu-central-1 && aws cloudfront create-invalidation --distribution-id ELOAJK261PQZW --paths '/*' --region eu-central-1"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.4.1",
@@ -25,12 +30,15 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
-    "@types/node": "^25",
+    "@types/node": "^25.7.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.27",
+    "fast-check": "^4.8.0",
     "postcss": "^8",
     "tailwindcss": "^4.2.2",
-    "typescript": "^6"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.6",
+    "zod": "^4.4.3"
   }
 }

@@ -46,21 +46,19 @@ export default function AuthButton({ className, simple }: { className?: string; 
 
   return (
     <div className="flex items-center gap-1 bg-black/20 rounded-full p-1 backdrop-blur-sm border border-white/10">
+      {/* Dashboard */}
+      <Link href="/" className={iconCls(pathname === "/")} title="Dashboard">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>
+      </Link>
+
       {/* Files */}
       <Link href="/meine-dateien" className={iconCls(pathname === "/meine-dateien")} title="Meine Dateien">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
         </svg>
       </Link>
-
-      {/* Inbox */}
-      {hasInboxAccess && (
-        <Link href="/nachrichten" className={iconCls(pathname === "/nachrichten")} title="Nachrichten">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9-2 2-2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
-          </svg>
-        </Link>
-      )}
 
       {/* Profile */}
       <Link href="/profil" className={iconCls(pathname === "/profil")} title="Profil">

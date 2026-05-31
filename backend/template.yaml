@@ -5,7 +5,7 @@ Description: TGV Mitglieder Backend
 Parameters:
   UserPoolId:
     Type: String
-    Default: eu-central-1_vJEWudU5g
+    Default: eu-central-1_XZYux89m6
   CognitoDomain:
     Type: String
     Default: benutzer.tgveintrachtbeilstein.de
@@ -23,6 +23,10 @@ Parameters:
     Type: String
     Description: "ARN of the Secrets Manager secret that holds the CloudFront private key PEM (for signing). Provide real ARN when deploying."
     Default: "arn:aws:secretsmanager:eu-central-1:000000000000:secret:placeholder"
+  EasyVereinSecretArn:
+    Type: String
+    Description: "ARN of the Secrets Manager secret that holds the easyVerein API token."
+    Default: "arn:aws:secretsmanager:eu-central-1:136609826960:secret:EASYVEREIN_API_TOKEN-qwFrGy"
 
 Globals:
   Function:
@@ -109,14 +113,76 @@ Resources:
     Properties:
       UserPoolId: !Ref UserPoolId
       ClientId: !Ref LocalhostClient
-      UseCognitoProvidedValues: true
+      ReturnMergedResources: true
+      Settings:
+        categories:
+          auth:
+            authMethodOrder: [[{"display": "INPUT", "type": "USERNAME_PASSWORD"}]]
+            federation: {"interfaceStyle": "BUTTON_LIST", "order": []}
+          form:
+            displayGraphics: true
+            instructions: {"enabled": false}
+            languageSelector: {"enabled": false}
+            location: {"horizontal": "CENTER", "vertical": "CENTER"}
+            sessionTimerDisplay: "NONE"
+          global:
+            colorSchemeMode: "LIGHT"
+            pageFooter: {"enabled": true}
+            pageHeader: {"enabled": true}
+            spacingDensity: "REGULAR"
+          signUp:
+            acceptanceElements: [{"enforcement": "NONE", "textKey": "en"}]
+        componentClasses:
+          buttons: {"borderRadius": 9999}
+          focusState: {"lightMode": {"borderColor": "b11217ff"}}
+          input: {"borderRadius": 8, "lightMode": {"defaults": {"backgroundColor": "ffffffff", "borderColor": "d1d5dbff"}}}
+          link: {"lightMode": {"defaults": {"textColor": "b11217ff"}, "hover": {"textColor": "8f0f13ff"}}}
+          optionControls: {"lightMode": {"selected": {"backgroundColor": "b11217ff", "foregroundColor": "ffffffff"}}}
+        components:
+          form: {"borderRadius": 12, "lightMode": {"backgroundColor": "ffffffff"}, "logo": {"enabled": true, "formInclusion": "IN", "location": "CENTER", "position": "TOP"}}
+          pageBackground: {"lightMode": {"color": "f6f7f9ff"}, "image": {"enabled": false}}
+          pageFooter: {"lightMode": {"background": {"color": "1f1f1fff"}, "borderColor": "1f1f1fff"}}
+          pageHeader: {"lightMode": {"background": {"color": "8f0f13ff"}, "borderColor": "6b0a0eff"}, "logo": {"enabled": true, "location": "CENTER"}}
+          primaryButton: {"lightMode": {"defaults": {"backgroundColor": "b11217ff", "textColor": "ffffffff"}, "hover": {"backgroundColor": "8f0f13ff", "textColor": "ffffffff"}, "active": {"backgroundColor": "8f0f13ff", "textColor": "ffffffff"}}}
+          secondaryButton: {"lightMode": {"defaults": {"backgroundColor": "ffffffff", "borderColor": "b11217ff", "textColor": "b11217ff"}, "hover": {"backgroundColor": "fef2f2ff", "borderColor": "8f0f13ff", "textColor": "8f0f13ff"}}}
 
   ProductionBranding:
     Type: AWS::Cognito::ManagedLoginBranding
     Properties:
       UserPoolId: !Ref UserPoolId
       ClientId: !Ref ProductionClient
-      UseCognitoProvidedValues: true
+      ReturnMergedResources: true
+      Settings:
+        categories:
+          auth:
+            authMethodOrder: [[{"display": "INPUT", "type": "USERNAME_PASSWORD"}]]
+            federation: {"interfaceStyle": "BUTTON_LIST", "order": []}
+          form:
+            displayGraphics: true
+            instructions: {"enabled": false}
+            languageSelector: {"enabled": false}
+            location: {"horizontal": "CENTER", "vertical": "CENTER"}
+            sessionTimerDisplay: "NONE"
+          global:
+            colorSchemeMode: "LIGHT"
+            pageFooter: {"enabled": true}
+            pageHeader: {"enabled": true}
+            spacingDensity: "REGULAR"
+          signUp:
+            acceptanceElements: [{"enforcement": "NONE", "textKey": "en"}]
+        componentClasses:
+          buttons: {"borderRadius": 9999}
+          focusState: {"lightMode": {"borderColor": "b11217ff"}}
+          input: {"borderRadius": 8, "lightMode": {"defaults": {"backgroundColor": "ffffffff", "borderColor": "d1d5dbff"}}}
+          link: {"lightMode": {"defaults": {"textColor": "b11217ff"}, "hover": {"textColor": "8f0f13ff"}}}
+          optionControls: {"lightMode": {"selected": {"backgroundColor": "b11217ff", "foregroundColor": "ffffffff"}}}
+        components:
+          form: {"borderRadius": 12, "lightMode": {"backgroundColor": "ffffffff"}, "logo": {"enabled": true, "formInclusion": "IN", "location": "CENTER", "position": "TOP"}}
+          pageBackground: {"lightMode": {"color": "f6f7f9ff"}, "image": {"enabled": false}}
+          pageFooter: {"lightMode": {"background": {"color": "1f1f1fff"}, "borderColor": "1f1f1fff"}}
+          pageHeader: {"lightMode": {"background": {"color": "8f0f13ff"}, "borderColor": "6b0a0eff"}, "logo": {"enabled": true, "location": "CENTER"}}
+          primaryButton: {"lightMode": {"defaults": {"backgroundColor": "b11217ff", "textColor": "ffffffff"}, "hover": {"backgroundColor": "8f0f13ff", "textColor": "ffffffff"}, "active": {"backgroundColor": "8f0f13ff", "textColor": "ffffffff"}}}
+          secondaryButton: {"lightMode": {"defaults": {"backgroundColor": "ffffffff", "borderColor": "b11217ff", "textColor": "b11217ff"}, "hover": {"backgroundColor": "fef2f2ff", "borderColor": "8f0f13ff", "textColor": "8f0f13ff"}}}
 
   # Cognito Groups (SAM Managed)
   TgvInboxAccessGroup:
@@ -309,6 +375,27 @@ Resources:
           Properties:
             ApiId: !Ref HttpApi
             Path: /files
+            Method: GET
+
+  ListFileVersionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: list-file-versions.handler
+      CodeUri: src/
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: 's3:ListBucketVersions'
+              Resource: !GetAtt FormsBucket.Arn
+              Condition:
+                StringLike:
+                  s3:prefix: 'users/*'
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /file-versions
             Method: GET
 
   GetFileFunction:
@@ -576,6 +663,70 @@ Resources:
             Method: GET
             Auth:
               Authorizer: NONE
+
+  GetAnnouncementsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: get-announcements.handler
+      CodeUri: src/
+      Environment:
+        Variables:
+          EASYVEREIN_SECRET_ARN: !Ref EasyVereinSecretArn
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: 'secretsmanager:GetSecretValue'
+              Resource: !Ref EasyVereinSecretArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /announcements
+            Method: GET
+
+  GetMyDataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: get-my-data.handler
+      CodeUri: src/
+      Environment:
+        Variables:
+          EASYVEREIN_SECRET_ARN: !Ref EasyVereinSecretArn
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: 'secretsmanager:GetSecretValue'
+              Resource: !Ref EasyVereinSecretArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /my-data
+            Method: GET
+
+  GetMyDocumentsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Fetch member documents from easyVerein"
+      Handler: get-my-documents.handler
+      CodeUri: src/
+      Environment:
+        Variables:
+          EASYVEREIN_SECRET_ARN: !Ref EasyVereinSecretArn
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: 'secretsmanager:GetSecretValue'
+              Resource: !Ref EasyVereinSecretArn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /my-documents
+            Method: GET
 
   CloudFrontOriginAccessIdentity:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity

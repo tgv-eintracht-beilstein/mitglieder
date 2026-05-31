@@ -1,13 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Container from "@/app/_components/container";
-import { getTokens, logout } from "@/lib/auth";
+import { getTokens, logout, callApi } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+
+interface MemberData {
+  contactDetails: {
+    first_name?: string;
+    family_name?: string;
+    street?: string;
+    zip?: string;
+    city?: string;
+    phone_mobile?: string;
+    date_of_birth?: string;
+  };
+  joinDate: string | null;
+  membershipNumber: string | null;
+  groups: { name: string; start: string | null; end: string | null }[];
+}
 
 export default function ProfilePage() {
   const [tokens, setTokens] = useState<any>(null);
-  const [attributes, setAttributes] = useState<Record<string, string>>({});
+  const [memberData, setMemberData] = useState<MemberData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -18,68 +36,40 @@ export default function ProfilePage() {
     }
     setTokens(t);
 
-    // Extract attributes from ID token payload
-    try {
-      const payload = JSON.parse(atob(t.id_token.split(".")[1]));
-      const attrs: Record<string, string> = {};
-      Object.entries(payload).forEach(([key, val]) => {
-        // Filter for common and custom attributes
-        if (key.startsWith("custom:") || ["given_name", "family_name", "phone_number", "birthdate", "address", "gender"].includes(key)) {
-          attrs[key] = String(val);
-        }
-      });
-      setAttributes(attrs);
-    } catch (e) {
-      console.error("Failed to parse ID token", e);
-    }
+    callApi("/my-data")
+      .then(setMemberData)
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   }, [router]);
 
   if (!tokens) return null;
 
-  const isGst = tokens.groups.includes("geschäftsstelle") || tokens.groups.includes("tgv-geschaeftsstelle");
-  const isVorstand = tokens.groups.includes("vorstand") || tokens.groups.includes("tgv-vorstand") || tokens.groups.includes("hauptausschuss") || tokens.groups.includes("tgv-hauptausschuss") || tokens.groups.includes("erweiterter-vorstand") || tokens.groups.includes("tgv-erweiterter-vorstand");
-  const isAbteilungsleiter = tokens.groups.includes("abteilungsleiter") || tokens.groups.includes("tgv-abteilungsleiter") || tokens.groups.some((g: string) => g.startsWith("abt-") || g.startsWith("tgv-abt-"));
-  
-  const hasInboxAccess = tokens.groups.includes("tgv-inbox-access") || isGst || isVorstand || isAbteilungsleiter;
-
-  // Map technical group IDs to readable display names
-  const GROUP_LABELS: Record<string, string> = {
-    "tgv-geschaeftsstelle": "Geschäftsstelle",
-    "geschäftsstelle": "Geschäftsstelle",
-    "tgv-vorstand": "Vorstand",
-    "vorstand": "Vorstand",
-    "tgv-hauptausschuss": "Hauptausschuss",
-    "hauptausschuss": "Hauptausschuss",
-    "tgv-erweiterter-vorstand": "Erweiterter Vorstand",
-    "erweiterter-vorstand": "Erweiterter Vorstand",
-    "tgv-abteilungsleiter": "Abteilungsleiter",
-    "abteilungsleiter": "Abteilungsleiter",
-    "tgv-abt-handball": "Abteilung Handball",
-    "tgv-abt-fussball": "Abteilung Fußball",
-    "tgv-abt-turnen": "Abteilung Turnen",
-    "tgv-abt-leichtathletik": "Abteilung Leichtathletik",
-    "tgv-abt-tischtennis": "Abteilung Tischtennis",
-    "tgv-abt-tennis": "Abteilung Tennis",
-    "tgv-abt-schwimmen": "Abteilung Schwimmen",
-    "tgv-abt-gesang": "Abteilung Gesang",
-    "tgv-abt-gymnastik": "Abteilung Gymnastik",
-    "tgv-abt-tang-soo-do": "Abteilung Tang Soo Do",
-    "tgv-abt-ski-berg": "Abteilung Ski & Berg",
-    "tgv-abt-jedermann": "Abteilung Jedermann",
-  };
-
   const displayGroups = tokens.groups
     .filter((g: string) => g !== "tgv-inbox-access")
-    .map((g: string) => GROUP_LABELS[g] || g);
+    .map((g: string) => {
+      // Strip tgv- prefix, then format nicely
+      let name = g.replace(/^tgv-/, "");
+      // Known mappings
+      const LABELS: Record<string, string> = {
+        "vorstand": "Vorstand",
+        "erweiterter-vorstand": "Erweiterter Vorstand",
+        "hauptausschuss": "Hauptausschuss",
+        "jugendvorstand": "Jugendvorstand",
+        "geschaeftsstelle": "Geschäftsstelle",
+        "abteilungsleiter": "Abteilungsleiter",
+        "kassenprufer": "Kassenprüfer",
+      };
+      if (LABELS[name]) return LABELS[name];
+      // abt-* → "Abt. Name"
+      if (name.startsWith("abt-")) {
+        const abt = name.slice(4).replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+          .replace("Und", "&").replace("Fussball", "Fußball").replace("Ski Berg", "Ski & Berg");
+        return `Abt. ${abt}`;
+      }
+      return name;
+    });
 
-  const labelMap: Record<string, string> = {
-    given_name: "Vorname",
-    family_name: "Nachname",
-    phone_number: "Telefon",
-    birthdate: "Geburtsdatum",
-    address: "Adresse",
-    gender: "Geschlecht"
-  };
+  const cd = memberData?.contactDetails;
 
   return (
     <main>
@@ -88,40 +78,59 @@ export default function ProfilePage() {
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Profil</h1>
             <div className="flex items-center gap-2">
-              <button 
+              <button
                 onClick={() => logout()}
                 className="px-4 py-2 rounded-lg bg-[#b11217] text-white text-sm font-medium hover:bg-[#8f0f13] transition-colors"
               >
-                Abmelden
-              </button>
+              Abmelden
+            </button>
+              <Link href="/passwort-aendern" className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors">
+                Passwort ändern
+              </Link>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-2 space-y-8">
               <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-2xl font-semibold mb-4">Benutzerinformationen</h2>
-                <div className="space-y-4">
-                  <div className="border-b border-gray-100 pb-2">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Email / Login</span>
-                    <span className="text-lg font-medium">{tokens.username}</span>
+                <h2 className="text-2xl font-semibold mb-4">Meine Daten</h2>
+                {loading ? (
+                  <p className="text-gray-500">Lade Profildaten…</p>
+                ) : error ? (
+                  <p className="text-red-600">Fehler: {error}</p>
+                ) : cd ? (
+                  <div className="space-y-4">
+                    <Field label="Name" value={[cd.first_name, cd.family_name].filter(Boolean).join(" ")} />
+                    <Field label="E-Mail" value={tokens.username} />
+                    <Field label="Mitgliedsnummer" value={memberData?.membershipNumber} />
+                    <Field label="Adresse" value={[cd.street, [cd.zip, cd.city].filter(Boolean).join(" ")].filter(Boolean).join(", ")} />
+                    <Field label="Telefon" value={cd.phone_mobile} />
+                    <Field label="Geburtsdatum" value={cd.date_of_birth ? new Date(cd.date_of_birth).toLocaleDateString("de-DE") : undefined} />
+                    <Field label="Eintrittsdatum" value={memberData?.joinDate ? new Date(memberData.joinDate).toLocaleDateString("de-DE") : undefined} />
                   </div>
-                  
-                  {Object.entries(attributes).map(([key, val]) => (
-                    <div key={key} className="border-b border-gray-100 pb-2">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">
-                        {key.startsWith("custom:") ? key.split(":")[1] : (labelMap[key] || key)}
-                      </span>
-                      <span className="text-lg font-medium">{val}</span>
-                    </div>
-                  ))}
-                </div>
+                ) : (
+                  <p className="text-gray-500">Kein Mitgliedsprofil gefunden.</p>
+                )}
               </div>
+
+              {memberData?.groups && memberData.groups.filter(g => !g.end && g.start).length > 0 && (
+                <div className="bg-white shadow rounded-lg p-6">
+                  <h2 className="text-xl font-semibold mb-4">Mitgliedschaften & Abteilungen</h2>
+                  <div className="space-y-2">
+                    {memberData.groups.filter(g => !g.end && g.start).map((g, i) => (
+                      <div key={i} className="flex items-center justify-between border-b border-gray-100 pb-2">
+                        <span className="font-medium">{g.name}</span>
+                        <span className="text-sm text-gray-500">seit {new Date(g.start!).toLocaleDateString("de-DE")}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="md:col-span-1">
               <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-4">Ihre Rollen / Gruppen</h2>
+                <h2 className="text-xl font-semibold mb-4">Berechtigungen</h2>
                 <div className="flex flex-col gap-2">
                   {displayGroups.length > 0 ? (
                     displayGroups.map((group: string) => (
@@ -139,5 +148,15 @@ export default function ProfilePage() {
         </div>
       </Container>
     </main>
+  );
+}
+
+function Field({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="border-b border-gray-100 pb-2">
+      <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">{label}</span>
+      <span className="text-lg font-medium">{value}</span>
+    </div>
   );
 }

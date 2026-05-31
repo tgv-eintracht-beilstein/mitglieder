@@ -16,8 +16,9 @@ function formatSize(b: number) {
 export default function MeineDateienPage() {
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [preview, setPreview] = useState<{ name: string; url: string } | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ name: string; url: string; key: string } | null>(null);
+  const [versions, setVersions] = useState<{ versionId: string; lastModified: string; size: number; isLatest: boolean }[]>([]);
+  const [activeVersion, setActiveVersion] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -27,7 +28,7 @@ export default function MeineDateienPage() {
     setLoading(true);
     try {
       const data = await callApi("/files");
-      setFiles(data);
+      setFiles(data || []);
     } catch { setFiles([]); }
     setLoading(false);
   }
@@ -41,18 +42,15 @@ export default function MeineDateienPage() {
 
   async function handlePreview(file: FileEntry) {
     const { url } = await callApi(`/file?key=${encodeURIComponent(file.key)}`);
-    setPreview({ name: file.name, url });
+    setPreview({ name: file.name, url, key: file.key });
+    setActiveVersion(null);
+    callApi(`/file-versions?key=${encodeURIComponent(file.key)}`).then(setVersions).catch(() => setVersions([]));
   }
 
-  async function handleDelete(file: FileEntry) {
-    if (!confirm(`„${file.name}" wirklich löschen?`)) return;
-    setDeleting(file.key);
-    try {
-      await callApi("/file", { method: "DELETE", body: JSON.stringify({ key: file.key }) });
-      setFiles((f) => f.filter((x) => x.key !== file.key));
-      if (preview?.name === file.name) setPreview(null);
-    } catch (e) { alert("Löschen fehlgeschlagen"); }
-    setDeleting(null);
+  async function loadVersion(versionId: string, key: string) {
+    const { url } = await callApi(`/file?key=${encodeURIComponent(key)}&versionId=${encodeURIComponent(versionId)}`);
+    setPreview(p => p ? { ...p, url } : null);
+    setActiveVersion(versionId);
   }
 
   const ACCEPT = "application/pdf,image/png,image/jpeg";
@@ -134,32 +132,45 @@ export default function MeineDateienPage() {
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                 </svg>
               </button>
-              <button
-                onClick={() => handleDelete(file)}
-                disabled={deleting === file.key}
-                className="text-xs text-gray-500 hover:text-red-600 transition-colors shrink-0 disabled:opacity-50"
-                title="Löschen"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                </svg>
-              </button>
             </div>
           ))}
         </div>
       )}
 
       {preview && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setPreview(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => { setPreview(null); setVersions([]); }}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
               <span className="font-semibold text-gray-900 truncate">{preview.name}</span>
-              <button onClick={() => setPreview(null)} className="text-gray-500 hover:text-gray-700 transition-colors">
+              <button onClick={() => { setPreview(null); setVersions([]); }} className="text-gray-500 hover:text-gray-700 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
             </div>
-            <div className="overflow-auto flex-1 p-4">
-              <PdfViewer url={preview.url} filename={preview.name} />
+            <div className="flex flex-1 overflow-hidden min-h-0">
+              <div className="flex-1 overflow-auto p-4">
+                <PdfViewer url={preview.url} filename={preview.name} />
+              </div>
+              {versions.length > 1 && (
+                <div className="w-48 border-l border-gray-100 overflow-auto p-3">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Versionen</h3>
+                  <div className="space-y-1">
+                    {versions.map((v) => (
+                      <button
+                        key={v.versionId}
+                        onClick={() => v.isLatest && !activeVersion ? null : loadVersion(v.versionId, preview.key)}
+                        className={`w-full text-left px-2 py-1.5 rounded text-xs transition-colors ${
+                          (v.isLatest && !activeVersion) || activeVersion === v.versionId
+                            ? "bg-red-50 text-[#b11217] font-medium"
+                            : "text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        <div>{new Date(v.lastModified).toLocaleDateString("de-DE")}</div>
+                        <div className="text-[10px] text-gray-400">{new Date(v.lastModified).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}{v.isLatest ? " (aktuell)" : ""}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
