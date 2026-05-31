@@ -21,7 +21,7 @@ exports.handler = async (event) => {
 
   // Find member by email
   const memberRes = await fetch(
-    `${API_BASE}/member?email=${encodeURIComponent(email)}&query={id,contact_details{*},join_date,membership_number}&limit=1`,
+    `${API_BASE}/member?email=${encodeURIComponent(email)}&query={id,contact_details{*},join_date,membership_number,payment_amount,payment_intervall_months,payment_start_date}&limit=1`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   if (!memberRes.ok) throw new Error(`easyVerein API error: ${memberRes.status}`);
@@ -31,15 +31,19 @@ exports.handler = async (event) => {
 
   // Get group assignments (Funktionen)
   const groupsRes = await fetch(
-    `${API_BASE}/member-group-assignment?user_object=${member.id}&query={id,member_group{name},start,end}&limit=100`,
+    `${API_BASE}/member-group-assignment?user_object=${member.id}&query={id,member_group{name,short,payment_amount,payment_interval},start,end,payment_active}&limit=100`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   if (!groupsRes.ok) throw new Error(`easyVerein API error: ${groupsRes.status}`);
   const groupsData = await groupsRes.json();
   const groups = (groupsData.results || []).map(g => ({
     name: g.member_group?.name || "",
+    short: g.member_group?.short || "",
+    paymentAmount: g.member_group?.payment_amount ?? null,
+    paymentInterval: g.member_group?.payment_interval ?? null,
     start: g.start || null,
     end: g.end || null,
+    paymentActive: g.payment_active || false,
   }));
 
   const cd = member.contact_details || {};
@@ -59,6 +63,9 @@ exports.handler = async (event) => {
       joinDate: member.join_date,
       membershipNumber: member.membership_number,
       groups,
+      paymentAmount: member.payment_amount || null,
+      paymentIntervallMonths: member.payment_intervall_months || null,
+      paymentStartDate: member.payment_start_date || null,
     }),
   };
 };

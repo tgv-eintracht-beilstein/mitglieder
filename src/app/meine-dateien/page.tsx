@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
 import { getTokens, callApi } from "@/lib/auth";
 import { uploadFile } from "@/lib/form-api";
 import PdfViewer from "@/app/_components/pdf-viewer";
@@ -86,6 +87,9 @@ export default function MeineDateienPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Meine Dateien</h1>
         <div className="flex items-center gap-2">
+          <Link href="/docs" className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors">
+            Vereinsdokumente
+          </Link>
           <input ref={fileRef} type="file" accept={ACCEPT} multiple className="hidden" onChange={handleUpload} />
           <button
             onClick={() => fileRef.current?.click()}

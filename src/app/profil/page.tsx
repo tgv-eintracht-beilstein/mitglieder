@@ -18,7 +18,10 @@ interface MemberData {
   };
   joinDate: string | null;
   membershipNumber: string | null;
-  groups: { name: string; start: string | null; end: string | null }[];
+  groups: { name: string; short: string; paymentAmount: number | null; paymentInterval: number | null; start: string | null; end: string | null; paymentActive: boolean }[];
+  paymentAmount: number | null;
+  paymentIntervallMonths: number | null;
+  paymentStartDate: string | null;
 }
 
 export default function ProfilePage() {
@@ -121,6 +124,32 @@ export default function ProfilePage() {
                       <div key={i} className="flex items-center justify-between border-b border-gray-100 pb-2">
                         <span className="font-medium">{g.name}</span>
                         <span className="text-sm text-gray-500">seit {new Date(g.start!).toLocaleDateString("de-DE")}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {memberData?.groups && memberData.groups.filter(g => !g.end && g.paymentActive).length > 0 && (
+                <div className="bg-white shadow rounded-lg p-6">
+                  <h2 className="text-xl font-semibold mb-4">Gebuchte Beiträge</h2>
+                  <div className="space-y-2">
+                    {memberData.groups.filter(g => !g.end && g.paymentActive).map((g, i) => (
+                      <div key={i} className="flex items-center justify-between border-b border-gray-100 pb-2">
+                        <div>
+                          <span className="font-medium">{g.name}</span>
+                          {g.short && <span className="ml-2 text-xs text-gray-400">({g.short})</span>}
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-semibold">
+                            {g.paymentAmount != null ? `${Number(g.paymentAmount).toFixed(2).replace(".", ",")} €` : "–"}
+                          </span>
+                          {g.paymentInterval && (
+                            <span className="text-xs text-gray-500 ml-1">
+                              / {g.paymentInterval === 1 ? "Monat" : g.paymentInterval === 12 ? "Jahr" : `${g.paymentInterval} Mon.`}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

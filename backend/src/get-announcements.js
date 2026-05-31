@@ -9,7 +9,7 @@ async function getToken() {
 }
 
 async function fetchMembers(token, params) {
-  const url = `${API_BASE}/member?${params}&query={contact_details{first_name,family_name,date_of_birth},join_date}&limit=100`;
+  const url = `${API_BASE}/member?${params}&query={contact_details{first_name,family_name,date_of_birth},join_date,member_groups{name}}&limit=100`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error(`easyVerein API error: ${res.status}`);
   const data = await res.json();
