@@ -116,12 +116,24 @@ export default function Home() {
     setIsLoggedIn(loggedIn);
     if (!loggedIn) return;
     setLoading(true);
+
+    // Cache announcements for 1 day
+    const cacheKey = "announcements_cache";
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const { data, ts } = JSON.parse(cached);
+        if (Date.now() - ts < 86400000) { setAnnouncements(data); setLoading(false); callApi("/my-data").then(setMyData).catch(() => null); return; }
+      } catch {}
+    }
+
     Promise.all([
       callApi("/announcements").catch(() => null),
       callApi("/my-data").catch(() => null),
     ]).then(([ann, data]) => {
       setAnnouncements(ann);
       setMyData(data);
+      if (ann) localStorage.setItem(cacheKey, JSON.stringify({ data: ann, ts: Date.now() }));
     }).finally(() => setLoading(false));
   }, []);
 

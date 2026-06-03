@@ -39,3 +39,6 @@ yarn-error.log*
 next-env.d.ts
 .playwright-mcp/
 .aws-sambackend/node_modules/
+
+migration
+dokumentation

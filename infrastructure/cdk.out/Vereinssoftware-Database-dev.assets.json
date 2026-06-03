@@ -1,0 +1,21 @@
+{
+  "version": "53.0.0",
+  "files": {
+    "559a3f0d0a553a6f3d422d83fe392d962a21e3cf32f4125e22b7ba351ed10ef5": {
+      "displayName": "Vereinssoftware-Database-dev Template",
+      "source": {
+        "path": "Vereinssoftware-Database-dev.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "136609826960-eu-central-1-f4d74151": {
+          "bucketName": "cdk-hnb659fds-assets-136609826960-eu-central-1",
+          "objectKey": "559a3f0d0a553a6f3d422d83fe392d962a21e3cf32f4125e22b7ba351ed10ef5.json",
+          "region": "eu-central-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::136609826960:role/cdk-hnb659fds-file-publishing-role-136609826960-eu-central-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

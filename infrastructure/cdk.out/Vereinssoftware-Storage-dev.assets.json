@@ -1,0 +1,36 @@
+{
+  "version": "53.0.0",
+  "files": {
+    "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6": {
+      "displayName": "Vereinssoftware-Storage-dev/Custom::S3AutoDeleteObjectsCustomResourceProvider Code",
+      "source": {
+        "path": "asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "136609826960-eu-central-1-787f0fe2": {
+          "bucketName": "cdk-hnb659fds-assets-136609826960-eu-central-1",
+          "objectKey": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip",
+          "region": "eu-central-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::136609826960:role/cdk-hnb659fds-file-publishing-role-136609826960-eu-central-1"
+        }
+      }
+    },
+    "310deac7a8fbc46751c6a28a146de29bf8340bf4689acec288d4e63b39f9405b": {
+      "displayName": "Vereinssoftware-Storage-dev Template",
+      "source": {
+        "path": "Vereinssoftware-Storage-dev.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "136609826960-eu-central-1-54aac9ac": {
+          "bucketName": "cdk-hnb659fds-assets-136609826960-eu-central-1",
+          "objectKey": "310deac7a8fbc46751c6a28a146de29bf8340bf4689acec288d4e63b39f9405b.json",
+          "region": "eu-central-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::136609826960:role/cdk-hnb659fds-file-publishing-role-136609826960-eu-central-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

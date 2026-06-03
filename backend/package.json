@@ -1,16 +1,22 @@
 {
-  "name": "backend",
+  "name": "@vereinssoftware/backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest --run",
+    "test:unit": "vitest --run __tests__/unit",
+    "test:properties": "vitest --run __tests__/properties",
+    "test:integration": "vitest --run __tests__/integration"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "pdf-lib": "^1.17.1"
+    "@aws-sdk/client-cognito-identity-provider": "^3.800.0",
+    "@aws-sdk/client-dynamodb": "^3.800.0",
+    "@aws-sdk/lib-dynamodb": "^3.800.0",
+    "uuid": "^11.1.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0"
   }
 }

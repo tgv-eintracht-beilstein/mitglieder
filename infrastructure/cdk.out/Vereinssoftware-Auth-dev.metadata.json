@@ -1,0 +1,139 @@
+{
+  "/Vereinssoftware-Auth-dev": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:47:19)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Auth-dev/UserPoolId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "UserPoolId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AuthStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/auth-stack.ts:91:5)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:47:19)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Auth-dev/UserPoolArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "UserPoolArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AuthStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/auth-stack.ts:92:5)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:47:19)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Auth-dev/UserPoolClientId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "UserPoolClientId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AuthStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/auth-stack.ts:93:5)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:47:19)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Auth-dev/CognitoIssuer": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CognitoIssuer"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AuthStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/auth-stack.ts:94:5)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:47:19)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Auth-dev/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...App.synth in aws-cdk-lib...",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:57:5)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Auth-dev/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...App.synth in aws-cdk-lib...",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:57:5)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Auth-dev/UserPool/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "UserPool6BA7E5F2"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new UserPool2 in aws-cdk-lib...",
+        "new AuthStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/auth-stack.ts:28:21)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:47:19)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Auth-dev/UserPoolClient/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "UserPoolClient2F5918F7"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new UserPoolClient2 in aws-cdk-lib...",
+        "new AuthStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/auth-stack.ts:57:27)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:47:19)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Auth-dev/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...App.synth in aws-cdk-lib...",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:57:5)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ]
+}

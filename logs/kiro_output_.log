@@ -1,0 +1,911 @@
+[32mAll tools are now trusted ([0m[31m![0m[32m). Kiro will execute tools without asking for confirmation.[0m
+Agents can sometimes do unexpected things so understand the risks.
+
+Learn more at [38;5;141mhttps://kiro.dev/docs/cli/chat/security/#using-tools-trust-all-safely[0m
+
+
+
+[38;5;252m[0m[?25l[38;5;141m> [0mLet me start by reading the project files to understand what needs to be done.[0m[0m
+[?25l[0m[0m[1mTool validation failed: [0m
+[38;5;9mFailed to validate tool parameters: Path is not a file: 
+[0m[?25l[0m[0mReading directory: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder[0m[38;5;244m (using tool: read, max depth: 2, max entries: 1000, excluding: defaults)[0m
+[38;5;10m ✓ [0mSuccessfully read directory [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder[0m [38;5;244m(308 entries)[0m
+[38;5;244m - Completed in 0.3s[0m
+
+[?25l[0m[?25l[0m[0mBatch fs_read operation with [38;5;141m2[0m operations[38;5;244m (using tool: read)[0m
+
+↱ Operation 1: Reading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/.kiro/fix_plan.md[0m, all lines
+↱ Operation 2: Reading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/.kiro/AGENT.md[0m, all lines
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m7842 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/.kiro/fix_plan.md
+
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m5196 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/.kiro/AGENT.md
+
+ ⋮ 
+
+[38;5;244m- [0mSummary: 2 operations processed, 2 successful, 0 failed
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[38;5;141m> [0mNow let me read the Phase 1 spec to understand what needs to be built first:[0m[0m
+[?25l[0m[0mReading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/specs/phase-1-foundation.md[0m, all lines[38;5;244m (using tool: read)[0m
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m12147 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/specs/phase-1-foundation.md
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[38;5;141m> [0mNow I have a clear picture. This is a large multi-tenant Vereinssoftware (sports club management software) project. The fix_plan has everything unchecked — I need to start with Phase 1. Let me check what's already been built:[0m[0m
+[?25l[0m[0mBatch fs_read operation with [38;5;141m2[0m operations[38;5;244m (using tool: read)[0m
+
+↱ Operation 1: Reading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/backend/template.yaml[0m, all lines
+↱ Operation 2: Reading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts[0m, all lines
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m17680 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/backend/template.yaml
+
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m1513 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts
+
+ ⋮ 
+
+[38;5;244m- [0mSummary: 2 operations processed, 2 successful, 0 failed
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[38;5;141m> [0mNow I have a clear picture. The project already has:[0m[0m
+- An existing SAM-based backend ([38;5;10mbackend/template.yaml[0m) for the current TGV single-tenant app[0m[0m
+- A CDK infrastructure skeleton ([38;5;10minfrastructure/[0m) that needs the stacks implemented[0m[0m
+- The fix_plan wants a full multi-tenant Vereinssoftware platform built[0m[0m
+[0m[0m
+The highest priority item is the [1mCDK DatabaseStack[22m — it's foundational for everything else. Let me also check what's in the backend lib and package.json:[0m[0m
+[?25l[0m[0mBatch fs_read operation with [38;5;141m5[0m operations[38;5;244m (using tool: read)[0m
+
+↱ Operation 1: Reading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/backend/lib/response.ts[0m, all lines
+↱ Operation 2: Reading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/backend/lib/errors.ts[0m, all lines
+↱ Operation 3: Reading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/backend/package.json[0m, all lines
+↱ Operation 4: Reading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/package.json[0m, all lines
+↱ Operation 5: Reading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/package.json[0m, all lines
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m1166 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/backend/lib/response.ts
+
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m1191 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/backend/lib/errors.ts
+
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m589 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/backend/package.json
+
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m1004 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/package.json
+
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m391 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/package.json
+
+ ⋮ 
+
+[38;5;244m- [0mSummary: 5 operations processed, 5 successful, 0 failed
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[38;5;141m> [0mNow I have a complete picture. The project has:[0m[0m
+- A working CDK infrastructure skeleton with no stacks implemented yet[0m[0m
+- Backend lib with response/error helpers already done[0m[0m
+- The fix_plan's first real task is the CDK stacks[0m[0m
+[0m[0m
+The most impactful first task is the [1mCDK DatabaseStack[22m — it's the foundation everything else depends on. Let me implement it now:[0m[0m
+[?25l[0m[0mI'll create the following file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/database-stack.ts[0m[38;5;244m (using tool: write)[0m
+Purpose: CDK DatabaseStack: DynamoDB tables with GSIs and PITR for multi-tenant Vereinssoftware
+
+[49m[38;5;10m+      1[0m:[38;5;10m[49m import * as cdk from 'aws-cdk-lib';
+[0m[49m[38;5;10m+      2[0m:[38;5;10m[49m import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+[0m[49m[38;5;10m+      3[0m:[38;5;10m[49m import { Construct } from 'constructs';
+[0m[49m[38;5;10m+      4[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+      5[0m:[38;5;10m[49m export interface DatabaseStackProps extends cdk.StackProps {
+[0m[49m[38;5;10m+      6[0m:[38;5;10m[49m   readonly stageName: string;
+[0m[49m[38;5;10m+      7[0m:[38;5;10m[49m }
+[0m[49m[38;5;10m+      8[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+      9[0m:[38;5;10m[49m /**
+[0m[49m[38;5;10m+     10[0m:[38;5;10m[49m  * DatabaseStack: Multi-tenant DynamoDB tables for Vereinssoftware.
+[0m[49m[38;5;10m+     11[0m:[38;5;10m[49m  *
+[0m[49m[38;5;10m+     12[0m:[38;5;10m[49m  * Design principles:
+[0m[49m[38;5;10m+     13[0m:[38;5;10m[49m  * - Multi-table design for clear boundaries and simpler access patterns
+[0m[49m[38;5;10m+     14[0m:[38;5;10m[49m  * - All PKs prefixed with TENANT#<id> to enforce tenant isolation
+[0m[49m[38;5;10m+     15[0m:[38;5;10m[49m  * - PITR enabled on all tables for disaster recovery
+[0m[49m[38;5;10m+     16[0m:[38;5;10m[49m  * - PAY_PER_REQUEST billing (no capacity planning needed)
+[0m[49m[38;5;10m+     17[0m:[38;5;10m[49m  */
+[0m[49m[38;5;10m+     18[0m:[38;5;10m[49m export class DatabaseStack extends cdk.Stack {
+[0m[49m[38;5;10m+     19[0m:[38;5;10m[49m   /** Verein Stammdaten + Subscription-Status */
+[0m[49m[38;5;10m+     20[0m:[38;5;10m[49m   public readonly tenantsTable: dynamodb.Table;
+[0m[49m[38;5;10m+     21[0m:[38;5;10m[49m   /** Mitglieder eines Vereins */
+[0m[49m[38;5;10m+     22[0m:[38;5;10m[49m   public readonly membersTable: dynamodb.Table;
+[0m[49m[38;5;10m+     23[0m:[38;5;10m[49m   /** Vereinsstruktur (Abteilungen, Teams) */
+[0m[49m[38;5;10m+     24[0m:[38;5;10m[49m   public readonly structureTable: dynamodb.Table;
+[0m[49m[38;5;10m+     25[0m:[38;5;10m[49m   /** Veranstaltungen */
+[0m[49m[38;5;10m+     26[0m:[38;5;10m[49m   public readonly eventsTable: dynamodb.Table;
+[0m[49m[38;5;10m+     27[0m:[38;5;10m[49m   /** Dokument-Metadaten */
+[0m[49m[38;5;10m+     28[0m:[38;5;10m[49m   public readonly documentsTable: dynamodb.Table;
+[0m[49m[38;5;10m+     29[0m:[38;5;10m[49m   /** Rollen & Berechtigungen */
+[0m[49m[38;5;10m+     30[0m:[38;5;10m[49m   public readonly authTable: dynamodb.Table;
+[0m[49m[38;5;10m+     31[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     32[0m:[38;5;10m[49m   constructor(scope: Construct, id: string, props: DatabaseStackProps) {
+[0m[49m[38;5;10m+     33[0m:[38;5;10m[49m     super(scope, id, props);
+[0m[49m[38;5;10m+     34[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     35[0m:[38;5;10m[49m     const { stageName } = props;
+[0m[49m[38;5;10m+     36[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     37[0m:[38;5;10m[49m     // ── Tenants ──────────────────────────────────────────────────────────────
+[0m[49m[38;5;10m+     38[0m:[38;5;10m[49m     // PK: TENANT#<id>  SK: META
+[0m[49m[38;5;10m+     39[0m:[38;5;10m[49m     this.tenantsTable = new dynamodb.Table(this, 'TenantsTable', {
+[0m[49m[38;5;10m+     40[0m:[38;5;10m[49m       tableName: `vereinssoftware-tenants-${stageName}`,
+[0m[49m[38;5;10m+     41[0m:[38;5;10m[49m       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+     42[0m:[38;5;10m[49m       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+     43[0m:[38;5;10m[49m       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+[0m[49m[38;5;10m+     44[0m:[38;5;10m[49m       pointInTimeRecovery: true,
+[0m[49m[38;5;10m+     45[0m:[38;5;10m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[38;5;10m+     46[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+     47[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     48[0m:[38;5;10m[49m     // GSI: slug → tenant lookup (for subdomain routing)
+[0m[49m[38;5;10m+     49[0m:[38;5;10m[49m     this.tenantsTable.addGlobalSecondaryIndex({
+[0m[49m[38;5;10m+     50[0m:[38;5;10m[49m       indexName: 'TenantsBySlug',
+[0m[49m[38;5;10m+     51[0m:[38;5;10m[49m       partitionKey: { name: 'slug', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+     52[0m:[38;5;10m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[38;5;10m+     53[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+     54[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     55[0m:[38;5;10m[49m     // ── Members ───────────────────────────────────────────────────────────────
+[0m[49m[38;5;10m+     56[0m:[38;5;10m[49m     // PK: TENANT#<vereinId>#MEMBER#<id>  SK: PROFILE | MEMBERSHIP#<timestamp>
+[0m[49m[38;5;10m+     57[0m:[38;5;10m[49m     this.membersTable = new dynamodb.Table(this, 'MembersTable', {
+[0m[49m[38;5;10m+     58[0m:[38;5;10m[49m       tableName: `vereinssoftware-members-${stageName}`,
+[0m[49m[38;5;10m+     59[0m:[38;5;10m[49m       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+     60[0m:[38;5;10m[49m       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+     61[0m:[38;5;10m[49m       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+[0m[49m[38;5;10m+     62[0m:[38;5;10m[49m       pointInTimeRecovery: true,
+[0m[49m[38;5;10m+     63[0m:[38;5;10m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[38;5;10m+     64[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+     65[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     66[0m:[38;5;10m[49m     // GSI: email uniqueness check per tenant
+[0m[49m[38;5;10m+     67[0m:[38;5;10m[49m     // PK: TENANT#<vereinId>#EMAIL#<email>
+[0m[49m[38;5;10m+     68[0m:[38;5;10m[49m     this.membersTable.addGlobalSecondaryIndex({
+[0m[49m[38;5;10m+     69[0m:[38;5;10m[49m       indexName: 'MembersByEmail',
+[0m[49m[38;5;10m+     70[0m:[38;5;10m[49m       partitionKey: { name: 'emailKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+     71[0m:[38;5;10m[49m       projectionType: dynamodb.ProjectionType.KEYS_ONLY,
+[0m[49m[38;5;10m+     72[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+     73[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     74[0m:[38;5;10m[49m     // GSI: list members by department
+[0m[49m[38;5;10m+     75[0m:[38;5;10m[49m     // PK: TENANT#<vereinId>#DEPT#<abteilungId>  SK: MEMBER#<id>
+[0m[49m[38;5;10m+     76[0m:[38;5;10m[49m     this.membersTable.addGlobalSecondaryIndex({
+[0m[49m[38;5;10m+     77[0m:[38;5;10m[49m       indexName: 'MembersByDept',
+[0m[49m[38;5;10m+     78[0m:[38;5;10m[49m       partitionKey: { name: 'deptKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+     79[0m:[38;5;10m[49m       sortKey: { name: 'memberSortKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+     80[0m:[38;5;10m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[38;5;10m+     81[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+     82[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     83[0m:[38;5;10m[49m     // GSI: Cognito sub → member lookup (for auth flows)
+[0m[49m[38;5;10m+     84[0m:[38;5;10m[49m     // PK: AUTH#<cognitoSub>  SK: TENANT#<vereinId>
+[0m[49m[38;5;10m+     85[0m:[38;5;10m[49m     this.membersTable.addGlobalSecondaryIndex({
+[0m[49m[38;5;10m+     86[0m:[38;5;10m[49m       indexName: 'UserByAuth',
+[0m[49m[38;5;10m+     87[0m:[38;5;10m[49m       partitionKey: { name: 'authKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+     88[0m:[38;5;10m[49m       sortKey: { name: 'tenantKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+     89[0m:[38;5;10m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[38;5;10m+     90[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+     91[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     92[0m:[38;5;10m[49m     // ── Structure ─────────────────────────────────────────────────────────────
+[0m[49m[38;5;10m+     93[0m:[38;5;10m[49m     // PK: TENANT#<vereinId>#DEPT#<abteilungId>  SK: META | TEAM#<teamId>
+[0m[49m[38;5;10m+     94[0m:[38;5;10m[49m     this.structureTable = new dynamodb.Table(this, 'StructureTable', {
+[0m[49m[38;5;10m+     95[0m:[38;5;10m[49m       tableName: `vereinssoftware-structure-${stageName}`,
+[0m[49m[38;5;10m+     96[0m:[38;5;10m[49m       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+     97[0m:[38;5;10m[49m       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+     98[0m:[38;5;10m[49m       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+[0m[49m[38;5;10m+     99[0m:[38;5;10m[49m       pointInTimeRecovery: true,
+[0m[49m[38;5;10m+    100[0m:[38;5;10m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[38;5;10m+    101[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    102[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    103[0m:[38;5;10m[49m     // GSI: list all departments/teams for a tenant
+[0m[49m[38;5;10m+    104[0m:[38;5;10m[49m     // PK: TENANT#<vereinId>  SK: DEPT#<abteilungId> | TEAM#<teamId>
+[0m[49m[38;5;10m+    105[0m:[38;5;10m[49m     this.structureTable.addGlobalSecondaryIndex({
+[0m[49m[38;5;10m+    106[0m:[38;5;10m[49m       indexName: 'StructureByTenant',
+[0m[49m[38;5;10m+    107[0m:[38;5;10m[49m       partitionKey: { name: 'tenantId', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    108[0m:[38;5;10m[49m       sortKey: { name: 'structureSortKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    109[0m:[38;5;10m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[38;5;10m+    110[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    111[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    112[0m:[38;5;10m[49m     // ── Events ────────────────────────────────────────────────────────────────
+[0m[49m[38;5;10m+    113[0m:[38;5;10m[49m     // PK: TENANT#<vereinId>#EVENT#<id>  SK: META | GUEST#<memberId>
+[0m[49m[38;5;10m+    114[0m:[38;5;10m[49m     this.eventsTable = new dynamodb.Table(this, 'EventsTable', {
+[0m[49m[38;5;10m+    115[0m:[38;5;10m[49m       tableName: `vereinssoftware-events-${stageName}`,
+[0m[49m[38;5;10m+    116[0m:[38;5;10m[49m       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    117[0m:[38;5;10m[49m       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    118[0m:[38;5;10m[49m       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+[0m[49m[38;5;10m+    119[0m:[38;5;10m[49m       pointInTimeRecovery: true,
+[0m[49m[38;5;10m+    120[0m:[38;5;10m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[38;5;10m+    121[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    122[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    123[0m:[38;5;10m[49m     // GSI: calendar queries — events by date range for a tenant
+[0m[49m[38;5;10m+    124[0m:[38;5;10m[49m     // PK: TENANT#<vereinId>  SK: DATE#<isoDate>#EVENT#<id>
+[0m[49m[38;5;10m+    125[0m:[38;5;10m[49m     this.eventsTable.addGlobalSecondaryIndex({
+[0m[49m[38;5;10m+    126[0m:[38;5;10m[49m       indexName: 'EventsByDate',
+[0m[49m[38;5;10m+    127[0m:[38;5;10m[49m       partitionKey: { name: 'tenantId', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    128[0m:[38;5;10m[49m       sortKey: { name: 'dateSortKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    129[0m:[38;5;10m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[38;5;10m+    130[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    131[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    132[0m:[38;5;10m[49m     // ── Documents ─────────────────────────────────────────────────────────────
+[0m[49m[38;5;10m+    133[0m:[38;5;10m[49m     // PK: TENANT#<vereinId>#DOC#<id>  SK: META
+[0m[49m[38;5;10m+    134[0m:[38;5;10m[49m     this.documentsTable = new dynamodb.Table(this, 'DocumentsTable', {
+[0m[49m[38;5;10m+    135[0m:[38;5;10m[49m       tableName: `vereinssoftware-documents-${stageName}`,
+[0m[49m[38;5;10m+    136[0m:[38;5;10m[49m       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    137[0m:[38;5;10m[49m       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    138[0m:[38;5;10m[49m       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+[0m[49m[38;5;10m+    139[0m:[38;5;10m[49m       pointInTimeRecovery: true,
+[0m[49m[38;5;10m+    140[0m:[38;5;10m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[38;5;10m+    141[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    142[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    143[0m:[38;5;10m[49m     // GSI: list documents by tenant + visibility
+[0m[49m[38;5;10m+    144[0m:[38;5;10m[49m     // PK: TENANT#<vereinId>  SK: VISIBILITY#<level>#DOC#<id>
+[0m[49m[38;5;10m+    145[0m:[38;5;10m[49m     this.documentsTable.addGlobalSecondaryIndex({
+[0m[49m[38;5;10m+    146[0m:[38;5;10m[49m       indexName: 'DocumentsByTenant',
+[0m[49m[38;5;10m+    147[0m:[38;5;10m[49m       partitionKey: { name: 'tenantId', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    148[0m:[38;5;10m[49m       sortKey: { name: 'visibilitySortKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    149[0m:[38;5;10m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[38;5;10m+    150[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    151[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    152[0m:[38;5;10m[49m     // ── Auth (Roles & Permissions) ────────────────────────────────────────────
+[0m[49m[38;5;10m+    153[0m:[38;5;10m[49m     // PK: TENANT#<vereinId>#ROLE#<roleId>  SK: META | PERMISSION#<resource>
+[0m[49m[38;5;10m+    154[0m:[38;5;10m[49m     this.authTable = new dynamodb.Table(this, 'AuthTable', {
+[0m[49m[38;5;10m+    155[0m:[38;5;10m[49m       tableName: `vereinssoftware-auth-${stageName}`,
+[0m[49m[38;5;10m+    156[0m:[38;5;10m[49m       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    157[0m:[38;5;10m[49m       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    158[0m:[38;5;10m[49m       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+[0m[49m[38;5;10m+    159[0m:[38;5;10m[49m       pointInTimeRecovery: true,
+[0m[49m[38;5;10m+    160[0m:[38;5;10m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[38;5;10m+    161[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    162[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    163[0m:[38;5;10m[49m     // GSI: roles by user (find all roles assigned to a Cognito user)
+[0m[49m[38;5;10m+    164[0m:[38;5;10m[49m     // PK: TENANT#<vereinId>#USER#<cognitoSub>  SK: ROLE#<roleId>
+[0m[49m[38;5;10m+    165[0m:[38;5;10m[49m     this.authTable.addGlobalSecondaryIndex({
+[0m[49m[38;5;10m+    166[0m:[38;5;10m[49m       indexName: 'RolesByUser',
+[0m[49m[38;5;10m+    167[0m:[38;5;10m[49m       partitionKey: { name: 'userRoleKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    168[0m:[38;5;10m[49m       sortKey: { name: 'roleSortKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[38;5;10m+    169[0m:[38;5;10m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[38;5;10m+    170[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    171[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    172[0m:[38;5;10m[49m     // ── Outputs ───────────────────────────────────────────────────────────────
+[0m[49m[38;5;10m+    173[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'TenantsTableName', { value: this.tenantsTable.tableName });
+[0m[49m[38;5;10m+    174[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'MembersTableName', { value: this.membersTable.tableName });
+[0m[49m[38;5;10m+    175[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'StructureTableName', { value: this.structureTable.tableName });
+[0m[49m[38;5;10m+    176[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'EventsTableName', { value: this.eventsTable.tableName });
+[0m[49m[38;5;10m+    177[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'DocumentsTableName', { value: this.documentsTable.tableName });
+[0m[49m[38;5;10m+    178[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'AuthTableName', { value: this.authTable.tableName });
+[0m[49m[38;5;10m+    179[0m:[38;5;10m[49m   }
+[0m[49m[38;5;10m+    180[0m:[38;5;10m[49m }
+[0m[K
+Creating: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/database-stack.ts[0m
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[38;5;141m> [0mNow implement the AuthStack (Cognito):[0m[0m
+[?25l[0m[0mI'll create the following file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/auth-stack.ts[0m[38;5;244m (using tool: write)[0m
+Purpose: CDK AuthStack: Shared Cognito User Pool with custom:tenant_id and custom:roles attributes
+
+[49m[38;5;10m+     1[0m:[38;5;10m[49m import * as cdk from 'aws-cdk-lib';
+[0m[49m[38;5;10m+     2[0m:[38;5;10m[49m import * as cognito from 'aws-cdk-lib/aws-cognito';
+[0m[49m[38;5;10m+     3[0m:[38;5;10m[49m import { Construct } from 'constructs';
+[0m[49m[38;5;10m+     4[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     5[0m:[38;5;10m[49m export interface AuthStackProps extends cdk.StackProps {
+[0m[49m[38;5;10m+     6[0m:[38;5;10m[49m   readonly stageName: string;
+[0m[49m[38;5;10m+     7[0m:[38;5;10m[49m }
+[0m[49m[38;5;10m+     8[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     9[0m:[38;5;10m[49m /**
+[0m[49m[38;5;10m+    10[0m:[38;5;10m[49m  * AuthStack: Shared Cognito User Pool for all tenants.
+[0m[49m[38;5;10m+    11[0m:[38;5;10m[49m  *
+[0m[49m[38;5;10m+    12[0m:[38;5;10m[49m  * Design:
+[0m[49m[38;5;10m+    13[0m:[38;5;10m[49m  * - Single shared pool (cheaper, scales better than per-tenant pools)
+[0m[49m[38;5;10m+    14[0m:[38;5;10m[49m  * - Tenant isolation via custom:tenant_id attribute
+[0m[49m[38;5;10m+    15[0m:[38;5;10m[49m  * - PKCE flow for frontend (no client secret)
+[0m[49m[38;5;10m+    16[0m:[38;5;10m[49m  * - custom:roles stores JSON array of role types
+[0m[49m[38;5;10m+    17[0m:[38;5;10m[49m  */
+[0m[49m[38;5;10m+    18[0m:[38;5;10m[49m export class AuthStack extends cdk.Stack {
+[0m[49m[38;5;10m+    19[0m:[38;5;10m[49m   public readonly userPool: cognito.UserPool;
+[0m[49m[38;5;10m+    20[0m:[38;5;10m[49m   public readonly userPoolClient: cognito.UserPoolClient;
+[0m[49m[38;5;10m+    21[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    22[0m:[38;5;10m[49m   constructor(scope: Construct, id: string, props: AuthStackProps) {
+[0m[49m[38;5;10m+    23[0m:[38;5;10m[49m     super(scope, id, props);
+[0m[49m[38;5;10m+    24[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    25[0m:[38;5;10m[49m     const { stageName } = props;
+[0m[49m[38;5;10m+    26[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    27[0m:[38;5;10m[49m     // ── User Pool ─────────────────────────────────────────────────────────────
+[0m[49m[38;5;10m+    28[0m:[38;5;10m[49m     this.userPool = new cognito.UserPool(this, 'UserPool', {
+[0m[49m[38;5;10m+    29[0m:[38;5;10m[49m       userPoolName: `vereinssoftware-${stageName}`,
+[0m[49m[38;5;10m+    30[0m:[38;5;10m[49m       selfSignUpEnabled: false, // Admins create users; self-signup via /register endpoint
+[0m[49m[38;5;10m+    31[0m:[38;5;10m[49m       signInAliases: { email: true },
+[0m[49m[38;5;10m+    32[0m:[38;5;10m[49m       autoVerify: { email: true },
+[0m[49m[38;5;10m+    33[0m:[38;5;10m[49m       standardAttributes: {
+[0m[49m[38;5;10m+    34[0m:[38;5;10m[49m         email: { required: true, mutable: true },
+[0m[49m[38;5;10m+    35[0m:[38;5;10m[49m         givenName: { required: false, mutable: true },
+[0m[49m[38;5;10m+    36[0m:[38;5;10m[49m         familyName: { required: false, mutable: true },
+[0m[49m[38;5;10m+    37[0m:[38;5;10m[49m       },
+[0m[49m[38;5;10m+    38[0m:[38;5;10m[49m       customAttributes: {
+[0m[49m[38;5;10m+    39[0m:[38;5;10m[49m         // Tenant the user belongs to (set at registration, immutable)
+[0m[49m[38;5;10m+    40[0m:[38;5;10m[49m         tenant_id: new cognito.StringAttribute({ mutable: false }),
+[0m[49m[38;5;10m+    41[0m:[38;5;10m[49m         // JSON array of role types, e.g. ["superadmin"] or ["abteilungsleiter","teamleiter"]
+[0m[49m[38;5;10m+    42[0m:[38;5;10m[49m         roles: new cognito.StringAttribute({ maxLen: 2048, mutable: true }),
+[0m[49m[38;5;10m+    43[0m:[38;5;10m[49m       },
+[0m[49m[38;5;10m+    44[0m:[38;5;10m[49m       passwordPolicy: {
+[0m[49m[38;5;10m+    45[0m:[38;5;10m[49m         minLength: 8,
+[0m[49m[38;5;10m+    46[0m:[38;5;10m[49m         requireLowercase: true,
+[0m[49m[38;5;10m+    47[0m:[38;5;10m[49m         requireUppercase: true,
+[0m[49m[38;5;10m+    48[0m:[38;5;10m[49m         requireDigits: true,
+[0m[49m[38;5;10m+    49[0m:[38;5;10m[49m         requireSymbols: false, // Vereins-Ehrenamtliche as target group
+[0m[49m[38;5;10m+    50[0m:[38;5;10m[49m       },
+[0m[49m[38;5;10m+    51[0m:[38;5;10m[49m       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+[0m[49m[38;5;10m+    52[0m:[38;5;10m[49m       email: cognito.UserPoolEmail.withCognito(),
+[0m[49m[38;5;10m+    53[0m:[38;5;10m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[38;5;10m+    54[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    55[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    56[0m:[38;5;10m[49m     // ── App Client (PKCE, no secret) ──────────────────────────────────────────
+[0m[49m[38;5;10m+    57[0m:[38;5;10m[49m     this.userPoolClient = new cognito.UserPoolClient(this, 'UserPoolClient', {
+[0m[49m[38;5;10m+    58[0m:[38;5;10m[49m       userPool: this.userPool,
+[0m[49m[38;5;10m+    59[0m:[38;5;10m[49m       userPoolClientName: `vereinssoftware-frontend-${stageName}`,
+[0m[49m[38;5;10m+    60[0m:[38;5;10m[49m       generateSecret: false, // SPA — no client secret
+[0m[49m[38;5;10m+    61[0m:[38;5;10m[49m       authFlows: {
+[0m[49m[38;5;10m+    62[0m:[38;5;10m[49m         userSrp: true,
+[0m[49m[38;5;10m+    63[0m:[38;5;10m[49m         userPassword: false, // SRP only, never plaintext password
+[0m[49m[38;5;10m+    64[0m:[38;5;10m[49m       },
+[0m[49m[38;5;10m+    65[0m:[38;5;10m[49m       oAuth: {
+[0m[49m[38;5;10m+    66[0m:[38;5;10m[49m         flows: { authorizationCodeGrant: true },
+[0m[49m[38;5;10m+    67[0m:[38;5;10m[49m         scopes: [
+[0m[49m[38;5;10m+    68[0m:[38;5;10m[49m           cognito.OAuthScope.OPENID,
+[0m[49m[38;5;10m+    69[0m:[38;5;10m[49m           cognito.OAuthScope.EMAIL,
+[0m[49m[38;5;10m+    70[0m:[38;5;10m[49m           cognito.OAuthScope.PROFILE,
+[0m[49m[38;5;10m+    71[0m:[38;5;10m[49m         ],
+[0m[49m[38;5;10m+    72[0m:[38;5;10m[49m         callbackUrls: stageName === 'prod'
+[0m[49m[38;5;10m+    73[0m:[38;5;10m[49m           ? ['https://app.vereinssoftware.de/callback']
+[0m[49m[38;5;10m+    74[0m:[38;5;10m[49m           : ['http://localhost:5173/callback', 'http://localhost:3000/callback'],
+[0m[49m[38;5;10m+    75[0m:[38;5;10m[49m         logoutUrls: stageName === 'prod'
+[0m[49m[38;5;10m+    76[0m:[38;5;10m[49m           ? ['https://app.vereinssoftware.de']
+[0m[49m[38;5;10m+    77[0m:[38;5;10m[49m           : ['http://localhost:5173', 'http://localhost:3000'],
+[0m[49m[38;5;10m+    78[0m:[38;5;10m[49m       },
+[0m[49m[38;5;10m+    79[0m:[38;5;10m[49m       readAttributes: new cognito.ClientAttributes()
+[0m[49m[38;5;10m+    80[0m:[38;5;10m[49m         .withStandardAttributes({ email: true, givenName: true, familyName: true })
+[0m[49m[38;5;10m+    81[0m:[38;5;10m[49m         .withCustomAttributes('tenant_id', 'roles'),
+[0m[49m[38;5;10m+    82[0m:[38;5;10m[49m       writeAttributes: new cognito.ClientAttributes()
+[0m[49m[38;5;10m+    83[0m:[38;5;10m[49m         .withStandardAttributes({ email: true, givenName: true, familyName: true }),
+[0m[49m[38;5;10m+    84[0m:[38;5;10m[49m       // Tokens: access 1h, id 1h, refresh 30d
+[0m[49m[38;5;10m+    85[0m:[38;5;10m[49m       accessTokenValidity: cdk.Duration.hours(1),
+[0m[49m[38;5;10m+    86[0m:[38;5;10m[49m       idTokenValidity: cdk.Duration.hours(1),
+[0m[49m[38;5;10m+    87[0m:[38;5;10m[49m       refreshTokenValidity: cdk.Duration.days(30),
+[0m[49m[38;5;10m+    88[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    89[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    90[0m:[38;5;10m[49m     // ── Outputs ───────────────────────────────────────────────────────────────
+[0m[49m[38;5;10m+    91[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'UserPoolId', { value: this.userPool.userPoolId });
+[0m[49m[38;5;10m+    92[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'UserPoolArn', { value: this.userPool.userPoolArn });
+[0m[49m[38;5;10m+    93[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'UserPoolClientId', { value: this.userPoolClient.userPoolClientId });
+[0m[49m[38;5;10m+    94[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'CognitoIssuer', {
+[0m[49m[38;5;10m+    95[0m:[38;5;10m[49m       value: `https://cognito-idp.${this.region}.amazonaws.com/${this.userPool.userPoolId}`,
+[0m[49m[38;5;10m+    96[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    97[0m:[38;5;10m[49m   }
+[0m[49m[38;5;10m+    98[0m:[38;5;10m[49m }
+[0m[K
+Creating: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/auth-stack.ts[0m
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[38;5;141m> [0mNow the StorageStack:[0m[0m
+[?25l[0m[0mI'll create the following file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts[0m[38;5;244m (using tool: write)[0m
+Purpose: CDK StorageStack: S3 bucket with versioning + CloudFront distribution for document delivery
+
+[49m[38;5;10m+     1[0m:[38;5;10m[49m import * as cdk from 'aws-cdk-lib';
+[0m[49m[38;5;10m+     2[0m:[38;5;10m[49m import * as s3 from 'aws-cdk-lib/aws-s3';
+[0m[49m[38;5;10m+     3[0m:[38;5;10m[49m import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
+[0m[49m[38;5;10m+     4[0m:[38;5;10m[49m import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
+[0m[49m[38;5;10m+     5[0m:[38;5;10m[49m import { Construct } from 'constructs';
+[0m[49m[38;5;10m+     6[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     7[0m:[38;5;10m[49m export interface StorageStackProps extends cdk.StackProps {
+[0m[49m[38;5;10m+     8[0m:[38;5;10m[49m   readonly stageName: string;
+[0m[49m[38;5;10m+     9[0m:[38;5;10m[49m }
+[0m[49m[38;5;10m+    10[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    11[0m:[38;5;10m[49m /**
+[0m[49m[38;5;10m+    12[0m:[38;5;10m[49m  * StorageStack: S3 bucket for tenant documents/images + CloudFront distribution.
+[0m[49m[38;5;10m+    13[0m:[38;5;10m[49m  *
+[0m[49m[38;5;10m+    14[0m:[38;5;10m[49m  * Object key convention: <tenantId>/<category>/<objectId>/<filename>
+[0m[49m[38;5;10m+    15[0m:[38;5;10m[49m  * This prefix structure allows per-tenant IAM conditions for strict isolation.
+[0m[49m[38;5;10m+    16[0m:[38;5;10m[49m  */
+[0m[49m[38;5;10m+    17[0m:[38;5;10m[49m export class StorageStack extends cdk.Stack {
+[0m[49m[38;5;10m+    18[0m:[38;5;10m[49m   public readonly bucket: s3.Bucket;
+[0m[49m[38;5;10m+    19[0m:[38;5;10m[49m   public readonly distribution: cloudfront.Distribution;
+[0m[49m[38;5;10m+    20[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    21[0m:[38;5;10m[49m   constructor(scope: Construct, id: string, props: StorageStackProps) {
+[0m[49m[38;5;10m+    22[0m:[38;5;10m[49m     super(scope, id, props);
+[0m[49m[38;5;10m+    23[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    24[0m:[38;5;10m[49m     const { stageName } = props;
+[0m[49m[38;5;10m+    25[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    26[0m:[38;5;10m[49m     // ── S3 Bucket ─────────────────────────────────────────────────────────────
+[0m[49m[38;5;10m+    27[0m:[38;5;10m[49m     this.bucket = new s3.Bucket(this, 'DocumentsBucket', {
+[0m[49m[38;5;10m+    28[0m:[38;5;10m[49m       bucketName: `vereinssoftware-documents-${stageName}-${this.account}`,
+[0m[49m[38;5;10m+    29[0m:[38;5;10m[49m       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+[0m[49m[38;5;10m+    30[0m:[38;5;10m[49m       encryption: s3.BucketEncryption.S3_MANAGED,
+[0m[49m[38;5;10m+    31[0m:[38;5;10m[49m       versioned: true, // DSGVO: enables recovery + audit trail
+[0m[49m[38;5;10m+    32[0m:[38;5;10m[49m       lifecycleRules: [
+[0m[49m[38;5;10m+    33[0m:[38;5;10m[49m         {
+[0m[49m[38;5;10m+    34[0m:[38;5;10m[49m           // Clean up incomplete multipart uploads
+[0m[49m[38;5;10m+    35[0m:[38;5;10m[49m           abortIncompleteMultipartUploadAfter: cdk.Duration.days(7),
+[0m[49m[38;5;10m+    36[0m:[38;5;10m[49m         },
+[0m[49m[38;5;10m+    37[0m:[38;5;10m[49m         {
+[0m[49m[38;5;10m+    38[0m:[38;5;10m[49m           // Move old versions to cheaper storage after 90 days
+[0m[49m[38;5;10m+    39[0m:[38;5;10m[49m           noncurrentVersionTransitions: [
+[0m[49m[38;5;10m+    40[0m:[38;5;10m[49m             {
+[0m[49m[38;5;10m+    41[0m:[38;5;10m[49m               storageClass: s3.StorageClass.INFREQUENT_ACCESS,
+[0m[49m[38;5;10m+    42[0m:[38;5;10m[49m               transitionAfter: cdk.Duration.days(90),
+[0m[49m[38;5;10m+    43[0m:[38;5;10m[49m             },
+[0m[49m[38;5;10m+    44[0m:[38;5;10m[49m           ],
+[0m[49m[38;5;10m+    45[0m:[38;5;10m[49m           noncurrentVersionExpiration: cdk.Duration.days(365),
+[0m[49m[38;5;10m+    46[0m:[38;5;10m[49m         },
+[0m[49m[38;5;10m+    47[0m:[38;5;10m[49m       ],
+[0m[49m[38;5;10m+    48[0m:[38;5;10m[49m       cors: [
+[0m[49m[38;5;10m+    49[0m:[38;5;10m[49m         {
+[0m[49m[38;5;10m+    50[0m:[38;5;10m[49m           allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.PUT],
+[0m[49m[38;5;10m+    51[0m:[38;5;10m[49m           allowedOrigins: stageName === 'prod'
+[0m[49m[38;5;10m+    52[0m:[38;5;10m[49m             ? ['https://app.vereinssoftware.de', 'https://*.vereinssoftware.de']
+[0m[49m[38;5;10m+    53[0m:[38;5;10m[49m             : ['http://localhost:5173', 'http://localhost:3000'],
+[0m[49m[38;5;10m+    54[0m:[38;5;10m[49m           allowedHeaders: ['*'],
+[0m[49m[38;5;10m+    55[0m:[38;5;10m[49m           maxAge: 3600,
+[0m[49m[38;5;10m+    56[0m:[38;5;10m[49m         },
+[0m[49m[38;5;10m+    57[0m:[38;5;10m[49m       ],
+[0m[49m[38;5;10m+    58[0m:[38;5;10m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[38;5;10m+    59[0m:[38;5;10m[49m       autoDeleteObjects: stageName !== 'prod',
+[0m[49m[38;5;10m+    60[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    61[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    62[0m:[38;5;10m[49m     // ── CloudFront (for signed URL delivery) ─────────────────────────────────
+[0m[49m[38;5;10m+    63[0m:[38;5;10m[49m     const oac = new cloudfront.S3OriginAccessControl(this, 'OAC', {
+[0m[49m[38;5;10m+    64[0m:[38;5;10m[49m       description: `OAC for vereinssoftware-${stageName}`,
+[0m[49m[38;5;10m+    65[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    66[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    67[0m:[38;5;10m[49m     this.distribution = new cloudfront.Distribution(this, 'Distribution', {
+[0m[49m[38;5;10m+    68[0m:[38;5;10m[49m       comment: `vereinssoftware-${stageName}`,
+[0m[49m[38;5;10m+    69[0m:[38;5;10m[49m       defaultBehavior: {
+[0m[49m[38;5;10m+    70[0m:[38;5;10m[49m         origin: origins.S3BucketOrigin.withOriginAccessControl(this.bucket, {
+[0m[49m[38;5;10m+    71[0m:[38;5;10m[49m           originAccessControl: oac,
+[0m[49m[38;5;10m+    72[0m:[38;5;10m[49m         }),
+[0m[49m[38;5;10m+    73[0m:[38;5;10m[49m         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+[0m[49m[38;5;10m+    74[0m:[38;5;10m[49m         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED, // Documents served via signed URLs
+[0m[49m[38;5;10m+    75[0m:[38;5;10m[49m         allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+[0m[49m[38;5;10m+    76[0m:[38;5;10m[49m       },
+[0m[49m[38;5;10m+    77[0m:[38;5;10m[49m       // Restrict to eu-central-1 region for DSGVO compliance
+[0m[49m[38;5;10m+    78[0m:[38;5;10m[49m       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
+[0m[49m[38;5;10m+    79[0m:[38;5;10m[49m     });
+[0m[49m[38;5;10m+    80[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+    81[0m:[38;5;10m[49m     // ── Outputs ───────────────────────────────────────────────────────────────
+[0m[49m[38;5;10m+    82[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'BucketName', { value: this.bucket.bucketName });
+[0m[49m[38;5;10m+    83[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'BucketArn', { value: this.bucket.bucketArn });
+[0m[49m[38;5;10m+    84[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'DistributionDomainName', { value: this.distribution.distributionDomainName });
+[0m[49m[38;5;10m+    85[0m:[38;5;10m[49m     new cdk.CfnOutput(this, 'DistributionId', { value: this.distribution.distributionId });
+[0m[49m[38;5;10m+    86[0m:[38;5;10m[49m   }
+[0m[49m[38;5;10m+    87[0m:[38;5;10m[49m }
+[0m[K
+Creating: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts[0m
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[38;5;141m> [0mNow wire everything together in [38;5;10mapp.ts[0m:[0m[0m
+[?25l[0m[0mI'll create the following file: [38;5;141minfrastructure/bin/app.ts[0m[38;5;244m (using tool: write)[0m
+Purpose: Wire up CDK stacks in app.ts: AuthStack, DatabaseStack, StorageStack
+
+[49m[39m   1,  1[0m:[39m[49m #!/usr/bin/env node
+[0m[49m[39m   2,  2[0m:[39m[49m import * as cdk from 'aws-cdk-lib';
+[0m[49m[38;5;10m+      3[0m:[38;5;10m[49m import { AuthStack } from '../lib/auth-stack.js';
+[0m[49m[38;5;10m+      4[0m:[38;5;10m[49m import { DatabaseStack } from '../lib/database-stack.js';
+[0m[49m[38;5;10m+      5[0m:[38;5;10m[49m import { StorageStack } from '../lib/storage-stack.js';
+[0m[49m[39m   3,  6[0m:[39m[49m 
+[0m[49m[39m   4,  7[0m:[39m[49m /**
+[0m[49m[39m   5,  8[0m:[39m[49m  * Environment configuration for the Vereinssoftware platform.
+[0m[49m[39m   6,  9[0m:[39m[49m  * All resources are deployed to eu-central-1 (Frankfurt) for DSGVO compliance.
+[0m[49m[39m   7, 10[0m:[39m[49m  */
+[0m[49m[39m   8, 11[0m:[39m[49m interface EnvironmentConfig {
+[0m[49m[39m   9, 12[0m:[39m[49m   readonly account?: string;
+[0m[49m[39m  10, 13[0m:[39m[49m   readonly region: string;
+[0m[49m[39m  11, 14[0m:[39m[49m   readonly stageName: string;
+[0m[49m[39m  12, 15[0m:[39m[49m }
+[0m[49m[39m  13, 16[0m:[39m[49m 
+[0m[49m[39m  14, 17[0m:[39m[49m const environments: Record<string, EnvironmentConfig> = {
+[0m[49m[39m  15, 18[0m:[39m[49m   dev: {
+[0m[49m[39m  16, 19[0m:[39m[49m     account: process.env.CDK_DEFAULT_ACCOUNT,
+[0m[49m[39m  17, 20[0m:[39m[49m     region: 'eu-central-1',
+[0m[49m[39m  18, 21[0m:[39m[49m     stageName: 'dev',
+[0m[49m[39m  19, 22[0m:[39m[49m   },
+[0m[49m[39m  20, 23[0m:[39m[49m   staging: {
+[0m[49m[39m  21, 24[0m:[39m[49m     account: process.env.CDK_DEFAULT_ACCOUNT,
+[0m[49m[39m  22, 25[0m:[39m[49m     region: 'eu-central-1',
+[0m[49m[39m  23, 26[0m:[39m[49m     stageName: 'staging',
+[0m[49m[39m  24, 27[0m:[39m[49m   },
+[0m[49m[39m  25, 28[0m:[39m[49m   prod: {
+[0m[49m[39m  26, 29[0m:[39m[49m     account: process.env.CDK_DEFAULT_ACCOUNT,
+[0m[49m[39m  27, 30[0m:[39m[49m     region: 'eu-central-1',
+[0m[49m[39m  28, 31[0m:[39m[49m     stageName: 'prod',
+[0m[49m[39m  29, 32[0m:[39m[49m   },
+[0m[49m[39m  30, 33[0m:[39m[49m };
+[0m[49m[39m  31, 34[0m:[39m[49m 
+[0m[49m[39m  32, 35[0m:[39m[49m const app = new cdk.App();
+[0m[49m[39m  33, 36[0m:[39m[49m 
+[0m[49m[39m  34, 37[0m:[39m[49m const targetEnv = app.node.tryGetContext('env') || 'dev';
+[0m[49m[39m  35, 38[0m:[39m[49m const envConfig = environments[targetEnv] ?? environments['dev']!;
+[0m[49m[39m  36, 39[0m:[39m[49m 
+[0m[49m[38;5;9m- 37    [0m:[38;5;9m[49m // eslint-disable-next-line @typescript-eslint/no-unused-vars
+[0m[49m[39m  38, 40[0m:[39m[49m const env: cdk.Environment = {
+[0m[49m[39m  39, 41[0m:[39m[49m   account: envConfig.account,
+[0m[49m[39m  40, 42[0m:[39m[49m   region: envConfig.region,
+[0m[49m[39m  41, 43[0m:[39m[49m };
+[0m[49m[39m  42, 44[0m:[39m[49m 
+[0m[49m[38;5;9m- 43    [0m:[38;5;9m[49m // TODO: Instantiate stacks here (Task 13)
+[0m[49m[38;5;9m- 44    [0m:[38;5;9m[49m // new DatabaseStack(app, `Vereinssoftware-Database-${envConfig.stageName}`, { env });
+[0m[49m[38;5;9m- 45    [0m:[38;5;9m[49m // new AuthStack(app, `Vereinssoftware-Auth-${envConfig.stageName}`, { env });
+[0m[49m[38;5;9m- 46    [0m:[38;5;9m[49m // new ApiStack(app, `Vereinssoftware-Api-${envConfig.stageName}`, { env });
+[0m[49m[38;5;9m- 47    [0m:[38;5;9m[49m // new StorageStack(app, `Vereinssoftware-Storage-${envConfig.stageName}`, { env });
+[0m[49m[38;5;9m- 48    [0m:[38;5;9m[49m // new MonitoringStack(app, `Vereinssoftware-Monitoring-${envConfig.stageName}`, { env });
+[0m[49m[38;5;10m+     45[0m:[38;5;10m[49m const { stageName } = envConfig;
+[0m[49m[38;5;10m+     46[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     47[0m:[38;5;10m[49m const authStack = new AuthStack(app, `Vereinssoftware-Auth-${stageName}`, { env, stageName });
+[0m[49m[38;5;10m+     48[0m:[38;5;10m[49m const dbStack = new DatabaseStack(app, `Vereinssoftware-Database-${stageName}`, { env, stageName });
+[0m[49m[38;5;10m+     49[0m:[38;5;10m[49m const storageStack = new StorageStack(app, `Vereinssoftware-Storage-${stageName}`, { env, stageName });
+[0m[49m[38;5;10m+     50[0m:[38;5;10m[49m 
+[0m[49m[38;5;10m+     51[0m:[38;5;10m[49m // ApiStack and MonitoringStack will be added in subsequent tasks
+[0m[49m[38;5;10m+     52[0m:[38;5;10m[49m // (they depend on authStack.userPool and dbStack tables)
+[0m[49m[38;5;10m+     53[0m:[38;5;10m[49m void authStack;
+[0m[49m[38;5;10m+     54[0m:[38;5;10m[49m void dbStack;
+[0m[49m[38;5;10m+     55[0m:[38;5;10m[49m void storageStack;
+[0m[49m[39m  49, 56[0m:[39m[49m 
+[0m[49m[39m  50, 57[0m:[39m[49m app.synth();
+[0m[K
+Replacing: [38;5;141minfrastructure/bin/app.ts[0m
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[38;5;141m> [0mNow let's verify the TypeScript compiles:[0m[0m
+[?25l[0m[0mI will run the following command: [38;5;141mcd /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure && npm run build 2>&1[0m[38;5;244m (using tool: shell)[0m
+Purpose: Compile CDK infrastructure TypeScript
+
+
+> @vereinssoftware/infrastructure@0.1.0 build
+> tsc
+
+[38;5;244m - Completed in 1.825s[0m
+
+[?25l[0m[38;5;141m> [0mClean compile. Now let's verify CDK can synthesize the stacks:[0m[0m
+[?25l[0m[0mI will run the following command: [38;5;141mcd /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure && npx cdk synth --context env=dev 2>&1 | tail -30[0m[38;5;244m (using tool: shell)[0m
+Purpose: CDK synth to verify stacks are valid
+
+npm warn exec The following package was not found and will be installed: cdk@2.1121.0
+Error: Cannot find module '../lib/auth-stack.js'
+Require stack:
+- /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1475:15)
+    at Module._resolveFilename.sharedData.moduleResolveFilenameHook.installedValue [as _resolveFilename] (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/node_modules/@cspotcode/source-map-support/source-map-support.js:811:30)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+    at Module._load (node:internal/modules/cjs/loader:1261:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.require (node:internal/modules/cjs/loader:1575:12)
+    at require (node:internal/modules/helpers:191:16)
+    at Object.<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:3:1) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts'
+  ]
+}
+[31mnpx ts-node --prefer-ts-exts bin/app.ts: Subprocess exited with error 1[39m
+[38;5;244m - Completed in 8.647s[0m
+
+[?25l[0m[38;5;11m
+WARNING: [0mRetry #2, retrying within 10.0s..
+[38;5;141m> [0mThe CDK CLI uses ts-node which doesn't resolve [38;5;10m.js[0m extensions in imports. Let me check the tsconfig:[0m[0m
+[?25l[0m[0mBatch fs_read operation with [38;5;141m2[0m operations[38;5;244m (using tool: read)[0m
+
+↱ Operation 1: Reading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/tsconfig.json[0m, all lines
+↱ Operation 2: Reading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/cdk.json[0m, all lines
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m293 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/tsconfig.json
+
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m416 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/cdk.json
+
+ ⋮ 
+
+[38;5;244m- [0mSummary: 2 operations processed, 2 successful, 0 failed
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[?25l[0m[0mReading file: [38;5;141m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/tsconfig.base.json[0m, all lines[38;5;244m (using tool: read)[0m
+[38;5;10m ✓ [0mSuccessfully read [38;5;244m669 bytes[0m from /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/tsconfig.base.json
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[38;5;141m> [0mThe base tsconfig uses [38;5;10mNodeNext[0m module resolution which requires [38;5;10m.js[0m extensions. But ts-node with [38;5;10m--prefer-ts-exts[0m should handle this. The issue is that ts-node can't find the compiled [38;5;10m.js[0m files because the infrastructure tsconfig has [38;5;10moutDir: ./dist[0m but ts-node runs from source. The [38;5;10m.js[0m extension in imports is correct for NodeNext — the problem is ts-node needs [38;5;10mesm[0m mode. Let me fix the infrastructure tsconfig to use CommonJS (which CDK's ts-node setup expects):[0m[0m
+[?25l[0m[0mI'll create the following file: [38;5;141minfrastructure/tsconfig.json[0m[38;5;244m (using tool: write)[0m
+Purpose: Switch infrastructure tsconfig to CommonJS for CDK ts-node compatibility
+
+[48;2;43;48;59m[39m   1,  1[0m:[39m[48;2;43;48;59m [38;2;192;197;206m{[K
+[0m[48;2;79;40;40m[39m-  2    [0m:[39m[48;2;36;25;28m [38;2;192;197;206m  [38;2;192;197;206m"[38;2;163;190;140mextends[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;192;197;206m"[38;2;163;190;140m../tsconfig.base.json[38;2;192;197;206m"[38;2;192;197;206m,[K
+[0m[48;2;43;48;59m[39m   3,  2[0m:[39m[48;2;43;48;59m [38;2;192;197;206m  [38;2;192;197;206m"[38;2;163;190;140mcompilerOptions[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;192;197;206m{[K
+[0m[48;2;79;40;40m[39m-  4    [0m:[39m[48;2;36;25;28m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mrootDir[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;192;197;206m"[38;2;163;190;140m.[38;2;192;197;206m"[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+      3[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mtarget[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;192;197;206m"[38;2;163;190;140mES2022[38;2;192;197;206m"[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+      4[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mmodule[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;192;197;206m"[38;2;163;190;140mCommonJS[38;2;192;197;206m"[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+      5[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mmoduleResolution[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;192;197;206m"[38;2;163;190;140mNode[38;2;192;197;206m"[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+      6[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mstrict[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mtrue[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+      7[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mesModuleInterop[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mtrue[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+      8[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mskipLibCheck[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mtrue[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+      9[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mforceConsistentCasingInFileNames[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mtrue[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+     10[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mresolveJsonModule[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mtrue[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+     11[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mdeclaration[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mtrue[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+     12[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mdeclarationMap[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mtrue[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+     13[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140msourceMap[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mtrue[38;2;192;197;206m,[K
+[0m[48;2;43;48;59m[39m   5, 14[0m:[39m[48;2;43;48;59m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140moutDir[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;192;197;206m"[38;2;163;190;140m./dist[38;2;192;197;206m"[38;2;192;197;206m,[K
+[0m[48;2;79;40;40m[39m-  6    [0m:[39m[48;2;36;25;28m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mdeclaration[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mtrue[38;2;192;197;206m,[K
+[0m[48;2;79;40;40m[39m-  7    [0m:[39m[48;2;36;25;28m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mtypes[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;192;197;206m[[38;2;192;197;206m"[38;2;163;190;140mnode[38;2;192;197;206m"[38;2;192;197;206m][38;2;192;197;206m,[K
+[0m[48;2;79;40;40m[39m-  8    [0m:[39m[48;2;36;25;28m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mnoUnusedLocals[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mfalse[K
+[0m[48;2;40;67;43m[39m+     15[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mrootDir[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;192;197;206m"[38;2;163;190;140m.[38;2;192;197;206m"[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+     16[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mnoUnusedLocals[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mfalse[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+     17[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mnoUnusedParameters[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mfalse[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+     18[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mnoImplicitReturns[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mtrue[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+     19[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mnoFallthroughCasesInSwitch[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;208;135;112mtrue[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+     20[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mtypes[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;192;197;206m[[38;2;192;197;206m"[38;2;163;190;140mnode[38;2;192;197;206m"[38;2;192;197;206m][K
+[0m[48;2;43;48;59m[39m   9, 21[0m:[39m[48;2;43;48;59m [38;2;192;197;206m  [38;2;192;197;206m}[38;2;192;197;206m,[K
+[0m[48;2;43;48;59m[39m  10, 22[0m:[39m[48;2;43;48;59m [38;2;192;197;206m  [38;2;192;197;206m"[38;2;163;190;140minclude[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;192;197;206m[[38;2;192;197;206m"[38;2;163;190;140mbin/**/*.ts[38;2;192;197;206m"[38;2;192;197;206m,[38;2;192;197;206m [38;2;192;197;206m"[38;2;163;190;140mlib/**/*.ts[38;2;192;197;206m"[38;2;192;197;206m,[38;2;192;197;206m [38;2;192;197;206m"[38;2;163;190;140m__tests__/**/*.ts[38;2;192;197;206m"[38;2;192;197;206m][38;2;192;197;206m,[K
+[0m[48;2;43;48;59m[39m  11, 23[0m:[39m[48;2;43;48;59m [38;2;192;197;206m  [38;2;192;197;206m"[38;2;163;190;140mexclude[38;2;192;197;206m"[38;2;192;197;206m:[38;2;192;197;206m [38;2;192;197;206m[[38;2;192;197;206m"[38;2;163;190;140mnode_modules[38;2;192;197;206m"[38;2;192;197;206m,[38;2;192;197;206m [38;2;192;197;206m"[38;2;163;190;140mdist[38;2;192;197;206m"[38;2;192;197;206m][K
+[0m[48;2;43;48;59m[39m  12, 24[0m:[39m[48;2;43;48;59m [38;2;192;197;206m}[K
+[0m[K
+Replacing: [38;5;141minfrastructure/tsconfig.json[0m
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[38;5;141m> [0mNow update the imports in app.ts to remove the [38;5;10m.js[0m extensions (CommonJS doesn't need them):[0m[0m
+[?25l[0m[0mI'll modify the following file: [38;5;141minfrastructure/bin/app.ts[0m[38;5;244m (using tool: write)[0m
+
+[49m[38;5;9m- 3   [0m:[38;5;9m[49m import { AuthStack } from '../lib/auth-stack.js';
+[0m[49m[38;5;9m- 4   [0m:[38;5;9m[49m import { DatabaseStack } from '../lib/database-stack.js';
+[0m[49m[38;5;9m- 5   [0m:[38;5;9m[49m import { StorageStack } from '../lib/storage-stack.js';
+[0m[49m[38;5;10m+    3[0m:[38;5;10m[49m import { AuthStack } from '../lib/auth-stack';
+[0m[49m[38;5;10m+    4[0m:[38;5;10m[49m import { DatabaseStack } from '../lib/database-stack';
+[0m[49m[38;5;10m+    5[0m:[38;5;10m[49m import { StorageStack } from '../lib/storage-stack';
+[0m[K
+Updating: [38;5;141minfrastructure/bin/app.ts[0m
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[?25l[0m[0mI will run the following command: [38;5;141mcd /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure && npm run build 2>&1 && echo "BUILD OK"[0m[38;5;244m (using tool: shell)[0m
+Purpose: Recompile after tsconfig change
+
+
+> @vereinssoftware/infrastructure@0.1.0 build
+> tsc
+
+[96mtsconfig.json[0m:[93m5[0m:[93m25[0m - [91merror[0m[90m TS5107: [0mOption 'moduleResolution=node10' is deprecated and will stop functioning in TypeScript 7.0. Specify compilerOption '"ignoreDeprecations": "6.0"' to silence this error.
+  Visit https://aka.ms/ts6 for migration information.
+
+[7m5[0m     "moduleResolution": "Node",
+[7m [0m [91m                        ~~~~~~[0m
+
+
+Found 1 error in tsconfig.json[90m:5[0m
+
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure
+npm error workspace @vereinssoftware/infrastructure@0.1.0
+npm error location /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure
+npm error command failed
+npm error command sh -c tsc
+[38;5;244m - Completed in 1.707s[0m
+
+[?25l[0m[?25l[0m[0mI'll modify the following file: [38;5;141minfrastructure/tsconfig.json[0m[38;5;244m (using tool: write)[0m
+
+[48;2;79;40;40m[39m- 5   [0m:[39m[48;2;36;25;28m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mmoduleResolution[38;2;192;197;206m"[38;2;192;197;206m: [38;2;192;197;206m"[38;2;163;190;140mNode[38;2;192;197;206m"[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+    5[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mmoduleResolution[38;2;192;197;206m"[38;2;192;197;206m: [38;2;192;197;206m"[38;2;163;190;140mNode10[38;2;192;197;206m"[38;2;192;197;206m,[K
+[0m[48;2;40;67;43m[39m+    6[0m:[39m[48;2;24;38;30m [38;2;192;197;206m    [38;2;192;197;206m"[38;2;163;190;140mignoreDeprecations[38;2;192;197;206m"[38;2;192;197;206m: [38;2;192;197;206m"[38;2;163;190;140m6.0[38;2;192;197;206m"[38;2;192;197;206m,[K
+[0m[K
+Updating: [38;5;141minfrastructure/tsconfig.json[0m
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[?25l[0m[0mI will run the following command: [38;5;141mcd /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure && npm run build 2>&1 && echo "BUILD OK"[0m[38;5;244m (using tool: shell)[0m
+
+
+> @vereinssoftware/infrastructure@0.1.0 build
+> tsc
+
+BUILD OK
+[38;5;244m - Completed in 1.784s[0m
+
+[?25l[0m[?25l[0m[0mI will run the following command: [38;5;141mcd /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure && npx cdk synth --context env=dev 2>&1 | grep -E "^(Stack|Error|Resources|Outputs|✅|❌)" | head -30[0m[38;5;244m (using tool: shell)[0m
+Purpose: CDK synth to verify stacks synthesize correctly
+
+[38;5;244m - Completed in 5.686s[0m
+
+[?25l[0m[?25l[0m[0mI will run the following command: [38;5;141mcd /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure && npx cdk synth --context env=dev 2>&1 | tail -20[0m[38;5;244m (using tool: shell)[0m
+
+  use `pointInTimeRecoverySpecification` instead
+  This API will be removed in the next major release.
+[WARNING] aws-cdk-lib.aws_dynamodb.TableOptions#pointInTimeRecovery is deprecated.
+  use `pointInTimeRecoverySpecification` instead
+  This API will be removed in the next major release.
+[WARNING] aws-cdk-lib.aws_dynamodb.TableOptions#pointInTimeRecovery is deprecated.
+  use `pointInTimeRecoverySpecification` instead
+  This API will be removed in the next major release.
+[WARNING] aws-cdk-lib.aws_dynamodb.TableOptions#pointInTimeRecovery is deprecated.
+  use `pointInTimeRecoverySpecification` instead
+  This API will be removed in the next major release.
+[WARNING] aws-cdk-lib.aws_dynamodb.TableOptions#pointInTimeRecovery is deprecated.
+  use `pointInTimeRecoverySpecification` instead
+  This API will be removed in the next major release.
+[WARNING] aws-cdk-lib.aws_dynamodb.TableOptions#pointInTimeRecovery is deprecated.
+  use `pointInTimeRecoverySpecification` instead
+  This API will be removed in the next major release.
+[32mSuccessfully synthesized to [34m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/cdk.out[39m[32m[39m
+Supply a stack id ([32mVereinssoftware-Auth-dev[39m, [32mVereinssoftware-Database-dev[39m, [32mVereinssoftware-Storage-dev[39m) to display its template.
+76 feature flags are not configured. Run 'cdk flags --unstable=flags' to learn more.
+[38;5;244m - Completed in 5.450s[0m
+
+[?25l[0m[38;5;141m> [0mCDK synth succeeds. Fix the deprecated [38;5;10mpointInTimeRecovery[0m API:[0m[0m
+[?25l[0m[0mI'll modify the following file: [38;5;141minfrastructure/lib/database-stack.ts[0m[38;5;244m (using tool: write)[0m
+
+[49m[39m   43,  43[0m:[39m[49m       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+[0m[49m[38;5;9m-  44     [0m:[38;5;9m[49m       pointInTimeRecovery: true,
+[0m[49m[38;5;10m+       44[0m:[38;5;10m[49m       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+[0m[49m[39m   45,  45[0m:[39m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[39m   46,  46[0m:[39m[49m     });
+[0m[49m[39m   47,  47[0m:[39m[49m 
+[0m[49m[39m   48,  48[0m:[39m[49m     // GSI: slug → tenant lookup (for subdomain routing)
+[0m[49m[39m   49,  49[0m:[39m[49m     this.tenantsTable.addGlobalSecondaryIndex({
+[0m[49m[39m   50,  50[0m:[39m[49m       indexName: 'TenantsBySlug',
+[0m[49m[39m   51,  51[0m:[39m[49m       partitionKey: { name: 'slug', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m   52,  52[0m:[39m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[39m   53,  53[0m:[39m[49m     });
+[0m[49m[39m   54,  54[0m:[39m[49m 
+[0m[49m[39m   55,  55[0m:[39m[49m     // ── Members ───────────────────────────────────────────────────────────────
+[0m[49m[39m   56,  56[0m:[39m[49m     // PK: TENANT#<vereinId>#MEMBER#<id>  SK: PROFILE | MEMBERSHIP#<timestamp>
+[0m[49m[39m   57,  57[0m:[39m[49m     this.membersTable = new dynamodb.Table(this, 'MembersTable', {
+[0m[49m[39m   58,  58[0m:[39m[49m       tableName: `vereinssoftware-members-${stageName}`,
+[0m[49m[39m   59,  59[0m:[39m[49m       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m   60,  60[0m:[39m[49m       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m   61,  61[0m:[39m[49m       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+[0m[49m[38;5;9m-  62     [0m:[38;5;9m[49m       pointInTimeRecovery: true,
+[0m[49m[38;5;10m+       62[0m:[38;5;10m[49m       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+[0m[49m[39m   63,  63[0m:[39m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[39m   64,  64[0m:[39m[49m     });
+[0m[49m[39m   65,  65[0m:[39m[49m 
+[0m[49m[39m   66,  66[0m:[39m[49m     // GSI: email uniqueness check per tenant
+[0m[49m[39m   67,  67[0m:[39m[49m     // PK: TENANT#<vereinId>#EMAIL#<email>
+[0m[49m[39m   68,  68[0m:[39m[49m     this.membersTable.addGlobalSecondaryIndex({
+[0m[49m[39m   69,  69[0m:[39m[49m       indexName: 'MembersByEmail',
+[0m[49m[39m   70,  70[0m:[39m[49m       partitionKey: { name: 'emailKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m   71,  71[0m:[39m[49m       projectionType: dynamodb.ProjectionType.KEYS_ONLY,
+[0m[49m[39m   72,  72[0m:[39m[49m     });
+[0m[49m[39m   73,  73[0m:[39m[49m 
+[0m[49m[39m   74,  74[0m:[39m[49m     // GSI: list members by department
+[0m[49m[39m   75,  75[0m:[39m[49m     // PK: TENANT#<vereinId>#DEPT#<abteilungId>  SK: MEMBER#<id>
+[0m[49m[39m   76,  76[0m:[39m[49m     this.membersTable.addGlobalSecondaryIndex({
+[0m[49m[39m   77,  77[0m:[39m[49m       indexName: 'MembersByDept',
+[0m[49m[39m   78,  78[0m:[39m[49m       partitionKey: { name: 'deptKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m   79,  79[0m:[39m[49m       sortKey: { name: 'memberSortKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m   80,  80[0m:[39m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[39m   81,  81[0m:[39m[49m     });
+[0m[49m[39m   82,  82[0m:[39m[49m 
+[0m[49m[39m   83,  83[0m:[39m[49m     // GSI: Cognito sub → member lookup (for auth flows)
+[0m[49m[39m   84,  84[0m:[39m[49m     // PK: AUTH#<cognitoSub>  SK: TENANT#<vereinId>
+[0m[49m[39m   85,  85[0m:[39m[49m     this.membersTable.addGlobalSecondaryIndex({
+[0m[49m[39m   86,  86[0m:[39m[49m       indexName: 'UserByAuth',
+[0m[49m[39m   87,  87[0m:[39m[49m       partitionKey: { name: 'authKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m   88,  88[0m:[39m[49m       sortKey: { name: 'tenantKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m   89,  89[0m:[39m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[39m   90,  90[0m:[39m[49m     });
+[0m[49m[39m   91,  91[0m:[39m[49m 
+[0m[49m[39m   92,  92[0m:[39m[49m     // ── Structure ─────────────────────────────────────────────────────────────
+[0m[49m[39m   93,  93[0m:[39m[49m     // PK: TENANT#<vereinId>#DEPT#<abteilungId>  SK: META | TEAM#<teamId>
+[0m[49m[39m   94,  94[0m:[39m[49m     this.structureTable = new dynamodb.Table(this, 'StructureTable', {
+[0m[49m[39m   95,  95[0m:[39m[49m       tableName: `vereinssoftware-structure-${stageName}`,
+[0m[49m[39m   96,  96[0m:[39m[49m       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m   97,  97[0m:[39m[49m       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m   98,  98[0m:[39m[49m       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+[0m[49m[38;5;9m-  99     [0m:[38;5;9m[49m       pointInTimeRecovery: true,
+[0m[49m[38;5;10m+       99[0m:[38;5;10m[49m       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+[0m[49m[39m  100, 100[0m:[39m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[39m  101, 101[0m:[39m[49m     });
+[0m[49m[39m  102, 102[0m:[39m[49m 
+[0m[49m[39m  103, 103[0m:[39m[49m     // GSI: list all departments/teams for a tenant
+[0m[49m[39m  104, 104[0m:[39m[49m     // PK: TENANT#<vereinId>  SK: DEPT#<abteilungId> | TEAM#<teamId>
+[0m[49m[39m  105, 105[0m:[39m[49m     this.structureTable.addGlobalSecondaryIndex({
+[0m[49m[39m  106, 106[0m:[39m[49m       indexName: 'StructureByTenant',
+[0m[49m[39m  107, 107[0m:[39m[49m       partitionKey: { name: 'tenantId', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m  108, 108[0m:[39m[49m       sortKey: { name: 'structureSortKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m  109, 109[0m:[39m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[39m  110, 110[0m:[39m[49m     });
+[0m[49m[39m  111, 111[0m:[39m[49m 
+[0m[49m[39m  112, 112[0m:[39m[49m     // ── Events ────────────────────────────────────────────────────────────────
+[0m[49m[39m  113, 113[0m:[39m[49m     // PK: TENANT#<vereinId>#EVENT#<id>  SK: META | GUEST#<memberId>
+[0m[49m[39m  114, 114[0m:[39m[49m     this.eventsTable = new dynamodb.Table(this, 'EventsTable', {
+[0m[49m[39m  115, 115[0m:[39m[49m       tableName: `vereinssoftware-events-${stageName}`,
+[0m[49m[39m  116, 116[0m:[39m[49m       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m  117, 117[0m:[39m[49m       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m  118, 118[0m:[39m[49m       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+[0m[49m[38;5;9m- 119     [0m:[38;5;9m[49m       pointInTimeRecovery: true,
+[0m[49m[38;5;10m+      119[0m:[38;5;10m[49m       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+[0m[49m[39m  120, 120[0m:[39m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[39m  121, 121[0m:[39m[49m     });
+[0m[49m[39m  122, 122[0m:[39m[49m 
+[0m[49m[39m  123, 123[0m:[39m[49m     // GSI: calendar queries — events by date range for a tenant
+[0m[49m[39m  124, 124[0m:[39m[49m     // PK: TENANT#<vereinId>  SK: DATE#<isoDate>#EVENT#<id>
+[0m[49m[39m  125, 125[0m:[39m[49m     this.eventsTable.addGlobalSecondaryIndex({
+[0m[49m[39m  126, 126[0m:[39m[49m       indexName: 'EventsByDate',
+[0m[49m[39m  127, 127[0m:[39m[49m       partitionKey: { name: 'tenantId', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m  128, 128[0m:[39m[49m       sortKey: { name: 'dateSortKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m  129, 129[0m:[39m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[39m  130, 130[0m:[39m[49m     });
+[0m[49m[39m  131, 131[0m:[39m[49m 
+[0m[49m[39m  132, 132[0m:[39m[49m     // ── Documents ─────────────────────────────────────────────────────────────
+[0m[49m[39m  133, 133[0m:[39m[49m     // PK: TENANT#<vereinId>#DOC#<id>  SK: META
+[0m[49m[39m  134, 134[0m:[39m[49m     this.documentsTable = new dynamodb.Table(this, 'DocumentsTable', {
+[0m[49m[39m  135, 135[0m:[39m[49m       tableName: `vereinssoftware-documents-${stageName}`,
+[0m[49m[39m  136, 136[0m:[39m[49m       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m  137, 137[0m:[39m[49m       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m  138, 138[0m:[39m[49m       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+[0m[49m[38;5;9m- 139     [0m:[38;5;9m[49m       pointInTimeRecovery: true,
+[0m[49m[38;5;10m+      139[0m:[38;5;10m[49m       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+[0m[49m[39m  140, 140[0m:[39m[49m       removalPolicy: stageName === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+[0m[49m[39m  141, 141[0m:[39m[49m     });
+[0m[49m[39m  142, 142[0m:[39m[49m 
+[0m[49m[39m  143, 143[0m:[39m[49m     // GSI: list documents by tenant + visibility
+[0m[49m[39m  144, 144[0m:[39m[49m     // PK: TENANT#<vereinId>  SK: VISIBILITY#<level>#DOC#<id>
+[0m[49m[39m  145, 145[0m:[39m[49m     this.documentsTable.addGlobalSecondaryIndex({
+[0m[49m[39m  146, 146[0m:[39m[49m       indexName: 'DocumentsByTenant',
+[0m[49m[39m  147, 147[0m:[39m[49m       partitionKey: { name: 'tenantId', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m  148, 148[0m:[39m[49m       sortKey: { name: 'visibilitySortKey', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m  149, 149[0m:[39m[49m       projectionType: dynamodb.ProjectionType.ALL,
+[0m[49m[39m  150, 150[0m:[39m[49m     });
+[0m[49m[39m  151, 151[0m:[39m[49m 
+[0m[49m[39m  152, 152[0m:[39m[49m     // ── Auth (Roles & Permissions) ────────────────────────────────────────────
+[0m[49m[39m  153, 153[0m:[39m[49m     // PK: TENANT#<vereinId>#ROLE#<roleId>  SK: META | PERMISSION#<resource>
+[0m[49m[39m  154, 154[0m:[39m[49m     this.authTable = new dynamodb.Table(this, 'AuthTable', {
+[0m[49m[39m  155, 155[0m:[39m[49m       tableName: `vereinssoftware-auth-${stageName}`,
+[0m[49m[39m  156, 156[0m:[39m[49m       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m  157, 157[0m:[39m[49m       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+[0m[49m[39m  158, 158[0m:[39m[49m       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+[0m[49m[38;5;9m- 159     [0m:[38;5;9m[49m       pointInTimeRecovery: true,
+[0m[49m[38;5;10m+      159[0m:[38;5;10m[49m       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+[0m[K
+Updating: [38;5;141minfrastructure/lib/database-stack.ts[0m
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[?25l[0m[0mI will run the following command: [38;5;141mcd /home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure && npm run build 2>&1 && npx cdk synth --context env=dev 2>&1 | grep -E "(Successfully|Error|WARNING.*deprecated)" | head -20[0m[38;5;244m (using tool: shell)[0m
+
+
+> @vereinssoftware/infrastructure@0.1.0 build
+> tsc
+
+[32mSuccessfully synthesized to [34m/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/cdk.out[39m[32m[39m
+[38;5;244m - Completed in 7.207s[0m
+
+[?25l[0m[38;5;141m> [0mClean synth with no deprecation warnings. Now update the fix_plan to mark the completed items and update AGENT.md:[0m[0m
+[?25l[0m[0mI'll modify the following file: [38;5;141m.kiro/fix_plan.md[0m[38;5;244m (using tool: write)[0m
+
+[48;2;43;48;59m[39m  5, 5[0m:[39m[48;2;43;48;59m [38;2;191;97;106m-[38;2;191;97;106m [38;2;191;97;106m[ ] Monorepo-Setup: pnpm workspaces, ESLint, Prettier, TypeScript strict[K
+[0m[48;2;79;40;40m[39m- 6   [0m:[39m[48;2;36;25;28m [38;2;191;97;106m-[38;2;191;97;106m [ ] CDK AuthStack: Cognito User Pool, App Client, custom:tenant_id + custom:roles attributes[K
+[0m[48;2;79;40;40m[39m- 7   [0m:[39m[48;2;36;25;28m [38;2;191;97;106m-[38;2;191;97;106m [ ] CDK DatabaseStack: DynamoDB Tabellen (Tenants, Members, Structure, Events, Documents, Auth) + GSIs + PITR[K
+[0m[48;2;40;67;43m[39m+    6[0m:[39m[48;2;24;38;30m [38;2;191;97;106m-[38;2;191;97;106m [x] CDK AuthStack: Cognito User Pool, App Client, custom:tenant_id + custom:roles attributes[K
+[0m[48;2;40;67;43m[39m+    7[0m:[39m[48;2;24;38;30m [38;2;191;97;106m-[38;2;191;97;106m [x] CDK DatabaseStack: DynamoDB Tabellen (Tenants, Members, Structure, Events, Documents, Auth) + GSIs + PITR[K
+[0m[48;2;43;48;59m[39m  8, 8[0m:[39m[48;2;43;48;59m [38;2;191;97;106m-[38;2;191;97;106m [ ] CDK ApiStack: API Gateway HTTP API, Lambda Authorizer, Routen[K
+[0m[48;2;79;40;40m[39m- 9   [0m:[39m[48;2;36;25;28m [38;2;191;97;106m-[38;2;191;97;106m [ ] CDK StorageStack: S3 Bucket + CloudFront[K
+[0m[48;2;40;67;43m[39m+    9[0m:[39m[48;2;24;38;30m [38;2;191;97;106m-[38;2;191;97;106m [x] CDK StorageStack: S3 Bucket + CloudFront[K
+[0m[K
+Updating: [38;5;141m.kiro/fix_plan.md[0m
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[?25l[0m[0mI'll modify the following file: [38;5;141m.kiro/AGENT.md[0m[38;5;244m (using tool: write)[0m
+
+[48;2;43;48;59m[39m  43, 43[0m:[39m[48;2;43;48;59m [38;2;143;161;179m##[38;2;192;197;206m [38;2;143;161;179mKey Learnings[K
+[0m[48;2;79;40;40m[39m- 44    [0m:[39m[48;2;36;25;28m [38;2;191;97;106m-[38;2;191;97;106m [38;2;191;97;106mUpdate this section when you learn new build optimizations[K
+[0m[48;2;79;40;40m[39m- 45    [0m:[39m[48;2;36;25;28m [38;2;191;97;106m-[38;2;191;97;106m Document any gotchas or special setup requirements[K
+[0m[48;2;79;40;40m[39m- 46    [0m:[39m[48;2;36;25;28m [38;2;191;97;106m-[38;2;191;97;106m Keep track of the fastest test/build cycle[K
+[0m[48;2;40;67;43m[39m+     44[0m:[39m[48;2;24;38;30m [38;2;191;97;106m-[38;2;191;97;106m [38;2;191;97;106mInfrastructure uses CommonJS (not NodeNext/ESM) because CDK's [38;2;163;190;140m`[38;2;163;190;140mcdk.json[38;2;163;190;140m`[38;2;191;97;106m runs via [38;2;163;190;140m`[38;2;163;190;140mts-node --prefer-ts-exts[38;2;163;190;140m`[38;2;191;97;106m which requires CJS[K
+[0m[48;2;40;67;43m[39m+     45[0m:[39m[48;2;24;38;30m [38;2;191;97;106m-[38;2;191;97;106m [38;2;163;190;140m`[38;2;163;190;140minfrastructure/tsconfig.json[38;2;163;190;140m`[38;2;191;97;106m must NOT extend [38;2;163;190;140m`[38;2;163;190;140mtsconfig.base.json[38;2;163;190;140m`[38;2;191;97;106m (which uses NodeNext) — it has its own standalone config[K
+[0m[48;2;40;67;43m[39m+     46[0m:[39m[48;2;24;38;30m [38;2;191;97;106m-[38;2;191;97;106m Use [38;2;163;190;140m`[38;2;163;190;140mpointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }[38;2;163;190;140m`[38;2;191;97;106m (not deprecated [38;2;163;190;140m`[38;2;163;190;140mpointInTimeRecovery: true[38;2;163;190;140m`[38;2;191;97;106m) for DynamoDB PITR[K
+[0m[48;2;40;67;43m[39m+     47[0m:[39m[48;2;24;38;30m [38;2;191;97;106m-[38;2;191;97;106m CDK synth command: [38;2;163;190;140m`[38;2;163;190;140mcd infrastructure && npx cdk synth --context env=dev[38;2;163;190;140m`[K
+[0m[48;2;40;67;43m[39m+     48[0m:[39m[48;2;24;38;30m [38;2;191;97;106m-[38;2;191;97;106m CDK build: [38;2;163;190;140m`[38;2;163;190;140mcd infrastructure && npm run build[38;2;163;190;140m`[K
+[0m[48;2;40;67;43m[39m+     49[0m:[39m[48;2;24;38;30m [38;2;191;97;106m-[38;2;191;97;106m Backend tests: [38;2;163;190;140m`[38;2;163;190;140mcd backend && npm test[38;2;163;190;140m`[K
+[0m[K
+Updating: [38;5;141m.kiro/AGENT.md[0m
+[38;5;244m - Completed in 0.0s[0m
+
+[?25l[0m[38;5;141m> [0mImplemented 3 CDK stacks this loop:[0m[0m
+[0m[0m
+- **AuthStack** ([38;5;10minfrastructure/lib/auth-stack.ts[0m): Shared Cognito User Pool with [38;5;10mcustom:tenant_id[0m + [38;5;10mcustom:roles[0m attributes, PKCE app client, SRP auth flow, 1h token validity[0m[0m
+- **DatabaseStack** ([38;5;10minfrastructure/lib/database-stack.ts[0m): 6 DynamoDB tables (Tenants, Members, Structure, Events, Documents, Auth) with all GSIs from the spec + PITR enabled, prod tables use RETAIN removal policy[0m[0m
+- **StorageStack** ([38;5;10minfrastructure/lib/storage-stack.ts[0m): S3 bucket with versioning + lifecycle rules + CloudFront distribution using OAC[0m[0m
+[0m[0m
+All stacks wire together in [38;5;10mapp.ts[0m and [38;5;10mcdk synth[0m produces clean output with no errors or warnings.[0m[0m
+[0m[0m
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RALPH_STATUS---[0m[0m
+STATUS: IN_PROGRESS[0m[0m
+TASKS_COMPLETED_THIS_LOOP: 3[0m[0m
+FILES_MODIFIED: 6[0m[0m
+TESTS_STATUS: NOT_RUN[0m[0m
+WORK_TYPE: IMPLEMENTATION[0m[0m
+EXIT_SIGNAL: false[0m[0m
+RECOMMENDATION: Next: implement CDK ApiStack (API Gateway HTTP API + Lambda Authorizer) and the Lambda Authorizer function itself[0m[0m
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+END_RALPH_STATUS---[0m[0m
+[38;5;8m
+ ▸ Credits: 4.91 • Time: 4m 6s
+
+[0m[1G[0m[0m[?25h

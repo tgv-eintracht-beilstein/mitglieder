@@ -1,0 +1,232 @@
+{
+  "/Vereinssoftware-Storage-dev": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:49:22)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/BucketName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BucketName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new StorageStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts:82:5)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:49:22)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/BucketArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BucketArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new StorageStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts:83:5)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:49:22)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/DistributionDomainName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DistributionDomainName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new StorageStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts:84:5)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:49:22)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/DistributionId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DistributionId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new StorageStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts:85:5)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:49:22)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...App.synth in aws-cdk-lib...",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:57:5)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...App.synth in aws-cdk-lib...",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:57:5)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/DocumentsBucket/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DocumentsBucket9EC9DEB9"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new StorageStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts:27:19)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:49:22)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketAutoDeleteObjects"
+      }
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new StorageStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts:27:19)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:49:22)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new StorageStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts:27:19)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:49:22)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/OAC/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "OAC5B452445"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new S3OriginAccessControl2 in aws-cdk-lib...",
+        "new StorageStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts:63:17)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:49:22)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/Distribution/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Distribution830FAC52"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Distribution2 in aws-cdk-lib...",
+        "new StorageStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts:67:25)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:49:22)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...App.synth in aws-cdk-lib...",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:57:5)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/DocumentsBucket/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DocumentsBucketPolicy1F991BD4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new StorageStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts:27:19)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:49:22)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketPolicyStatements"
+      }
+    }
+  ],
+  "/Vereinssoftware-Storage-dev/DocumentsBucket/AutoDeleteObjectsCustomResource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DocumentsBucketAutoDeleteObjectsCustomResourceFE3123FC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new StorageStack (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/lib/storage-stack.ts:27:19)",
+        "<anonymous> (/home/ebbo/dev/tgv-eintracht-beilstein/mitglieder/infrastructure/bin/app.ts:49:22)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    }
+  ]
+}

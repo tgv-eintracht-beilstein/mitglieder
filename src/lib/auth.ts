@@ -1,6 +1,6 @@
 const API_URL = typeof window !== "undefined" && window.location.hostname !== "localhost"
-  ? "https://api.tgveintrachtbeilstein.de/mitglieder"
-  : "https://api.tgveintrachtbeilstein.de/mitglieder";
+  ? "https://api.tgveintrachtbeilstein.de"
+  : "https://hpgg0co1j9.execute-api.eu-central-1.amazonaws.com";
 
 interface AuthConfig {
   cognitoDomain: string;
@@ -173,6 +173,7 @@ export async function handleCallback(): Promise<boolean> {
 
 export async function logout() {
   clearTokens();
+  localStorage.removeItem("announcements_cache");
   const cfg = await getConfig();
   const params = new URLSearchParams({
     client_id: cfg.clientId,

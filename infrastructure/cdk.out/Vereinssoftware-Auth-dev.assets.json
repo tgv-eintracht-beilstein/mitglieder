@@ -1,0 +1,21 @@
+{
+  "version": "53.0.0",
+  "files": {
+    "9c146932cf406b54bb296390d8a151e89a9fabdb9f1454f6dc5f3f39efc93b78": {
+      "displayName": "Vereinssoftware-Auth-dev Template",
+      "source": {
+        "path": "Vereinssoftware-Auth-dev.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "136609826960-eu-central-1-9026249c": {
+          "bucketName": "cdk-hnb659fds-assets-136609826960-eu-central-1",
+          "objectKey": "9c146932cf406b54bb296390d8a151e89a9fabdb9f1454f6dc5f3f39efc93b78.json",
+          "region": "eu-central-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::136609826960:role/cdk-hnb659fds-file-publishing-role-136609826960-eu-central-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}
