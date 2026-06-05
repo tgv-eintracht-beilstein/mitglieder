@@ -1,5 +1,5 @@
 const API_URL = typeof window !== "undefined" && window.location.hostname !== "localhost"
-  ? "https://api.tgveintrachtbeilstein.de"
+  ? "https://api.tgveintrachtbeilstein.de/mitglieder"
   : "https://hpgg0co1j9.execute-api.eu-central-1.amazonaws.com";
 
 interface AuthConfig {
