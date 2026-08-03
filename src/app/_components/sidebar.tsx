@@ -16,6 +16,8 @@ const formulare = [
   { href: "/reisekosten", label: "Reisekosten" },
   { href: "/uebungsleiterpauschale", label: "Übungsleiterpauschale" },
   { href: "/ehrenamtspauschale", label: "Ehrenamtspauschale" },
+  { href: "/ehrenkodex", label: "Ehrenkodex" },
+  { href: "/selbstverpflichtungserklaerung", label: "Selbstverpflichtungserklärung" },
 ];
 
 const allItems = [...leftItems, ...formulare];
