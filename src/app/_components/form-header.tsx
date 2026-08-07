@@ -107,7 +107,7 @@ export default function FormHeader({ title, contextFields, personalFields, onAdd
                   </label>
                   <PI value={f.type === "date" ? formatDateDE(f.value) : f.value}>
                     {f.type === "date"
-                      ? <DateSelect value={f.value} onChange={f.onChange} className={`text-sm ${f.required && !f.value ? "[&_button]:border-[#b11217] [&_input]:border-[#b11217]" : ""}`} />
+                      ? <DateSelect value={f.value} onChange={f.onChange} minYear={1920} className={`text-sm ${f.required && !f.value ? "[&_button]:border-[#b11217] [&_input]:border-[#b11217]" : ""}`} />
                       : <input id={`field-${f.key}`} type={f.type ?? "text"} value={f.value} onChange={e => f.onChange(e.target.value)} aria-label={f.label} className={`${fieldCls} ${fieldBorder(f.value, f.required, f.invalid)}`} />
                     }
                   </PI>

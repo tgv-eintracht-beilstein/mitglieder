@@ -109,6 +109,7 @@ export const ABTEILUNGEN: { name: string; slug: string }[] = [
   { name: "Gesang",                slug: "gesang" },
   { name: "Tennis",                slug: "tennis" },
   { name: "Ski & Berg",            slug: "ski_und_berg" },
+  { name: "FFZ",                   slug: "ffz" },
 ];
 
 export function AbteilungIcon({ slug, print = false, size = 20 }: { slug: string; print?: boolean; size?: number }) {
