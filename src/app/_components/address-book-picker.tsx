@@ -222,6 +222,7 @@ export default function AddressBookModal({ open, onClose, onCancel, current }: P
                     </div>
                     {f.type === "date"
                       ? <DateSelect value={active[f.key] as string} onChange={v => handleChange({ ...active, [f.key]: v })}
+                          minYear={1920}
                           className={`text-sm ${f.required && !active[f.key] ? "[&_button]:border-[#b11217] [&_input]:border-[#b11217]" : ""}`} />
                       : <input type={f.type ?? "text"} value={active[f.key] as string}
                           onChange={e => handleChange({ ...active, [f.key]: e.target.value })}
