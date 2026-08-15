@@ -141,6 +141,48 @@ Verein ist das eine Bus-Faktor-Frage, keine technische. Wer das nicht will, nimm
 Plattform in der EU und zahlt etwas mehr für weniger Betriebsarbeit. **Diese Abwägung solltet ihr
 treffen, nicht ich** — sie hängt daran, wer die Wartung dauerhaft übernimmt.
 
+## Anbieter, Infrastruktur und Rechtsraum — was zählt eigentlich?
+
+Wiederkehrende Frage: *„Läuft Cloudflare nicht auch auf AWS?"* — **Nein.** Cloudflare betreibt ein
+eigenes Netz mit eigener Hardware in Hunderten Standorten und ist ein direkter AWS-Wettbewerber;
+R2 existiert ausdrücklich als Gegenentwurf zu S3. Workers, R2, D1 und KV laufen auf
+Cloudflare-eigener Infrastruktur, nicht auf AWS.
+
+Der Eindruck entsteht, weil unzählige *Websites* Cloudflare davor und AWS als Ursprung dahinter
+haben — das ist aber die Infrastruktur der Kunden, nicht die von Cloudflare.
+
+**Entscheidend ist ohnehin nicht das Blech, sondern der Rechtsraum des Unternehmens.** Und da
+sind AWS und Cloudflare in derselben Kategorie: beides US-Unternehmen, beide dem US CLOUD Act
+unterworfen, unabhängig davon, in welchem Rechenzentrum die Daten physisch liegen. **Ein Wechsel
+von AWS zu Cloudflare ändert die technische Abhängigkeit, aber nicht die datenschutzrechtliche
+Frage.** Dasselbe gilt für Vercel, Netlify, Fly.io, Railway, Render und Supabase.
+
+Daraus folgt je nach Treiber etwas völlig anderes:
+
+| Treiber | Ist Cloudflare eine Antwort? |
+|---|---|
+| Kosten | **Ja** — sehr großzügige Freikontingente, keine Egress-Gebühren |
+| Betriebsaufwand | **Ja** — kein Server, keine Updates, keine Backups von Hand |
+| Lock-in | Teilweise — weg von DynamoDB/Cognito, aber hin zu Workers/D1/R2 |
+| **Datenhoheit / DSGVO** | **Nein** — gleiche Rechtslage wie AWS |
+
+Für den Treiber Datenhoheit helfen nur europäische Anbieter: Hetzner, netcup, IONOS oder Open
+Telekom Cloud (DE), Scaleway oder OVHcloud (FR), Exoscale (CH); verwaltet z. B. Clever Cloud oder
+Scalingo (FR).
+
+Zwei Ergänzungen der Fairness halber:
+- US-Anbieter sind **nicht per se unzulässig** — für Übermittlungen gibt es mit dem EU-US Data
+  Privacy Framework eine Grundlage. Sie ist allerdings wiederholt juristisch angegriffen worden.
+  Wer die Frage dauerhaft nicht führen will, umgeht sie mit einem EU-Anbieter. Das gehört mit
+  eurem Datenschutzbeauftragten geklärt, nicht hier entschieden.
+- **Auch das Frontend liegt bei einem US-Anbieter**: GitHub Pages gehört Microsoft. Statische
+  Dateien sind unkritisch, die Zugriffsprotokolle enthalten aber IP-Adressen. Wenn Datenhoheit
+  der Treiber ist, gehört das mit auf die Liste.
+
+**Technisch** wäre Cloudflare für euren Code übrigens gangbar: Die Backend-Abhängigkeiten sind
+schlank, und `pdf-lib` in `sign-pdf.js` ist reines JavaScript ohne native Module. Der Hinderungs-
+grund wäre also nicht die Machbarkeit, sondern allein der Rechtsraum.
+
 ## Sinnvolle Reihenfolge
 
 1. **easyVerein-OIDC verifizieren** (Testzugang) — entscheidet über alles Weitere
